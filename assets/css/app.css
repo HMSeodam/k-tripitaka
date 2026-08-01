@@ -184,22 +184,11 @@ button{background:none;border:0;cursor:pointer}
 }
 .rail button:hover{color:var(--celadon-deep)}
 
-.cnbox{grid-column:2;min-width:0}
-.kobox{grid-column:2;min-width:0}
+/* 각 칸의 줄을 명시해 둔다. 자동 배치에 맡기면 내용 길이에 따라
+   각주가 본문 위로 올라타는 일이 생긴다. */
+.cnbox{grid-column:2;grid-row:1;min-width:0}
+.kobox{grid-column:2;grid-row:2;min-width:0}
 
-/* 좌우 대조에서 원문이 번역보다 짧으면 왼쪽 칸이 비어 버린다.
-   원문 덩어리를 화면에 붙여 두어 긴 번역을 읽는 동안에도 함께 보이게 한다. */
-.split .cnbox{
-  position:sticky;
-  top:calc(var(--top) + var(--barh) + 14px);
-  align-self:start;
-  max-height:calc(100vh - var(--top) - var(--barh) - 40px);
-  overflow-y:auto;
-  overscroll-behavior:contain;
-}
-.split .cnbox::-webkit-scrollbar{width:5px}
-.split .cnbox::-webkit-scrollbar-thumb{background:var(--mist);border-radius:3px}
-body.hide-ko .split .cnbox{position:static;max-height:none;overflow:visible}
 
 .cn{font-family:var(--serif);font-size:calc(var(--cn-size) * var(--fs));line-height:2.05;
   letter-spacing:.02em;color:var(--ink);margin:0 0 .55rem;
@@ -209,7 +198,7 @@ body.hide-ko .split .cnbox{position:static;max-height:none;overflow:visible}
 .ko+.ko{margin-top:.3rem}
 .mk{font-family:var(--mono);font-size:.74rem;color:#A9BBBF;margin-right:.3rem}
 .app{color:#B9C6C2;font-size:.85em}
-.notes{grid-column:2;margin-top:.5rem;padding:.5rem .7rem;font-size:calc(.82rem * var(--fs));
+.notes{grid-column:2;grid-row:3;margin-top:.5rem;clear:both;padding:.5rem .7rem;font-size:calc(.82rem * var(--fs));
   border-left:2px solid var(--celadon);background:var(--celadon-wash);
   border-radius:0 6px 6px 0;color:var(--celadon-deep)}
 .notes p{margin:.15rem 0}
@@ -222,20 +211,9 @@ body.hide-ko .split .cnbox{position:static;max-height:none;overflow:visible}
 
 /* 좌우 대조 */
 .split .unit{grid-template-columns:var(--rail) minmax(0,1fr) minmax(0,1fr)}
-.split .cnbox{
-  grid-column:2;
-  position:sticky;
-  top:calc(var(--top) + var(--barh) + 14px);
-  align-self:start;
-  max-height:calc(100vh - var(--top) - var(--barh) - 40px);
-  overflow-y:auto;
-  overscroll-behavior:contain;
-}
-.split .cnbox::-webkit-scrollbar{width:5px}
-.split .cnbox::-webkit-scrollbar-thumb{background:var(--mist);border-radius:3px}
-body.hide-ko .split .cnbox{position:static;max-height:none;overflow:visible}
-.split .kobox{grid-column:3}
-.split .notes{grid-column:2/-1}
+.split .cnbox{grid-column:2;grid-row:1}
+.split .kobox{grid-column:3;grid-row:1}
+.split .notes{grid-column:2/-1;grid-row:2}
 .split .unit.nomark .cn,.split .unit.nomark .ko{text-align:left}
 .split .unit.nomark{grid-template-columns:var(--rail) minmax(0,1fr) minmax(0,1fr)}
 
@@ -244,7 +222,7 @@ body.hide-ko .kobox{display:none}
 body.hide-cn .cnbox{display:none}
 body.hide-ko .split .unit,body.hide-cn .split .unit{
   grid-template-columns:var(--rail) minmax(0,1fr)}
-body.hide-cn .split .kobox{grid-column:2}
+body.hide-cn .split .kobox{grid-column:2;grid-row:1}
 
 /* ─── 검색 결과 ────────────────────────────────── */
 .reshead{max-width:860px;margin:0 auto 1rem;display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap}
@@ -300,6 +278,9 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   body.hide-ko .split .unit,body.hide-cn .split .unit{
     grid-template-columns:var(--rail) minmax(0,1fr)}
   .split .cnbox,.split .kobox,.split .notes,body.hide-cn .split .kobox{grid-column:2}
+  .split .cnbox,body.hide-cn .split .kobox{grid-row:1}
+  .split .kobox{grid-row:2}
+  .split .notes{grid-row:3}
   :root{--rail:58px;--cn-size:1.02rem}
   .tabbar{
     display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;
