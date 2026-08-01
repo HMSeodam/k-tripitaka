@@ -494,12 +494,16 @@ def merge(txt_units, dx):
         if u["cn"]:
             targets = [t for t in (resolve(c) for c in u["cn"]) if t is not None]
         else:
-            # 원문 조각 없이 표지만 있는 번역 닻
+            # 원문 조각 없이 표지만 있는 번역 닻.
+            # 원문 한 줄이 길면 그 줄 하나에 번역 문단이 여럿 달린다.
+            # 그러므로 이미 다른 번역이 붙은 자리라도 이어 붙일 수 있어야 한다.
             targets = []
             if u["m"] and u["m"] in by_marker:
-                i = pick(by_marker[u["m"]])
-                if i is not None:
-                    targets = [i]
+                q = by_marker[u["m"]]
+                i = pick(q)                  # 아직 비어 있는 자리가 있으면 그쪽
+                if i is None:
+                    i = q[0]                 # 없으면 같은 표지의 첫 자리에 이어 붙인다
+                targets = [i]
         if not targets:
             unmatched.append((dxi, u))
             continue
