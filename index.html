@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>신한글대장경 · 한문 불전 원문·한국어 대조</title>
+<meta name="description" content="한문 불교 문헌의 원문과 한국어 직역을 위치표지 단위로 대조하여 읽고 검색합니다.">
+<meta name="theme-color" content="#0E1F26">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <a class="brand" href="#/" aria-label="첫 화면">
+    <span class="brand-mark">신한글대장경</span>
+    <span class="brand-sub">新한글大藏經</span>
+  </a>
+
+  <form class="search" id="searchForm" role="search">
+    <input id="q" type="search" name="q" autocomplete="off" spellcheck="false"
+           placeholder="한문 또는 한국어로 찾기 — 예: 一心, 진여, 아뢰야">
+    <button type="submit" aria-label="찾기">
+      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5 18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </form>
+
+  <div class="topbar-tools">
+    <div class="seg" id="scopeSeg" role="group" aria-label="검색 범위">
+      <button data-scope="all" class="on">전체</button>
+      <button data-scope="cn">원문</button>
+      <button data-scope="ko">번역</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar" aria-label="문헌 목록">
+    <div class="side-head">
+      <span>수록 문헌</span>
+      <span class="side-count" id="sideCount"></span>
+    </div>
+    <ul class="worklist" id="workList"></ul>
+    <div class="side-foot" id="sideFoot"></div>
+  </nav>
+
+  <main id="main" class="main" tabindex="-1"></main>
+</div>
+
+<div class="railtip" id="railtip" hidden></div>
+
+<footer class="sitefoot">
+  <p class="disclaim">
+    <strong>이 사이트의 한국어 번역문은 AI가 생성한 것입니다.</strong><br>
+    직역을 원칙으로 삼았으나 오역·누락·과잉 해석이 있을 수 있으며,
+    학술적 인용에 앞서 반드시 한문 원문과 대조하여 이용자가 직접 검토하시기 바랍니다.<br>
+    한문 원문은 CBETA 등의 전자 대장경에서 옮긴 것이며,
+    대장경 위치표지를 기준으로 삼되 판본 대조는 별도로 수행하지 않았습니다.<br><br>
+  </p>
+  <p class="rights-line">
+    한문 원문 출처: <b>CBETA 電子佛典集成</b> · <b>CC BY-NC-SA 4.0</b>
+  </p>
+  <p class="credit">한민수 · 동명대학교</p>
+</footer>
+
+<nav class="tabbar" aria-label="화면 이동">
+  <a href="#/" data-tab="home"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8.5 10 3l7 5.5V17H3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>문헌</span></a>
+  <button data-tab="search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M13.5 13.5 18 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>찾기</span></a>
+  <button data-tab="view"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h5v12H4zM11 4h5v12h-5z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span>대조</span></a>
+</nav>
+
+<script src="assets/js/app.js" type="module"></script>
+</body>
+</html>
