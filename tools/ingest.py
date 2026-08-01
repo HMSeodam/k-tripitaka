@@ -64,6 +64,22 @@ RE_UNIT_LABEL = re.compile(
 )
 LABEL_WORDS = ("원문", "번역", "직역", "본문", "대조", "문단", "단락", "단위")
 
+# 단락 앞머리에 붙는 꼬리표: "원문  大乘起信論…" / "번역  『대승기신론소』…"
+# 이 두 글자 때문에 짧은 한문 줄이 번역으로 오인되므로 먼저 떼어 낸다.
+RE_SIDE_PREFIX = re.compile(
+    r"^(원문|한문\s*원문|본문|번역|직역|한국어\s*직역|한국어\s*번역)\s*[:：·|]?\s+"
+)
+
+
+def strip_side(t: str):
+    """앞머리 꼬리표를 떼고, 그것이 가리키던 쪽('cn'/'ko'/None)을 함께 돌려준다."""
+    m = RE_SIDE_PREFIX.match(t)
+    if not m:
+        return t, None
+    head = re.sub(r"\s", "", m.group(1))
+    side = "cn" if head in ("원문", "한문원문", "본문") else "ko"
+    return t[m.end():].strip(), side
+
 
 def is_unit_label(t: str) -> bool:
     """내용 없는 단위 라벨인가. 실제 번역문을 잘못 지우지 않도록 조건을 좁게 둔다."""
@@ -229,6 +245,75 @@ def parse_source_docx(path: Path):
     return units
 
 
+PURE_MARKER = re.compile(r"^\[(\d{3,4}[abc]\d{2})\]$")
+
+
+def is_translation_only(path: Path) -> bool:
+    """원문 없이 번역만 담긴 docx 인가.
+
+    한문 원문 단락이 사실상 없고, '[0459a11]' 처럼 표지만 홀로 선 문단이
+    여럿이면 번역 전용 형식으로 본다. 이런 문서는 sources/<id>/원문*.txt
+    쪽에서 원문을 따로 대야 하며, merge() 의 표지 대응만으로 짝짓는다."""
+    d = docx.Document(str(path))
+    paras = [re.sub(r"[ \t]+", " ", p.text).strip() for p in d.paragraphs]
+    paras = [t for t in paras if t]
+    if not paras:
+        return False
+    n_src = sum(1 for t in paras if is_source_line(t))
+    n_anchor = sum(1 for t in paras if PURE_MARKER.match(t))
+    return n_anchor >= 20 and n_src < len(paras) * 0.03
+
+
+def parse_translation_only_docx(path: Path):
+    """표지 단독 문단을 앵커로 삼아 번역만 파싱한다(원문 문단 없음).
+
+    문서는 앞부분(해제) → [표지] 번역… [표지] 번역… → 뒷부분(검증 보고 등)
+    순서로 구성된다고 본다. 표지가 처음 나오는 순간부터 '본문'으로 보고,
+    표지가 나온 뒤에 다시 나오는 1단계 표제(Heading 1)는 본문이 끝나고
+    뒷부분(부록)이 시작된 것으로 본다."""
+    d = docx.Document(str(path))
+    units, front, appendix = [], [], []
+    mode = "front"          # front | body | back
+    cur = None
+
+    for p in d.paragraphs:
+        txt = re.sub(r"[ \t]+", " ", p.text).strip()
+        if not txt:
+            continue
+        style = (p.style.name or "").strip()
+
+        m = PURE_MARKER.match(txt)
+        if m:
+            if mode == "back":          # 뒷부분 이후에 표지가 다시 나올 리 없지만 방어적으로
+                appendix.append(txt)
+                continue
+            if cur:
+                units.append(cur)
+            cur = {"m": m.group(1), "cn": [], "ko": [], "nt": []}
+            mode = "body"
+            continue
+
+        if mode == "body" and style.lower().startswith("heading"):
+            if cur:
+                units.append(cur)
+                cur = None
+            mode = "back"
+
+        if mode == "front":
+            front.append(txt)
+        elif mode == "back":
+            appendix.append(txt)
+        elif cur is not None:
+            is_note = ("audit" in style.lower()) or ("검증" in style) or ("교감" in style)
+            (cur["nt"] if is_note else cur["ko"]).append(txt)
+
+    if cur:
+        units.append(cur)
+
+    return {"units": units, "tables": [], "front": front,
+            "appendix": appendix, "sections": []}
+
+
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
@@ -260,6 +345,10 @@ def parse_docx(path: Path):
         if is_unit_label(txt):
             continue
 
+        txt, side = strip_side(txt)
+        if not txt:
+            continue
+
         mk = RE_MARKER.search(txt)
 
         is_head = style.lower().startswith("heading") or style in (
@@ -278,7 +367,7 @@ def parse_docx(path: Path):
                            "lv": head_level(style), "m": cur_marker})
             continue
 
-        if is_source_line(txt):
+        if side == "cn" or (side is None and is_source_line(txt)):
             # 한 문단 안에 위치표지가 여럿이면 표지마다 쪼갠다.
             # (docx 가 원문 두 대목을 줄바꿈으로 한 문단에 담는 경우가 있다)
             pieces = [x.strip() for x in
@@ -292,8 +381,9 @@ def parse_docx(path: Path):
             continue
 
         kind = "note" if (
-            "note" in style.lower() or "각주" in style or "Editorial" in style
-            or NOTE_PREFIX.match(txt)
+            side != "ko" and (
+                "note" in style.lower() or "각주" in style or "Editorial" in style
+                or NOTE_PREFIX.match(txt))
         ) else "ko"
         blocks.append({"kind": kind, "text": txt, "m": cur_marker, "head": cur_head})
 
@@ -778,7 +868,8 @@ def build_work(entry):
         txt_units.extend(part)
     dp = wdir / "번역.docx"
     if dp.exists():
-        dx = parse_docx(dp)
+        dx = (parse_translation_only_docx(dp) if is_translation_only(dp)
+              else parse_docx(dp))
 
     units, dxmap = merge(txt_units, dx)
 

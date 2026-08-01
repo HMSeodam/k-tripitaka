@@ -227,6 +227,31 @@
       "note": "원문 권두에 [cf. No. 1864] 표기. 智周 『大乘入道次第』와 관련된 돈황 사본 계열.",
       "source": "CBETA",
       "底本_publisher": "大藏出版株式會社"
+    },
+    {
+      "id": "wongak-daeso-seogui",
+      "title_cn": "大方廣圓覺經大疏釋義鈔",
+      "title_ko": "대방광원각경대소석의초",
+      "author_cn": "宗密",
+      "author_ko": "종밀",
+      "dynasty": "唐",
+      "canon": "X09 no.245",
+      "canon_id": "X",
+      "canon_vol": 9,
+      "canon_no": 245,
+      "canon_label": "卍續藏 9",
+      "canon_full": "X09 no.245",
+      "canon_ko": "만신찬속장경 제9책",
+      "collection": "원각경",
+      "tags": [
+        "원각경",
+        "종밀",
+        "석의초"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "株式會社國書刊行會",
+      "note": "종밀의 원각경대소(X09 no.243)를 스스로 풀이한 후속 주석서. 번역 저본은 원문 없이 위치표지와 번역만 담긴 형식이라, 원문(sources/원문.txt)과 표지 대응으로 정렬하였다. 저본 낙질로 [0744b04]–[0757b10] 구간(70개 표지)은 번역이 없다."
     }
   ],
   "rights": {
