@@ -352,15 +352,18 @@
    ],
    "verify": false,
    "note": "종밀의 원각경대소(X09 no.243)를 스스로 풀이한 후속 주석서. 번역 저본은 원문 없이 위치표지와 번역만 담긴 형식이라, 원문(sources/원문.txt)과 표지 대응으로 정렬하였다. 저본 낙질로 [0744b04]–[0757b10] 구간(70개 표지)은 번역이 없다.",
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
-   "chapters": 0
+   "units": 1568,
+   "translated": 1417,
+   "coverage": 0.9566,
+   "chars_cn": 447027,
+   "chars_ko": 1464165,
+   "range": [
+    "0459a11",
+    "0757b10"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 31
   },
   {
    "id": "gisin-so-jongmil",
@@ -401,8 +404,8 @@
  ],
  "totals": {
   "works": 10,
-  "units": 2218,
-  "translated": 2142,
-  "chars_cn": 351685
+  "units": 3786,
+  "translated": 3559,
+  "chars_cn": 798712
  }
 }
