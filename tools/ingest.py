@@ -365,43 +365,69 @@ def parse_docx(path: Path):
     if cur:
         units.append(cur)
 
-    units = split_by_ko_markers(units)
+    # 번역 표지대로 단위를 쪼개면 번호가 밀리므로, 절 표제의 위치도 함께 옮긴다
+    units, remap = split_by_ko_markers(units)
+    sections = [{**sec, "i": remap.get(sec["i"], sec["i"])} for sec in sections]
 
     return {"units": units, "tables": tables,
             "front": front, "appendix": appendix, "sections": sections}
 
 
 def split_by_ko_markers(units):
-    """번역 문단마다 위치표지가 붙어 있으면 그 표지대로 잘게 나눈다.
+    """번역 문단마다 위치표지가 붙어 있으면 그 표지대로 원문과 번역을 함께 나눈다.
 
     원문 수십 줄을 한 '대조 단위'로 묶어 번역한 문서라도, 번역 문단이
-    [0084b04] 같은 표지를 달고 있으면 그 자리에 정확히 붙일 수 있다.
-    표지가 없는 번역은 앞 단위에 그대로 둔다."""
-    out = []
-    for u in units:
+    [0091a06] 같은 표지를 달고 있으면 그 표지에서 다음 표지 직전까지의
+    원문 줄을 그 번역 옆에 붙일 수 있다. 이렇게 해야 대조가 줄 단위로 맞는다.
+    표지가 없는 번역은 앞 조각에 이어 둔다.
+    쪼개기 전후의 번호 대응표(remap)를 함께 돌려준다."""
+    out, remap = [], {}
+    for old, u in enumerate(units):
+        remap[old] = len(out)
+
         marked = [(RE_MARKER.match(k), k) for k in u["ko"]]
-        anchors = [(m.group(1), k) for m, k in marked if m]
-        # 표지 달린 번역이 둘 이상이고, 대부분이 표지를 가질 때만 나눈다
+        anchors = [m for m, _ in marked if m]
         if len(anchors) < 2 or len(anchors) < len(u["ko"]) * 0.8:
             out.append(u)
             continue
 
-        first = True
-        cur = None
+        # 표지별로 번역을 묶는다
+        groups = []
         for m, k in marked:
             if m:
-                if cur:
-                    out.append(cur)
-                cur = {"m": m.group(1),
-                       "cn": u["cn"] if first else [],
-                       "ko": [k], "nt": [], "h": u.get("h") if first else None}
-                first = False
-            elif cur:
-                cur["ko"].append(k)
-        if cur:
-            cur["nt"] = u["nt"]      # 각주는 마지막 조각에 붙인다
-            out.append(cur)
-    return out
+                groups.append([m.group(1), [k]])
+            elif groups:
+                groups[-1][1].append(k)
+
+        # 각 표지가 원문 어느 줄에서 시작하는지 찾는다
+        cn_marks = [RE_MARKER.match(c) for c in u["cn"]]
+        n, cursor = len(u["cn"]), 0
+        starts = []
+        for mk, _ in groups:
+            pos = None
+            for j in range(cursor, n):
+                mm = cn_marks[j]
+                if mm and mm.group(1) == mk:
+                    pos = j
+                    break
+            starts.append(cursor if pos is None else pos)
+            cursor = starts[-1]
+
+        for gi, (mk, kos) in enumerate(groups):
+            s0 = starts[gi]
+            s1 = starts[gi + 1] if gi + 1 < len(groups) else n
+            if s1 < s0:
+                s1 = s0
+            cn = u["cn"][s0:s1]
+            if gi == 0 and s0 > 0:
+                cn = u["cn"][:s0] + cn          # 표제·찬자 등 앞머리는 첫 조각에
+            rec = {"m": mk, "cn": cn, "ko": kos, "nt": []}
+            if gi == 0 and u.get("h"):
+                rec["h"] = u["h"]
+            out.append(rec)
+        out[-1]["nt"] = u["nt"]                 # 각주는 마지막 조각에
+    remap[len(units)] = len(out)
+    return out, remap
 
 
 # ── 정렬(병합) ───────────────────────────────────────────────────────
