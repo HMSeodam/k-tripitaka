@@ -355,8 +355,8 @@
    "units": 54,
    "translated": 53,
    "coverage": 0.9995,
-   "chars_cn": 47308,
-   "chars_ko": 78781,
+   "chars_cn": 47202,
+   "chars_ko": 84881,
    "range": [
     "0085a08",
     "0144b11"
@@ -370,6 +370,6 @@
   "works": 9,
   "units": 1895,
   "translated": 1820,
-  "chars_cn": 351385
+  "chars_cn": 351279
  }
 }
