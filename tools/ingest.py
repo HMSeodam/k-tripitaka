@@ -460,7 +460,13 @@ def merge(txt_units, dx):
         if not targets:
             unmatched.append((dxi, u))
             continue
-        owner, last = min(targets), max(targets)
+        # docx 한 단위가 담은 원문 조각 수보다 훨씬 넓은 범위에 걸쳐 있다면
+        # 어느 한 조각이 엉뚱한 자리에 붙은 것이다. 그 이상치는 버린다.
+        targets.sort()
+        owner = targets[0]
+        span_max = len(u["cn"]) * 2 + 10
+        targets = [t for t in targets if t - owner <= span_max]
+        last = targets[-1]
         taken.update(targets)
         dxmap[dxi] = owner
         owners.add(owner)
@@ -476,6 +482,21 @@ def merge(txt_units, dx):
         for k in range(owner + 1, last + 1):
             if k not in owners and k not in absorbed:
                 absorbed[k] = owner
+
+    # 묶음형 docx 대응
+    #   원문 여러 줄(수십 줄)을 한 '대조 단위'로 묶어 번역한 문서에서는
+    #   단위 사이에 낀 원문 줄이 어디에도 걸리지 않고 남는다.
+    #   이때는 docx 단위를 구간 경계로 삼아, 다음 경계 직전까지를 그 단위에 붙인다.
+    if dx_units:
+        per_unit = sorted(len(u["cn"]) for u in dx_units)
+        median_cn = per_unit[len(per_unit) // 2]
+        if median_cn >= 5:                       # 한 단위가 원문 5줄 이상을 묶는 문서
+            bounds = sorted(owners)
+            for n, start in enumerate(bounds):
+                stop = bounds[n + 1] if n + 1 < len(bounds) else len(out)
+                for k in range(start + 1, stop):
+                    if k not in owners and k not in absorbed:
+                        absorbed[k] = start
     for k in sorted(absorbed):
         out[absorbed[k]]["cn"].extend(out[k]["cn"])
 
@@ -546,6 +567,24 @@ def detect_juan_from_source(units):
                 secs.append({"lv": 1, "t": line, "i": idx})
                 break
     return secs
+
+
+def chunk_by_chars(units, start, end, target=26000):
+    """단위 수가 적어도 글자 수가 많으면 쪽 경계에서 끊는다.
+    묶음형 번역처럼 한 단위가 원문 수십 줄을 담는 문헌용."""
+    out, acc, last_page = [], 0, None
+    for i in range(start, end):
+        u = units[i]
+        page = (u.get("m") or "")[:-3]
+        if acc >= target and page and page != last_page:
+            out.append(i)
+            acc = 0
+        acc += len(norm_search(" ".join(u["cn"])))
+        if page:
+            last_page = page
+    if out and (end - out[-1]) < 3:
+        out.pop()
+    return out
 
 
 def chunk_by_page(units, start, end, target=90):
@@ -685,6 +724,17 @@ def build_work(entry):
 
     sections, chapters = build_sections(raw_secs, len(units))
 
+    # 단위는 적지만 글자 수가 많은 문헌(묶음형 번역)도 나눈다
+    total_chars = sum(len(norm_search(" ".join(u["cn"]))) for u in units)
+    if not chapters and total_chars > 40000 and len(units) <= 120:
+        cuts = [0] + chunk_by_chars(units, 0, len(units))
+        if len(cuts) > 1:
+            chapters = [
+                {"lv": 1, "i": b,
+                 "t": label_range(units, b,
+                                  cuts[k + 1] if k + 1 < len(cuts) else len(units))}
+                for k, b in enumerate(cuts)]
+
     # 표제가 없어 권이 안 잡힌 긴 문헌은 위치표지 쪽으로 나눈다
     if not chapters and len(units) > 120:
         cuts = [0] + chunk_by_page(units, 0, len(units))
@@ -804,6 +854,21 @@ def main():
     }
     with open(OUT / "manifest.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=1)
+    # 재배포 조건 점검 — 출처마다 조건이 다르므로 빌드할 때마다 확인한다
+    srcinfo = reg.get("rights", {}).get("sources", {})
+    flagged = {}
+    for m in metas:
+        src = m.get("source", "CBETA")
+        info = srcinfo.get(src, {})
+        if info.get("ok") is not True:
+            flagged.setdefault(src, []).append(m["id"])
+    for src, ids in flagged.items():
+        info = srcinfo.get(src, {})
+        mark = "재배포 금지" if info.get("ok") is False else "조건 확인 필요"
+        print(f"\n[주의] 출처 {src} — {mark}")
+        print(f"        {info.get('condition', '이용 조건을 확인하십시오.')}")
+        print(f"        해당 문헌: {', '.join(ids)}")
+
     print(f"\n총 {manifest['totals']['works']}종 · "
           f"{manifest['totals']['units']}단위 · "
           f"원문 {manifest['totals']['chars_cn']:,}자")
