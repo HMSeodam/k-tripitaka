@@ -104,18 +104,18 @@
     "삼론"
    ],
    "verify": false,
-   "units": 78,
-   "translated": 68,
+   "units": 79,
+   "translated": 69,
    "coverage": 0.9947,
-   "chars_cn": 13386,
-   "chars_ko": 35884,
+   "chars_cn": 13394,
+   "chars_ko": 35907,
    "range": [
     "0263a05",
     "0272b08"
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 11
+   "chapters": 12
   },
   {
    "id": "gisin-uigi-byeolgi",
@@ -174,11 +174,11 @@
     "삼보"
    ],
    "verify": false,
-   "units": 63,
-   "translated": 46,
-   "coverage": 0.9951,
-   "chars_cn": 19471,
-   "chars_ko": 59090,
+   "units": 66,
+   "translated": 48,
+   "coverage": 0.9943,
+   "chars_cn": 19625,
+   "chars_ko": 59288,
    "range": [
     "0613a08",
     "0626b17"
@@ -209,11 +209,11 @@
     "전기"
    ],
    "verify": false,
-   "units": 124,
-   "translated": 114,
+   "units": 125,
+   "translated": 115,
    "coverage": 0.9974,
-   "chars_cn": 25722,
-   "chars_ko": 72553,
+   "chars_cn": 25778,
+   "chars_ko": 72730,
    "range": [
     "0153a15",
     "0172c15"
@@ -285,7 +285,7 @@
    "translated": 238,
    "coverage": 0.9988,
    "chars_cn": 21827,
-   "chars_ko": 45790,
+   "chars_ko": 46480,
    "range": [
     "1206c22",
     "1222c13"
@@ -316,11 +316,11 @@
     "선교일치"
    ],
    "verify": false,
-   "units": 650,
-   "translated": 616,
+   "units": 657,
+   "translated": 623,
    "coverage": 0.9984,
-   "chars_cn": 128608,
-   "chars_ko": 366710,
+   "chars_cn": 128796,
+   "chars_ko": 366769,
    "range": [
     "0323a07",
     "0418b24"
@@ -328,6 +328,39 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 13
+  },
+  {
+   "id": "wongak-daeso-seogui",
+   "title_cn": "大方廣圓覺經大疏釋義鈔",
+   "title_ko": "대방광원각경대소석의초",
+   "author_cn": "宗密",
+   "author_ko": "종밀",
+   "dynasty": "唐",
+   "canon": "X09 no.245",
+   "canon_id": "X",
+   "canon_vol": 9,
+   "canon_no": 245,
+   "canon_label": "卍續藏 9",
+   "canon_ko": "만신찬속장경 제9책",
+   "source": "CBETA",
+   "底本_publisher": "株式會社國書刊行會",
+   "collection": "원각경",
+   "tags": [
+    "원각경",
+    "종밀",
+    "석의초"
+   ],
+   "verify": false,
+   "note": "종밀의 원각경대소(X09 no.243)를 스스로 풀이한 후속 주석서. 번역 저본은 원문 없이 위치표지와 번역만 담긴 형식이라, 원문(sources/원문.txt)과 표지 대응으로 정렬하였다. 저본 낙질로 [0744b04]–[0757b10] 구간(70개 표지)은 번역이 없다.",
+   "units": 0,
+   "translated": 0,
+   "coverage": 0,
+   "chars_cn": 0,
+   "chars_ko": 0,
+   "range": null,
+   "has_source": false,
+   "has_translation": false,
+   "chapters": 0
   },
   {
    "id": "gisin-so-jongmil",
@@ -367,9 +400,9 @@
   }
  ],
  "totals": {
-  "works": 9,
-  "units": 2206,
-  "translated": 2131,
-  "chars_cn": 351279
+  "works": 10,
+  "units": 2218,
+  "translated": 2142,
+  "chars_cn": 351685
  }
 }
