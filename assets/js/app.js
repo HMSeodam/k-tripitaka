@@ -54,11 +54,86 @@ async function work(id) {
 }
 
 /* ─── 렌더 조각 ──────────────────────────────────── */
-function markupCN(text) {
-  // 위치표지와 교감 표지를 본문 글자와 구분해 보여 준다
-  return esc(text)
+/* ─── 검색어 강조 ─────────────────────────────────
+   검색과 같은 기준(이체자 접기·구두점 무시)으로 자리를 찾은 뒤,
+   원문 글자 위치로 되돌려 표시한다. 그래야 "一心。" 처럼 사이에
+   구두점이 낀 경우에도 제대로 잡힌다. */
+const VAR_FOLD = {
+  '眞':'真','衆':'眾','众':'眾','觉':'覺','说':'說','为':'為','无':'無','与':'與',
+  '体':'體','万':'萬','来':'來','实':'實','义':'義','经':'經','论':'論','号':'號',
+  '当':'當','从':'從','学':'學','断':'斷','边':'邊','转':'轉','显':'顯','现':'現',
+  '应':'應','处':'處','随':'隨','点':'點','师':'師','净':'淨','凈':'淨','烦':'煩',
+  '恼':'惱','萨':'薩','刹':'剎','弥':'彌','广':'廣','严':'嚴','华':'華','会':'會',
+  '个':'個','于':'於','后':'後','裏':'裡','么':'麼','并':'並','余':'餘','观':'觀'
+};
+const DROP_CH = /[\s。，、．・？！：；「」『』（）()〔〕【】\[\]“”‘’·…—　]/;
+
+function foldCh(ch) { return VAR_FOLD[ch] || ch; }
+
+function normQuery(qs, kind) {
+  let out = '';
+  for (const ch of qs.normalize('NFKC')) {
+    if (DROP_CH.test(ch)) continue;
+    out += kind === 'cn' ? foldCh(ch) : ch.toLowerCase();
+  }
+  return out;
+}
+
+/** 원문 문자열에서 검색어가 놓인 구간들을 찾는다 → [[시작, 끝], …] */
+function findRanges(raw, kind, needle) {
+  if (!needle) return [];
+  const skip = new Uint8Array(raw.length);
+  if (kind === 'cn') {
+    for (const re of [/\[\d{3,4}[abc]\d{2}\]/g, /\[(?:\d{1,3}|＊|\*)\]/g]) {
+      let m;
+      while ((m = re.exec(raw)) !== null) {
+        for (let i = m.index; i < m.index + m[0].length; i++) skip[i] = 1;
+      }
+    }
+  }
+  let norm = '';
+  const map = [];
+  for (let i = 0; i < raw.length; i++) {
+    if (skip[i]) continue;
+    const ch = raw[i].normalize('NFKC');
+    if (DROP_CH.test(ch)) continue;
+    const n = kind === 'cn' ? foldCh(ch) : ch.toLowerCase();
+    for (let k = 0; k < n.length; k++) map.push(i);
+    norm += n;
+  }
+  const out = [];
+  let from = 0;
+  for (;;) {
+    const p = norm.indexOf(needle, from);
+    if (p < 0) break;
+    const a = map[p];
+    const b = (map[p + needle.length - 1] ?? a) + 1;
+    out.push([a, b]);
+    from = p + needle.length;
+  }
+  return out;
+}
+
+/** 구간에 <mark>를 씌운 HTML을 만든다 */
+function markHTML(raw, ranges) {
+  if (!ranges.length) return esc(raw);
+  let html = '', at = 0;
+  for (const [a, b] of ranges) {
+    html += esc(raw.slice(at, a)) + '<mark class="hit-mark">' + esc(raw.slice(a, b)) + '</mark>';
+    at = b;
+  }
+  return html + esc(raw.slice(at));
+}
+
+function decorateCN(html) {
+  return html
     .replace(/^(\[\d{3,4}[abc]\d{2}\])\s*/gm, '<span class="mk">$1</span>')
     .replace(APP_TAG, m => `<span class="app">${m}</span>`);
+}
+
+function markupCN(text) {
+  // 위치표지와 교감 표지를 본문 글자와 구분해 보여 준다
+  return decorateCN(esc(text));
 }
 
 function unitNode(u, wid) {
@@ -199,7 +274,7 @@ async function viewHome() {
 }
 
 /* ─── 화면: 대조 열람 ────────────────────────────── */
-async function viewWork(id, anchor) {
+async function viewWork(id, anchor, hit) {
   const main = $('#main');
   main.innerHTML = '<p class="loading">문헌을 여는 중…</p>';
   renderSide(id);
@@ -301,7 +376,11 @@ async function viewWork(id, anchor) {
   });
 
   let ci = 0;
-  if (anchor) {
+  if (hit && hit.unit) {
+    const k = doc.units.findIndex(u => u.i === hit.unit);
+    if (k >= 0) ci = doc.units[k].c || 0;
+  }
+  if (!ci && anchor) {
     const k = doc.units.findIndex(u =>
       anchor.startsWith('u') ? ('u' + u.i) === anchor : u.m === anchor);
     if (k >= 0) ci = doc.units[k].c || 0;
@@ -324,7 +403,26 @@ async function viewWork(id, anchor) {
     drawNav();
     applyModes();
     watchPosition();
-    if (jump) jumpTo(jump);
+    if (jump) {
+      // 검색으로 들어왔으면 검색어가 놓인 자리까지 데려간다
+      const target = hit && hit.q
+        ? doc.units.find(u => u.i === hit.unit) ||
+          doc.units.find(u => (u.m === jump) || ('u' + u.i === jump))
+        : null;
+      if (target) {
+        const node = document.getElementById('u' + target.i);
+        const mark = spotlight(node, target, hit.q, hit.where);
+        if (mark) {
+          mark.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          node.classList.add('flash');
+          setTimeout(() => node.classList.remove('flash'), 2600);
+        } else {
+          jumpTo(jump);
+        }
+      } else {
+        jumpTo(jump);
+      }
+    }
     else if (chapters.length > 1) main.scrollIntoView({ block: 'start' });
   }
 
@@ -378,6 +476,34 @@ function applyModes() {
   document.querySelector('.wrap')?.classList.toggle('wide', state.view === 'split');
   document.body.classList.toggle('hide-ko', state.show === 'cn');
   document.body.classList.toggle('hide-cn', state.show === 'ko');
+}
+
+/** 검색으로 들어왔을 때: 해당 단위에서 검색어를 표시하고 그 자리로 옮긴다 */
+function spotlight(node, unit, q, where) {
+  if (!node || !q) return null;
+  let first = null;
+
+  const paint = (elems, raws, kind) => {
+    elems.forEach((el, n) => {
+      const raw = raws[n];
+      if (raw == null) return;
+      const ranges = findRanges(raw, kind, normQuery(q, kind));
+      if (!ranges.length) return;
+      const html = markHTML(raw, ranges);
+      el.innerHTML = kind === 'cn' ? decorateCN(html) : html;
+      if (!first) first = el.querySelector('.hit-mark');
+    });
+  };
+
+  if (where !== 'ko') paint([...node.querySelectorAll('.cn')], [unit.cn.join('\n')], 'cn');
+  if (where !== 'cn') paint([...node.querySelectorAll('.ko')], unit.ko || [], 'ko');
+
+  // 어느 쪽이라 지정됐어도 못 찾으면 반대쪽도 훑는다
+  if (!first) {
+    paint([...node.querySelectorAll('.cn')], [unit.cn.join('\n')], 'cn');
+    paint([...node.querySelectorAll('.ko')], unit.ko || [], 'ko');
+  }
+  return first;
 }
 
 function setFont(v) {
@@ -446,7 +572,7 @@ async function viewSearch(q, scope) {
     const shown = hits.filter(h => !state.facet || h.work === state.facet);
     shown.forEach(h => {
       const a = el('a', 'hit');
-      a.href = `#/w/${h.work}/${h.m || 'u' + h.i}`;
+      a.href = `#/w/${h.work}/${h.m || 'u' + h.i}`        + `?q=${encodeURIComponent(q)}&in=${h.where}&u=${h.i}`;
       const top = el('div', 'hit-top');
       const wk = m.works.find(x => x.id === h.work);
       top.innerHTML = `<b>${esc(h.title || h.title_cn || '')}</b>
@@ -508,6 +634,26 @@ async function viewRights() {
     </section>
 
     <section>
+      <h2>다른 전자 대장경을 쓸 때</h2>
+      <p>기관마다 조건이 다릅니다. 이 사이트는 재배포가 허용된 CBETA만 수록합니다.</p>
+      <table class="src-table">
+        <tr><th>CBETA</th>
+            <td><b class="ok">수록 가능</b><br>
+                CC BY-NC-SA 4.0. 비영리·출처 명시·동일조건 공개를 지키면 재배포할 수 있습니다.</td></tr>
+        <tr><th>SAT</th>
+            <td><b class="no">수록 불가</b><br>
+                利用条件 제3조가 인터넷·기타 매체를 통한 재배포를 당분간 금지합니다.
+                저작권법상 인용은 별개이므로, 링크를 걸거나 필요한 대목만 인용하는 방식으로 쓰십시오.</td></tr>
+        <tr><th>KABC</th>
+            <td><b class="ask">문의 필요</b><br>
+                모든 콘텐츠 활용에 출처 명시를 요구하지만, 전문의 제3자 재배포를 명시적으로
+                허용한 조항은 확인되지 않았습니다. 대량 수록에 앞서 동국대 불교학술원에 문의하십시오.</td></tr>
+      </table>
+      <p class="rights-note">여기 적은 것은 각 기관이 공개한 이용 조건을 정리한 것이며 법률 자문이 아닙니다.
+        조건은 바뀔 수 있으니 수록 전에 해당 기관의 최신 고지를 확인하십시오.</p>
+    </section>
+
+    <section>
       <h2>한국어 번역</h2>
       <p>번역문은 생성형 AI로 만든 뒤 검토한 것으로, 한문 원문의 2차적 저작물입니다.
          원문과 같은 <b>${esc(R.license || 'CC BY-NC-SA 4.0')}</b> 조건으로 공개합니다.</p>
@@ -547,7 +693,11 @@ function route() {
 
   if (seg[0] === 'w' && seg[1]) {
     document.querySelector('[data-tab="view"]')?.classList.add('on');
-    return viewWork(seg[1], seg[2]);
+    return viewWork(seg[1], seg[2], {
+      q: params.get('q') || '',
+      where: params.get('in') || '',
+      unit: Number(params.get('u') || 0),
+    });
   }
   if (seg[0] === 'rights') {
     return viewRights();
