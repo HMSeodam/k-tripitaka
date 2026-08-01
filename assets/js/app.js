@@ -574,7 +574,7 @@ async function viewSearch(q, scope) {
   $('#q').value = q;
 
   const head = el('div', 'reshead');
-  head.innerHTML = `<h2>‘${esc(q)}’ 찾기</h2><span class="n" id="resN">훑는 중…</span>`;
+  head.innerHTML = `<h2>‘${esc(q)}’ 찾기</h2><span class="n" id="resN">검색 중…</span>`;
   main.append(head);
 
   const facets = el('div', 'facets'); main.append(facets);
