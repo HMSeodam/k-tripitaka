@@ -413,7 +413,7 @@ async function viewWork(id, anchor, hit) {
         const node = document.getElementById('u' + target.i);
         const mark = spotlight(node, target, hit.q, hit.where);
         if (mark) {
-          mark.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          scrollToTarget(mark, true);
           node.classList.add('flash');
           setTimeout(() => node.classList.remove('flash'), 2600);
         } else {
@@ -423,7 +423,7 @@ async function viewWork(id, anchor, hit) {
         jumpTo(jump);
       }
     }
-    else if (chapters.length > 1) main.scrollIntoView({ block: 'start' });
+    else if (chapters.length > 1) window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
   function drawNav() {
@@ -512,12 +512,46 @@ function setFont(v) {
   applyFont();
 }
 
+/** 고정 막대에 가리지 않게 목표를 화면에 올린다.
+ *  모바일에서는 글꼴이 늦게 실려 본문 높이가 나중에 바뀐다. 그래서
+ *  한 번 옮긴 뒤에도 자리를 다시 재어 어긋난 만큼 보정한다. */
+function barOffset() {
+  const top = document.querySelector('.topbar')?.getBoundingClientRect().height || 60;
+  const bar = document.querySelector('.docbar')?.getBoundingClientRect().height || 0;
+  return top + bar + 14;
+}
+
+function scrollToTarget(el, smooth) {
+  if (!el) return;
+  const place = (behavior) => {
+    const y = window.scrollY + el.getBoundingClientRect().top - barOffset() - 8;
+    window.scrollTo({ top: Math.max(0, y), behavior });
+  };
+  const ready = document.fonts?.ready || Promise.resolve();
+  ready.then(() => {
+    requestAnimationFrame(() => {
+      place(smooth ? 'smooth' : 'auto');
+      // 글꼴·줄바꿈이 뒤늦게 바뀌면 다시 맞춘다
+      let tries = 0;
+      const fix = () => {
+        const off = el.getBoundingClientRect().top - barOffset();
+        if (Math.abs(off) > 24 && tries < 8) {
+          tries++;
+          place('auto');
+          setTimeout(fix, 160);
+        }
+      };
+      setTimeout(fix, smooth ? 420 : 160);
+    });
+  });
+}
+
 function jumpTo(anchor) {
   const node = anchor.startsWith('u')
     ? document.getElementById(anchor)
     : $(`.unit[data-m="${CSS.escape(anchor)}"]`);
   if (!node) return;
-  node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  scrollToTarget(node, true);
   node.classList.add('flash');
   setTimeout(() => node.classList.remove('flash'), 2600);
 }
