@@ -187,6 +187,20 @@ button{background:none;border:0;cursor:pointer}
 .cnbox{grid-column:2;min-width:0}
 .kobox{grid-column:2;min-width:0}
 
+/* 좌우 대조에서 원문이 번역보다 짧으면 왼쪽 칸이 비어 버린다.
+   원문 덩어리를 화면에 붙여 두어 긴 번역을 읽는 동안에도 함께 보이게 한다. */
+.split .cnbox{
+  position:sticky;
+  top:calc(var(--top) + var(--barh) + 14px);
+  align-self:start;
+  max-height:calc(100vh - var(--top) - var(--barh) - 40px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.split .cnbox::-webkit-scrollbar{width:5px}
+.split .cnbox::-webkit-scrollbar-thumb{background:var(--mist);border-radius:3px}
+body.hide-ko .split .cnbox{position:static;max-height:none;overflow:visible}
+
 .cn{font-family:var(--serif);font-size:calc(var(--cn-size) * var(--fs));line-height:2.05;
   letter-spacing:.02em;color:var(--ink);margin:0 0 .55rem;
   white-space:pre-wrap;overflow-wrap:anywhere}
@@ -208,7 +222,18 @@ button{background:none;border:0;cursor:pointer}
 
 /* 좌우 대조 */
 .split .unit{grid-template-columns:var(--rail) minmax(0,1fr) minmax(0,1fr)}
-.split .cnbox{grid-column:2}
+.split .cnbox{
+  grid-column:2;
+  position:sticky;
+  top:calc(var(--top) + var(--barh) + 14px);
+  align-self:start;
+  max-height:calc(100vh - var(--top) - var(--barh) - 40px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.split .cnbox::-webkit-scrollbar{width:5px}
+.split .cnbox::-webkit-scrollbar-thumb{background:var(--mist);border-radius:3px}
+body.hide-ko .split .cnbox{position:static;max-height:none;overflow:visible}
 .split .kobox{grid-column:3}
 .split .notes{grid-column:2/-1}
 .split .unit.nomark .cn,.split .unit.nomark .ko{text-align:left}
@@ -347,6 +372,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 }
 @media (max-width:900px){
   .sitefoot{padding:1.2rem 1rem 5.5rem}
+  .foot-grid{grid-template-columns:1fr;gap:.9rem}
 }
 
 /* ─── 출처·이용 조건 ───────────────────────────── */
@@ -378,3 +404,27 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 .rights-cite{font-family:var(--mono);font-size:.78rem!important;
   background:var(--indigo-wash);padding:.7rem .9rem;border-radius:6px;
   line-height:1.8;color:var(--ink-2)!important}
+
+.src-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:.7rem 0 .9rem}
+.src-table th{text-align:left;width:5.5rem;padding:.6rem .7rem .6rem 0;
+  vertical-align:top;font-family:var(--mono);font-size:.8rem;
+  color:var(--indigo);font-weight:500;white-space:nowrap}
+.src-table td{padding:.6rem 0;border-bottom:1px solid var(--mist-2);
+  line-height:1.75;color:var(--ink-2)}
+.src-table tr:last-child td{border-bottom:0}
+.src-table b.ok{color:var(--celadon-deep)}
+.src-table b.no{color:#A8442E}
+.src-table b.ask{color:var(--amber)}
+
+/* 검색으로 찾아온 대목 표시 */
+.hit-mark{
+  background:var(--amber-wash);color:var(--amber);
+  padding:0 .12em;border-radius:2px;font-weight:600;
+  box-shadow:0 0 0 1px rgba(154,107,31,.22);
+  scroll-margin-top:calc(var(--top) + var(--barh) + 80px);
+}
+.unit.flash .hit-mark{animation:hitpulse 1.6s ease-out 2}
+@keyframes hitpulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(154,107,31,.22)}
+  40%{box-shadow:0 0 0 4px rgba(154,107,31,.28)}
+}
