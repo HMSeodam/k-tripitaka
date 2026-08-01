@@ -365,8 +365,43 @@ def parse_docx(path: Path):
     if cur:
         units.append(cur)
 
+    units = split_by_ko_markers(units)
+
     return {"units": units, "tables": tables,
             "front": front, "appendix": appendix, "sections": sections}
+
+
+def split_by_ko_markers(units):
+    """번역 문단마다 위치표지가 붙어 있으면 그 표지대로 잘게 나눈다.
+
+    원문 수십 줄을 한 '대조 단위'로 묶어 번역한 문서라도, 번역 문단이
+    [0084b04] 같은 표지를 달고 있으면 그 자리에 정확히 붙일 수 있다.
+    표지가 없는 번역은 앞 단위에 그대로 둔다."""
+    out = []
+    for u in units:
+        marked = [(RE_MARKER.match(k), k) for k in u["ko"]]
+        anchors = [(m.group(1), k) for m, k in marked if m]
+        # 표지 달린 번역이 둘 이상이고, 대부분이 표지를 가질 때만 나눈다
+        if len(anchors) < 2 or len(anchors) < len(u["ko"]) * 0.8:
+            out.append(u)
+            continue
+
+        first = True
+        cur = None
+        for m, k in marked:
+            if m:
+                if cur:
+                    out.append(cur)
+                cur = {"m": m.group(1),
+                       "cn": u["cn"] if first else [],
+                       "ko": [k], "nt": [], "h": u.get("h") if first else None}
+                first = False
+            elif cur:
+                cur["ko"].append(k)
+        if cur:
+            cur["nt"] = u["nt"]      # 각주는 마지막 조각에 붙인다
+            out.append(cur)
+    return out
 
 
 # ── 정렬(병합) ───────────────────────────────────────────────────────
@@ -456,7 +491,15 @@ def merge(txt_units, dx):
     unmatched, dxmap, spans = [], {}, []
     owners = set()
     for dxi, u in enumerate(dx_units):
-        targets = [t for t in (resolve(c) for c in u["cn"]) if t is not None]
+        if u["cn"]:
+            targets = [t for t in (resolve(c) for c in u["cn"]) if t is not None]
+        else:
+            # 원문 조각 없이 표지만 있는 번역 닻
+            targets = []
+            if u["m"] and u["m"] in by_marker:
+                i = pick(by_marker[u["m"]])
+                if i is not None:
+                    targets = [i]
         if not targets:
             unmatched.append((dxi, u))
             continue
@@ -488,7 +531,9 @@ def merge(txt_units, dx):
     #   단위 사이에 낀 원문 줄이 어디에도 걸리지 않고 남는다.
     #   이때는 docx 단위를 구간 경계로 삼아, 다음 경계 직전까지를 그 단위에 붙인다.
     if dx_units:
-        per_unit = sorted(len(u["cn"]) for u in dx_units)
+        per_unit = sorted(len(u["cn"]) for u in dx_units if u["cn"])
+        if not per_unit:
+            per_unit = [0]
         median_cn = per_unit[len(per_unit) // 2]
         if median_cn >= 5:                       # 한 단위가 원문 5줄 이상을 묶는 문서
             bounds = sorted(owners)
