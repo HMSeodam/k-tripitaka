@@ -1,0 +1,66 @@
+name: 대조 데이터 생성과 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: python-docx 설치
+        run: pip install python-docx
+
+      - name: 원문·번역에서 대조 데이터 생성
+        run: |
+          if [ -d sources ] && [ -n "$(ls -A sources 2>/dev/null)" ]; then
+            python3 tools/ingest.py
+          else
+            echo "sources/ 가 비어 있어 건너뜁니다."
+          fi
+
+      - name: 문헌 목록 재생성
+        run: python3 tools/rebuild_manifest.py
+
+      - name: 생성 결과 되돌려 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --staged --quiet; then
+            echo "바뀐 데이터가 없습니다."
+          else
+            git commit -m "자동 생성: 대조 데이터 갱신"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
