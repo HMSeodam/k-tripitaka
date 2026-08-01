@@ -352,8 +352,8 @@
    ],
    "verify": false,
    "note": "CBETA 건륭장(乾隆大藏經, 龍藏) 수록본. 4권. 법장 술·종밀 록. 대정장에는 수록되지 않은 판본이다. 번역 docx가 원문 수십 줄을 한 대조 단위로 묶는 묶음형이라 단위가 굵다.",
-   "units": 365,
-   "translated": 364,
+   "units": 324,
+   "translated": 323,
    "coverage": 0.9995,
    "chars_cn": 47202,
    "chars_ko": 84881,
@@ -363,13 +363,13 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4
+   "chapters": 26
   }
  ],
  "totals": {
   "works": 9,
-  "units": 2221,
-  "translated": 2146,
+  "units": 2180,
+  "translated": 2105,
   "chars_cn": 351279
  }
 }
