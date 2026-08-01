@@ -14,7 +14,36 @@
   "license": "CC BY-NC-SA 4.0",
   "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ko",
   "commercial": false,
-  "note": "CBETA 版權宣告 기준. 대정신수대장경·만신찬속장경·역대장경보집은 CC BY-NC-SA 4.0 (類別 A). 인순법사·여징·태허·연배 등 근현대 저작(類別 B)은 CC 적용 대상이 아니므로 수록하지 않는다."
+  "note": "CBETA 版權宣告 기준. 대정신수대장경·만신찬속장경·역대장경보집은 CC BY-NC-SA 4.0 (類別 A). 인순법사·여징·태허·연배 등 근현대 저작(類別 B)은 CC 적용 대상이 아니므로 수록하지 않는다.",
+  "sources": {
+   "CBETA": {
+    "name": "CBETA 電子佛典集成",
+    "org": "財團法人佛教電子佛典基金會",
+    "url": "https://cbeta.org/copyright",
+    "license": "CC BY-NC-SA 4.0",
+    "redistribute": "허용",
+    "condition": "비영리 · 실질 내용 무변경 · 출처와 판본 명시 · 동일조건 공개",
+    "ok": true
+   },
+   "SAT": {
+    "name": "SAT 大正新脩大藏經テキストデータベース",
+    "org": "大藏經テキストデータベース研究会 (東京大學)",
+    "url": "https://21dzk.l.u-tokyo.ac.jp/SAT/termsofuse.html",
+    "license": "재배포 금지",
+    "redistribute": "금지",
+    "condition": "利用条件 제3조가 인터넷·기타 매체를 통한 재배포를 당분간 금지. 저작권법상 '인용'은 별개로 가능. 전문 수록은 불가하며 링크·인용으로만 이용해야 함",
+    "ok": false
+   },
+   "KABC": {
+    "name": "불교기록문화유산 아카이브",
+    "org": "동국대학교 불교학술원",
+    "url": "https://kabc.dongguk.edu",
+    "license": "출처 명시 요구 · 재배포 조건 불명확",
+    "redistribute": "확인 필요",
+    "condition": "모든 콘텐츠 활용 시 출처 명시가 요구되나, 전문의 제3자 재배포를 명시적으로 허용한 조항은 확인되지 않음. 대량 수록 전 사업단에 직접 문의 권장",
+    "ok": null
+   }
+  }
  },
  "works": [
   {
@@ -287,9 +316,9 @@
     "선교일치"
    ],
    "verify": false,
-   "units": 634,
+   "units": 650,
    "translated": 616,
-   "coverage": 0.9998,
+   "coverage": 0.9984,
    "chars_cn": 128608,
    "chars_ko": 366710,
    "range": [
@@ -322,24 +351,24 @@
     "종밀"
    ],
    "verify": false,
-   "note": "CBETA 건륭장(乾隆大藏經, 龍藏) 수록본. 4권. 법장 술·종밀 록. 대정장에는 수록되지 않은 판본이다.",
-   "units": 72,
+   "note": "CBETA 건륭장(乾隆大藏經, 龍藏) 수록본. 4권. 법장 술·종밀 록. 대정장에는 수록되지 않은 판본이다. 번역 docx가 원문 수십 줄을 한 대조 단위로 묶는 묶음형이라 단위가 굵다.",
+   "units": 54,
    "translated": 53,
-   "coverage": 0.9986,
+   "coverage": 0.9995,
    "chars_cn": 47308,
    "chars_ko": 78781,
    "range": [
     "0085a08",
-    "0145a14"
+    "0144b11"
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 2
   }
  ],
  "totals": {
   "works": 9,
-  "units": 1897,
+  "units": 1895,
   "translated": 1820,
   "chars_cn": 351385
  }
