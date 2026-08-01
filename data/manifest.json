@@ -69,8 +69,8 @@
    ],
    "verify": false,
    "note": "본문(십이문론)과 주석서(종치의기)를 하나의 회본으로 편집. 두 좌표계(T30 0159~0167 / T42 0212~0230)가 한 문헌 안에 공존함",
-   "units": 228,
-   "translated": 228,
+   "units": 243,
+   "translated": 243,
    "coverage": 1.0,
    "chars_cn": 38597,
    "chars_ko": 118193,
@@ -352,24 +352,24 @@
    ],
    "verify": false,
    "note": "CBETA 건륭장(乾隆大藏經, 龍藏) 수록본. 4권. 법장 술·종밀 록. 대정장에는 수록되지 않은 판본이다. 번역 docx가 원문 수십 줄을 한 대조 단위로 묶는 묶음형이라 단위가 굵다.",
-   "units": 54,
-   "translated": 53,
+   "units": 365,
+   "translated": 364,
    "coverage": 0.9995,
    "chars_cn": 47202,
    "chars_ko": 84881,
    "range": [
-    "0085a08",
-    "0144b11"
+    "0084b04",
+    "0145a06"
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2
+   "chapters": 4
   }
  ],
  "totals": {
   "works": 9,
-  "units": 1895,
-  "translated": 1820,
+  "units": 2221,
+  "translated": 2146,
   "chars_cn": 351279
  }
 }
