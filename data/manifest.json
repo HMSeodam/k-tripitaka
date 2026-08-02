@@ -595,11 +595,11 @@
    ],
    "verify": false,
    "note": "CBETA 목록은 唐 見登集으로 표기하나, 見登은 신라 승려로 알려져 있다. 한편 일본 학승 지쿄(智憬)를 저자로 보는 설도 제기되어 있다. 문서 표제(大乘起信論同異略集)와 CBETA 정식 서명(起信論同異集)이 다르니 인용 시 확인할 것. 2권.",
-   "units": 17,
-   "translated": 17,
-   "coverage": 1.0,
-   "chars_cn": 30392,
-   "chars_ko": 35268,
+   "units": 22,
+   "translated": 18,
+   "coverage": 0.9967,
+   "chars_cn": 30401,
+   "chars_ko": 89180,
    "range": [
     "0255b09",
     "0273b22"
@@ -683,8 +683,8 @@
  ],
  "totals": {
   "works": 18,
-  "units": 8283,
-  "translated": 8019,
-  "chars_cn": 1093350
+  "units": 8288,
+  "translated": 8020,
+  "chars_cn": 1093359
  }
 }
