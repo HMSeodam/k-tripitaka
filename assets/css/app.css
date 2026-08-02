@@ -139,7 +139,12 @@ button{background:none;border:0;cursor:pointer}
 .docbar{position:sticky;top:var(--top);z-index:30;margin:-1.6rem -2rem 1.2rem;
   padding:.55rem 2rem;background:rgba(246,248,245,.96);backdrop-filter:blur(10px);
   border-bottom:1px solid var(--mist);display:flex;align-items:center;gap:.7rem;
-  flex-wrap:wrap;box-shadow:0 1px 6px rgba(14,31,38,.05)}
+  flex-wrap:wrap;box-shadow:0 1px 6px rgba(14,31,38,.05);
+  /* 서지를 펼쳤을 때 막대가 화면보다 커지면, 고정된 채로 아래쪽에 손이 닿지
+     않게 되어 본문 스크롤이 막힌다. 상한을 두고 막대 안에서 스크롤시킨다. */
+  max-height:calc(100vh - var(--top) - 16px);
+  max-height:calc(100dvh - var(--top) - 16px);
+  overflow-y:auto;overscroll-behavior:contain}
 .docbar .chapnav{flex:1 1 100%;margin:.15rem 0 0;padding:.4rem 0 0;
   background:none;border:0;border-top:1px solid var(--mist-2);border-radius:0}
 .docbar h2{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin:0}
@@ -248,7 +253,7 @@ mark{background:var(--amber-wash);color:var(--amber);padding:0 .1em;border-radiu
 .drawer{flex:1 1 100%;order:-1;margin:0}
 .biblio{margin:0}
 .biblio[open]>summary{margin-bottom:.4rem}
-.biblio>div,.biblio>table{max-height:min(52vh,420px);overflow-y:auto}
+.biblio>div,.biblio>table{max-height:none;overflow:visible}
 .biblio>summary{cursor:pointer;font-size:.75rem;color:var(--ink-3);
   list-style:none;padding:.1rem 0;user-select:none;display:inline-block}
 .biblio>summary::-webkit-details-marker{display:none}
