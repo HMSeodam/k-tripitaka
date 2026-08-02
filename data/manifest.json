@@ -186,6 +186,42 @@
    "chapters": 0
   },
   {
+   "id": "gisin-uiso-hyewon",
+   "title_cn": "大乘起信論義疏",
+   "title_ko": "대승기신론의소",
+   "author_cn": "慧遠(?)",
+   "author_ko": "혜원(?)",
+   "dynasty": "隋",
+   "canon": "T44 no.1843",
+   "canon_id": "T",
+   "canon_vol": 44,
+   "canon_no": 1843,
+   "canon_label": "大正藏 44",
+   "canon_ko": "대정신수대장경 제44책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "혜원",
+    "정영사"
+   ],
+   "verify": false,
+   "note": "찬자를 淨影寺沙門慧遠(523~592)으로 제하나, 혜원의 진작이 아닐 것으로 보는 학계 의견이 있다. 저본(CBETA)에 위치표지가 매우 성글어(전체 4개) 대조 단위가 굵다.",
+   "units": 6,
+   "translated": 6,
+   "coverage": 1.0,
+   "chars_cn": 39440,
+   "chars_ko": 75726,
+   "range": [
+    "0196a05",
+    "0196a05"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 0
+  },
+  {
    "id": "gisin-uigi-byeolgi",
    "title_cn": "大乘起信論義記別記",
    "title_ko": "대승기신론의기별기",
@@ -219,6 +255,42 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 0
+  },
+  {
+   "id": "gisin-pilsakgi",
+   "title_cn": "起信論疏筆削記",
+   "title_ko": "대승기신론필삭기",
+   "author_cn": "子璿",
+   "author_ko": "자선",
+   "dynasty": "宋",
+   "canon": "T44 no.1848",
+   "canon_id": "T",
+   "canon_vol": 44,
+   "canon_no": 1848,
+   "canon_label": "大正藏 44",
+   "canon_ko": "대정신수대장경 제44책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "자선",
+    "장수"
+   ],
+   "verify": false,
+   "note": "장수(長水) 사문 자선(子璿)이 법장의 『기신론의기』와 종밀의 주석을 이어받아 지은 주석서. 전 20권. 원문 권두에 [cf. Nos. 1666, 1846, 1847] 표기.",
+   "units": 838,
+   "translated": 832,
+   "coverage": 0.9998,
+   "chars_cn": 158075,
+   "chars_ko": 471353,
+   "range": [
+    "0297a04",
+    "0409a11"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 22
   },
   {
    "id": "bojangron",
@@ -682,9 +754,9 @@
   }
  ],
  "totals": {
-  "works": 18,
-  "units": 8288,
-  "translated": 8020,
-  "chars_cn": 1093359
+  "works": 20,
+  "units": 9132,
+  "translated": 8858,
+  "chars_cn": 1290874
  }
 }
