@@ -149,6 +149,8 @@ function unitNode(u, wid) {
     rail.append(b);
   } else {
     n.classList.add('nomark');
+    // 짧은 줄(권두 표제·찬자 등)만 표제답게 조판한다
+    if (u.cn.join('').length <= 80) n.classList.add('titleish');
   }
 
   const cnbox = el('div', 'cnbox');
