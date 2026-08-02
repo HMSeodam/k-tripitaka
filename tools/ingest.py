@@ -342,6 +342,12 @@ def parse_docx(path: Path):
             continue
         if txt in LABELS or txt.rstrip("：: ") in LABELS:
             continue
+        # 표지만 홀로 선 문단([0297a11])은 위치 표시일 뿐 본문이 아니다.
+        # 걸러 내지 않으면 앞 단위의 번역 끝에 군더더기로 달라붙는다.
+        pm = PURE_MARKER.match(txt)
+        if pm:
+            cur_marker = pm.group(1)
+            continue
         if is_unit_label(txt):
             continue
 

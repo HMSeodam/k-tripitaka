@@ -446,6 +446,56 @@
       "source": "CBETA",
       "底本_publisher": "株式會社國書刊行會",
       "note": "CBETA 정식 서명은 大乘四論玄義(無依無得을 관용적으로 앞에 붙여 부른다). 7권. 찬자 균정(均正)에 대해서는 백제 승려 혜균(慧均)을 가리킨다는 설이 제기되어 있다."
+    },
+    {
+      "id": "gisin-uiso-hyewon",
+      "title_cn": "大乘起信論義疏",
+      "title_ko": "대승기신론의소",
+      "author_cn": "慧遠(?)",
+      "author_ko": "혜원(?)",
+      "dynasty": "隋",
+      "canon": "T44 no.1843",
+      "canon_id": "T",
+      "canon_vol": 44,
+      "canon_no": 1843,
+      "canon_label": "大正藏 44",
+      "canon_full": "T44 no.1843",
+      "canon_ko": "대정신수대장경 제44책",
+      "collection": "기신론",
+      "tags": [
+        "기신론",
+        "혜원",
+        "정영사"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "大藏出版株式會社",
+      "note": "찬자를 淨影寺沙門慧遠(523~592)으로 제하나, 혜원의 진작이 아닐 것으로 보는 학계 의견이 있다. 저본(CBETA)에 위치표지가 매우 성글어(전체 4개) 대조 단위가 굵다."
+    },
+    {
+      "id": "gisin-pilsakgi",
+      "title_cn": "起信論疏筆削記",
+      "title_ko": "대승기신론필삭기",
+      "author_cn": "子璿",
+      "author_ko": "자선",
+      "dynasty": "宋",
+      "canon": "T44 no.1848",
+      "canon_id": "T",
+      "canon_vol": 44,
+      "canon_no": 1848,
+      "canon_label": "大正藏 44",
+      "canon_full": "T44 no.1848",
+      "canon_ko": "대정신수대장경 제44책",
+      "collection": "기신론",
+      "tags": [
+        "기신론",
+        "자선",
+        "장수"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "大藏出版株式會社",
+      "note": "장수(長水) 사문 자선(子璿)이 법장의 『기신론의기』와 종밀의 주석을 이어받아 지은 주석서. 전 20권. 원문 권두에 [cf. Nos. 1666, 1846, 1847] 표기."
     }
   ],
   "rights": {
