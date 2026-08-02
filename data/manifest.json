@@ -139,14 +139,17 @@
     "유식"
    ],
    "verify": false,
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
+   "units": 12,
+   "translated": 12,
+   "coverage": 1.0,
+   "chars_cn": 11359,
+   "chars_ko": 36648,
+   "range": [
+    "0425c12",
+    "0431a17"
+   ],
+   "has_source": true,
+   "has_translation": true,
    "chapters": 0
   },
   {
@@ -172,14 +175,14 @@
    ],
    "verify": false,
    "note": "번역 docx에 위치표지가 전혀 없어(원문 앞머리 대조로만 정렬) 단위가 매우 굵다. 10번째 단위(제10 수문해석)에 번역 165조각이 한 단위로 뭉쳐 있어 실질적으로 열람하기 어렵다. 번역 재작업 시 위치표지를 넣어 줄 것을 권한다.",
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
+   "units": 13,
+   "translated": 13,
+   "coverage": 1.0,
+   "chars_cn": 22313,
+   "chars_ko": 61425,
    "range": null,
-   "has_source": false,
-   "has_translation": false,
+   "has_source": true,
+   "has_translation": true,
    "chapters": 0
   },
   {
@@ -240,14 +243,17 @@
    ],
    "verify": false,
    "note": "찬자를 長安沙門釋僧肇로 제하나, 승조(僧肇, 384~414)의 진작이 아니라 후대에 가탁된 위작으로 보는 견해가 유력하다. 도가적 어휘와 개념이 짙게 나타나는 점이 근거로 지적된다.",
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
+   "units": 56,
+   "translated": 52,
+   "coverage": 0.9938,
+   "chars_cn": 9780,
+   "chars_ko": 29651,
+   "range": [
+    "0143b18",
+    "0148a01"
+   ],
+   "has_source": true,
+   "has_translation": true,
    "chapters": 0
   },
   {
@@ -306,15 +312,18 @@
     "법장"
    ],
    "verify": false,
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
-   "chapters": 0
+   "units": 136,
+   "translated": 135,
+   "coverage": 0.9995,
+   "chars_cn": 12750,
+   "chars_ko": 40595,
+   "range": [
+    "0627a06",
+    "0636b15"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 11
   },
   {
    "id": "yusim-beopgyegi",
@@ -337,14 +346,17 @@
     "법장"
    ],
    "verify": false,
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
+   "units": 29,
+   "translated": 27,
+   "coverage": 0.9994,
+   "chars_cn": 13753,
+   "chars_ko": 39957,
+   "range": [
+    "0641b05",
+    "0650a16"
+   ],
+   "has_source": true,
+   "has_translation": true,
    "chapters": 0
   },
   {
@@ -476,15 +488,18 @@
     "신라"
    ],
    "verify": false,
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
-   "chapters": 0
+   "units": 799,
+   "translated": 768,
+   "coverage": 0.9944,
+   "chars_cn": 48906,
+   "chars_ko": 108428,
+   "range": [
+    "0414a06",
+    "0447c23"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 9
   },
   {
    "id": "wongak-daeso",
@@ -580,14 +595,17 @@
    ],
    "verify": false,
    "note": "CBETA 목록은 唐 見登集으로 표기하나, 見登은 신라 승려로 알려져 있다. 한편 일본 학승 지쿄(智憬)를 저자로 보는 설도 제기되어 있다. 문서 표제(大乘起信論同異略集)와 CBETA 정식 서명(起信論同異集)이 다르니 인용 시 확인할 것. 2권.",
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
+   "units": 17,
+   "translated": 17,
+   "coverage": 1.0,
+   "chars_cn": 30392,
+   "chars_ko": 35268,
+   "range": [
+    "0255b09",
+    "0273b22"
+   ],
+   "has_source": true,
+   "has_translation": true,
    "chapters": 0
   },
   {
@@ -613,15 +631,18 @@
    ],
    "verify": false,
    "note": "CBETA 정식 서명은 大乘四論玄義(無依無得을 관용적으로 앞에 붙여 부른다). 7권. 찬자 균정(均正)에 대해서는 백제 승려 혜균(慧均)을 가리킨다는 설이 제기되어 있다.",
-   "units": 0,
-   "translated": 0,
-   "coverage": 0,
-   "chars_cn": 0,
-   "chars_ko": 0,
-   "range": null,
-   "has_source": false,
-   "has_translation": false,
-   "chapters": 0
+   "units": 1777,
+   "translated": 1777,
+   "coverage": 1.0,
+   "chars_cn": 145361,
+   "chars_ko": 498236,
+   "range": [
+    "0556c05",
+    "0658a12"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 18
   },
   {
    "id": "gisin-so-jongmil",
@@ -662,8 +683,8 @@
  ],
  "totals": {
   "works": 18,
-  "units": 5444,
-  "translated": 5218,
-  "chars_cn": 798736
+  "units": 8283,
+  "translated": 8019,
+  "chars_cn": 1093350
  }
 }
