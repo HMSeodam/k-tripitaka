@@ -131,6 +131,15 @@ function decorateCN(html) {
     .replace(APP_TAG, m => `<span class="app">${m}</span>`);
 }
 
+/* 번역 문단 앞머리의 위치표지를 화면에서 걷어낸다.
+   저본마다 표지를 붙인 것도 있고 안 붙인 것도 있어 들쭉날쭉하다.
+   자리는 왼쪽 레일이 이미 알려 주므로 번역문에서는 지운다.
+   ([0570a04] 하나든 [0119b14]–[0119b15] 범위든 모두 해당) */
+const RE_KO_LEAD = /^\s*\[\d{3,4}[abc]\d{2}\](?:\s*[–—~-]\s*\[?\d{3,4}[abc]\d{2}\]?)*\s*/;
+function stripKoMarker(t) {
+  return String(t).replace(RE_KO_LEAD, '');
+}
+
 function markupCN(text) {
   // 위치표지와 교감 표지를 본문 글자와 구분해 보여 준다
   return decorateCN(esc(text));
@@ -160,7 +169,7 @@ function unitNode(u, wid) {
 
   const kobox = el('div', 'kobox');
   if (u.ko && u.ko.length) {
-    u.ko.forEach(t => kobox.append(el('p', 'ko', t)));
+    u.ko.forEach(t => kobox.append(el('p', 'ko', stripKoMarker(t))));
   } else {
     kobox.append(el('p', 'nokr', '번역 대응 없음'));
   }
@@ -498,12 +507,13 @@ function spotlight(node, unit, q, where) {
   };
 
   if (where !== 'ko') paint([...node.querySelectorAll('.cn')], [unit.cn.join('\n')], 'cn');
-  if (where !== 'cn') paint([...node.querySelectorAll('.ko')], unit.ko || [], 'ko');
+  const koRaw = (unit.ko || []).map(stripKoMarker);
+  if (where !== 'cn') paint([...node.querySelectorAll('.ko')], koRaw, 'ko');
 
   // 어느 쪽이라 지정됐어도 못 찾으면 반대쪽도 훑는다
   if (!first) {
     paint([...node.querySelectorAll('.cn')], [unit.cn.join('\n')], 'cn');
-    paint([...node.querySelectorAll('.ko')], unit.ko || [], 'ko');
+    paint([...node.querySelectorAll('.ko')], koRaw, 'ko');
   }
   return first;
 }
