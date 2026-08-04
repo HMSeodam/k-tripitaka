@@ -365,8 +365,19 @@ def parse_table_docx(path: Path):
             if not cn_cell and not ko_cell:
                 continue
             cn = [x.strip() for x in cn_cell.split("\n") if x.strip()]
-            ko = [x.strip() for x in ko_cell.split("\n") if x.strip()]
-            units.append({"m": marker, "cn": cn, "ko": ko, "nt": []})
+
+            # 번역 칸 안에 '주' 줄이 있고 그 아래 번호 각주가 이어지는 형식이 있다.
+            # 줄바꿈으로만 쪼개면 각주가 번역문으로 섞이므로 여기서 갈라낸다.
+            ko, nt, in_note = [], [], False
+            for x in ko_cell.split("\n"):
+                x = x.strip()
+                if not x:
+                    continue
+                if len(x) <= 8 and RE_NOTE_HEAD.search(x):
+                    in_note = True
+                    continue
+                (nt if in_note else ko).append(x)
+            units.append({"m": marker, "cn": cn, "ko": ko, "nt": nt})
 
     for p in d.paragraphs:
         txt = re.sub(r"[ \t]+", " ", p.text).strip()
