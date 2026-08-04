@@ -496,6 +496,32 @@
       "source": "CBETA",
       "底本_publisher": "大藏出版株式會社",
       "note": "장수(長水) 사문 자선(子璿)이 법장의 『기신론의기』와 종밀의 주석을 이어받아 지은 주석서. 전 20권. 원문 권두에 [cf. Nos. 1666, 1846, 1847] 표기."
+    },
+    {
+      "id": "geumganggyeong-yakso",
+      "title_cn": "佛說金剛般若波羅蜜經略疏",
+      "title_ko": "불설금강반야바라밀경약소",
+      "author_cn": "智儼(?)",
+      "author_ko": "지엄(?)",
+      "dynasty": "唐",
+      "canon": "T33 no.1704",
+      "canon_id": "T",
+      "canon_vol": 33,
+      "canon_no": 1704,
+      "canon_label": "大正藏 33",
+      "canon_full": "T33 no.1704",
+      "canon_ko": "대정신수대장경 제33책",
+      "collection": "반야",
+      "tags": [
+        "금강경",
+        "지엄",
+        "화엄",
+        "반야"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "大藏出版株式會社",
+      "note": "찬자를 唐 至相寺 沙門 智儼(602~668)으로 제하나, 지엄의 저술인지에 대해서는 논란이 남아 있어 학계의 논의 여지가 있다. 인용 시 이 점을 밝힐 것. 권상·권하 전 2권."
     }
   ],
   "rights": {

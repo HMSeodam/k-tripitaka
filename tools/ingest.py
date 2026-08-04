@@ -314,6 +314,69 @@ def parse_translation_only_docx(path: Path):
             "appendix": appendix, "sections": []}
 
 
+def is_table_aligned(path: Path) -> bool:
+    """대조 본문이 표(위치표지 | 원문 | 번역)로 짜인 docx 인가."""
+    if docx is None:
+        return False
+    d = docx.Document(str(path))
+    for t in d.tables:
+        if len(t.columns) < 3 or len(t.rows) < 3:
+            continue
+        head = [c.text.strip() for c in t.rows[0].cells]
+        joined = " ".join(head)
+        if "위치표지" in joined and "원문" in joined:
+            return True
+        # 표제가 없어도 첫 칸이 위치표지 꼴이면 대조표로 본다
+        if PURE_MARKER.match(head[0] if head else ""):
+            return True
+    return False
+
+
+def parse_table_docx(path: Path):
+    """표로 짜인 대조본을 읽는다.
+
+    각 행이 (위치표지, 원문, 번역) 세 칸으로 이루어진 표를 본문으로 삼고,
+    두 칸짜리 표는 서지·용어표로 넘긴다. 표 바깥 문단은 해제로 모은다."""
+    if docx is None:
+        raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
+    d = docx.Document(str(path))
+
+    units, tables, front = [], [], []
+
+    for t in d.tables:
+        rows = [[c.text.strip() for c in r.cells] for r in t.rows]
+        rows = [r for r in rows if any(r)]
+        if not rows:
+            continue
+        head = " ".join(rows[0])
+        body_table = (len(rows[0]) >= 3 and
+                      (("위치표지" in head and "원문" in head)
+                       or PURE_MARKER.match(rows[0][0])))
+        if not body_table:
+            tables.append(rows)          # 서지·용어표
+            continue
+
+        start = 1 if ("위치표지" in head or "원문" in head) else 0
+        for r in rows[start:]:
+            mk_cell, cn_cell = r[0].strip(), r[1].strip()
+            ko_cell = r[2].strip() if len(r) > 2 else ""
+            m = PURE_MARKER.match(mk_cell) or RE_MARKER.search(mk_cell)
+            marker = m.group(1) if m else None
+            if not cn_cell and not ko_cell:
+                continue
+            cn = [x.strip() for x in cn_cell.split("\n") if x.strip()]
+            ko = [x.strip() for x in ko_cell.split("\n") if x.strip()]
+            units.append({"m": marker, "cn": cn, "ko": ko, "nt": []})
+
+    for p in d.paragraphs:
+        txt = re.sub(r"[ \t]+", " ", p.text).strip()
+        if txt and not is_source_line(txt):
+            front.append(txt)
+
+    return {"units": units, "tables": tables,
+            "front": front, "appendix": [], "sections": []}
+
+
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
@@ -874,8 +937,12 @@ def build_work(entry):
         txt_units.extend(part)
     dp = wdir / "번역.docx"
     if dp.exists():
-        dx = (parse_translation_only_docx(dp) if is_translation_only(dp)
-              else parse_docx(dp))
+        if is_table_aligned(dp):
+            dx = parse_table_docx(dp)
+        elif is_translation_only(dp):
+            dx = parse_translation_only_docx(dp)
+        else:
+            dx = parse_docx(dp)
 
     units, dxmap = merge(txt_units, dx)
 
