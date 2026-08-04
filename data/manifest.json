@@ -366,6 +366,43 @@
    "chapters": 0
   },
   {
+   "id": "sibhyeonmun",
+   "title_cn": "華嚴一乘十玄門",
+   "title_ko": "화엄일승십현문",
+   "author_cn": "智儼(?)",
+   "author_ko": "지엄(?)",
+   "dynasty": "唐",
+   "canon": "T45 no.1868",
+   "canon_id": "T",
+   "canon_vol": 45,
+   "canon_no": 1868,
+   "canon_label": "大正藏 45",
+   "canon_ko": "대정신수대장경 제45책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "지엄",
+    "십현문",
+    "법계연기"
+   ],
+   "verify": false,
+   "note": "권수에 '大唐終南太一山至相寺釋智儼撰承杜順和尚說'이라 하여 지엄(智儼, 602~668)이 두순(杜順)의 설을 받아 지은 것으로 전하나, 지엄의 진작 여부에 의심의 여지가 있다. 인용과 사상사적 논의에 주의를 요한다. 1권.",
+   "units": 26,
+   "translated": 25,
+   "coverage": 0.9989,
+   "chars_cn": 6562,
+   "chars_ko": 21307,
+   "range": [
+    "0514a25",
+    "0518c06"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 0
+  },
+  {
    "id": "hwaeom-chaengnim",
    "title_cn": "華嚴策林",
    "title_ko": "화엄책림",
@@ -493,7 +530,7 @@
     "해인삼매"
    ],
    "verify": false,
-   "note": "법장(法藏, 643~712)의 저술로 전해 왔으나, 최근 학계에서는 법장의 진작 여부에 의문이 제기되고 있다. 인용과 사상사적 논의에 주의를 요한다. 1권.",
+   "note": "법장(法藏, 643~712)의 저술로 전해 왔으나, 최근 학계에서는 법장의 진작 여부에 의문이 제기되고 있다. 인용과 사상사적 논의에 주의를 요한다. 특히 '자성청정심'을 절대적 일체로 세우고 '해인삼매'를 진여본각으로 규정하는 점이 법장의 법계연기 사상과 이질적이라는 지적이 있으며, 일본 화엄학에서는 이미 담예(湛睿, 1271~1347) 무렵부터 찬자에 대한 의문이 제기되었다. 1권.",
    "units": 52,
    "translated": 51,
    "coverage": 0.9965,
@@ -864,6 +901,82 @@
    "chapters": 18
   },
   {
+   "id": "donggyo-ilseungchaek",
+   "title_cn": "註華嚴同教一乘策",
+   "title_ko": "주화엄동교일승책",
+   "author_cn": "師會 述 · 希迪 註",
+   "author_ko": "사회 술 · 희적 주",
+   "dynasty": "宋",
+   "canon": "X58 no.1016",
+   "canon_id": "X",
+   "canon_vol": 58,
+   "canon_no": 1016,
+   "canon_label": "卍續藏 58",
+   "canon_ko": "만신찬속장경 제58책",
+   "source": "CBETA",
+   "底本_publisher": "株式會社國書刊行會",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "사회",
+    "희적",
+    "동교",
+    "송대"
+   ],
+   "verify": false,
+   "note": "법진대사 사회(師會)의 『화엄동교일승책』에 무림(武林) 사문 희적(希迪)이 주를 단 것. 송대 화엄종의 동교(同教)·별교(別教) 논쟁을 보여 주는 자료. 1권.",
+   "units": 65,
+   "translated": 61,
+   "coverage": 0.9959,
+   "chars_cn": 8840,
+   "chars_ko": 30836,
+   "range": [
+    "0568a09",
+    "0573a20"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 4
+  },
+  {
+   "id": "ju-donggyo-mundap",
+   "title_cn": "註同教問答",
+   "title_ko": "주동교문답",
+   "author_cn": "師會 述 · 善熹 注",
+   "author_ko": "사회 술 · 선희 주",
+   "dynasty": "宋",
+   "canon": "X58 no.1017",
+   "canon_id": "X",
+   "canon_vol": 58,
+   "canon_no": 1017,
+   "canon_label": "卍續藏 58",
+   "canon_ko": "만신찬속장경 제58책",
+   "source": "CBETA",
+   "底本_publisher": "株式會社國書刊行會",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "사회",
+    "선희",
+    "동교",
+    "송대"
+   ],
+   "verify": false,
+   "note": "옥봉(玉峯) 사문 사회(師會)의 『동교문답』에 여택(蠡澤) 문인 선희(善熹)가 주를 단 것. 앞의 『주화엄동교일승책』(X58 no.1016)과 짝을 이루는 자료. 1권.",
+   "units": 69,
+   "translated": 66,
+   "coverage": 0.9984,
+   "chars_cn": 11139,
+   "chars_ko": 36838,
+   "range": [
+    "0574a09",
+    "0580a05"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 8
+  },
+  {
    "id": "gisin-so-jongmil",
    "title_cn": "大乘起信論疏",
    "title_ko": "대승기신론소",
@@ -901,9 +1014,9 @@
   }
  ],
  "totals": {
-  "works": 24,
-  "units": 9424,
-  "translated": 9133,
-  "chars_cn": 1325046
+  "works": 27,
+  "units": 9584,
+  "translated": 9285,
+  "chars_cn": 1351587
  }
 }
