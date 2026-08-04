@@ -116,7 +116,7 @@ self.onmessage = async (ev) => {
         else if (scope !== 'cn' && qko && r.nko.includes(qko)) where = 'ko';
         if (!where) continue;
         c++;
-        if (hits.length < limit){
+        if (!limit || hits.length < limit){
           const snip = where === 'cn'
             ? kwic(r.cnRaw, 'cn', qcn, 22)
             : kwic(r.koRaw, 'ko', qko, 34);

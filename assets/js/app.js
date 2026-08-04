@@ -21,6 +21,7 @@ const state = {
   view: localStorage.getItem('view2') || 'split',  // split | stack  (기본: 좌우)
   show: localStorage.getItem('show2') || 'both',   // both | cn | ko (기본: 대조)
   fs: Number(localStorage.getItem('fs') || 100),   // 글자 크기 %
+  perPage: Number(localStorage.getItem('perPage') || 10),  // 검색 결과 표시 개수
   token: 0,
 };
 
@@ -35,7 +36,7 @@ function search(query, ids, scope) {
   const token = ++state.token;
   return new Promise(res => {
     pending.set(token, res);
-    worker.postMessage({ type:'search', token, payload:{ query, ids, base:BASE, scope, limit:300 } });
+    worker.postMessage({ type:'search', token, payload:{ query, ids, base:BASE, scope, limit:0 } });
   });
 }
 
@@ -586,7 +587,11 @@ async function viewSearch(q, scope) {
   $('#q').value = q;
 
   const head = el('div', 'reshead');
-  head.innerHTML = `<h2>‘${esc(q)}’ 찾기</h2><span class="n" id="resN">검색 중…</span>`;
+  head.innerHTML = `<h2>‘${esc(q)}’ 찾기</h2>`
+    + `<span class="n" id="resN">검색 중…</span>`
+    + `<span class="range" id="resRange"></span>`;
+  const perBox = el('div', 'perbox');
+  head.append(perBox);
   main.append(head);
 
   const facets = el('div', 'facets'); main.append(facets);
@@ -613,34 +618,118 @@ async function viewSearch(q, scope) {
   m.works.filter(w => counts[w.id]).forEach(w =>
     facets.append(mkFacet(`${w.title_ko} ${counts[w.id]}`, w.id)));
 
-  function draw() {
-    list.innerHTML = '';
-    const shown = hits.filter(h => !state.facet || h.work === state.facet);
-    shown.forEach(h => {
-      const a = el('a', 'hit');
-      a.href = `#/w/${h.work}/${h.m || 'u' + h.i}`        + `?q=${encodeURIComponent(q)}&in=${h.where}&u=${h.i}`;
-      const top = el('div', 'hit-top');
-      const wk = m.works.find(x => x.id === h.work);
-      top.innerHTML = `<b>${esc(h.title || h.title_cn || '')}</b>
-        <span>${esc(wk ? wk.title_ko : '')}</span>
-        <span class="m">${esc(h.m || '—')}</span>
-        <span>${h.where === 'cn' ? '원문' : '번역'}</span>`;
-      a.append(top);
-      const p = el('p', h.where === 'cn' ? 'hit-cn' : 'hit-ko');
-      p.innerHTML = h.snip
-        ? `${esc(h.snip.pre)}<mark>${esc(h.snip.hit)}</mark>${esc(h.snip.post)}`
-        : '';
-      a.append(p);
-      if (h.alt) {
-        const q2 = el('p', h.where === 'cn' ? 'hit-ko' : 'hit-cn');
-        q2.textContent = h.alt;
-        a.append(q2);
-      }
-      list.append(a);
-    });
-    if (hits.length >= 300) {
-      list.append(el('p', 'loading', '앞의 300곳만 보여 줍니다. 낱말을 더 좁혀 보세요.'));
+  // 결과가 수천 곳에 이를 수 있으므로 쪽 단위로 나눠 보여 준다.
+  const PER_OPTIONS = [10, 20, 30, 50, 100];
+  let page = 1, shown = [];
+  const pager = el('nav', 'pager');
+  pager.setAttribute('aria-label', '검색 결과 쪽 이동');
+
+  function hitNode(h) {
+    const a = el('a', 'hit');
+    a.href = `#/w/${h.work}/${h.m || 'u' + h.i}`
+      + `?q=${encodeURIComponent(q)}&in=${h.where}&u=${h.i}`;
+    const top = el('div', 'hit-top');
+    const wk = m.works.find(x => x.id === h.work);
+    top.innerHTML = `<b>${esc(h.title || h.title_cn || '')}</b>
+      <span>${esc(wk ? wk.title_ko : '')}</span>
+      <span class="m">${esc(h.m || '—')}</span>
+      <span>${h.where === 'cn' ? '원문' : '번역'}</span>`;
+    a.append(top);
+    const p = el('p', h.where === 'cn' ? 'hit-cn' : 'hit-ko');
+    p.innerHTML = h.snip
+      ? `${esc(h.snip.pre)}<mark>${esc(h.snip.hit)}</mark>${esc(h.snip.post)}`
+      : '';
+    a.append(p);
+    if (h.alt) {
+      const q2 = el('p', h.where === 'cn' ? 'hit-ko' : 'hit-cn');
+      q2.textContent = h.alt;
+      a.append(q2);
     }
+    return a;
+  }
+
+  function drawPerBox() {
+    perBox.innerHTML = '';
+    const sel = el('select', 'persel');
+    sel.title = '한 쪽에 보여 줄 개수';
+    PER_OPTIONS.forEach(n => {
+      const o = el('option', null, `${n}개씩 출력`);
+      o.value = String(n);
+      if (n === state.perPage) o.selected = true;
+      sel.append(o);
+    });
+    sel.onchange = () => {
+      state.perPage = Number(sel.value);
+      localStorage.setItem('perPage', String(state.perPage));
+      page = 1;
+      render();
+    };
+    perBox.append(sel);
+  }
+
+  function go(n) {
+    page = n;
+    render();
+    const y = head.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  }
+
+  function drawPager(pages) {
+    pager.innerHTML = '';
+    if (pages <= 1) return;
+
+    const btn = (label, target, cls) => {
+      const b = el('button', 'pgbtn' + (cls ? ' ' + cls : ''), label);
+      if (target === page) b.classList.add('on');
+      if (target < 1 || target > pages || target === page) {
+        if (cls) b.disabled = true;
+      }
+      b.onclick = () => go(Math.min(pages, Math.max(1, target)));
+      return b;
+    };
+
+    const BLOCK = 10;                        // 한 번에 보여 줄 쪽 번호 수
+    const from = Math.floor((page - 1) / BLOCK) * BLOCK + 1;
+    const to = Math.min(from + BLOCK - 1, pages);
+
+    if (from > 1) {
+      pager.append(btn('«', 1, 'edge'));
+      pager.append(btn('‹', from - 1, 'edge'));
+    }
+    for (let n = from; n <= to; n++) pager.append(btn(String(n), n));
+    if (to < pages) {
+      pager.append(btn('›', to + 1, 'edge'));
+      pager.append(btn('»', pages, 'edge'));
+    }
+  }
+
+  function render() {
+    const pages = Math.max(1, Math.ceil(shown.length / state.perPage));
+    if (page > pages) page = pages;
+    const from = (page - 1) * state.perPage;
+    const slice = shown.slice(from, from + state.perPage);
+
+    list.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    slice.forEach(h => frag.append(hitNode(h)));
+    list.append(frag);
+
+    drawPager(pages);
+    if (!pager.isConnected) main.append(pager);
+
+    const info = document.getElementById('resRange');
+    if (info) {
+      info.textContent = shown.length
+        ? `${(from + 1).toLocaleString()}–${(from + slice.length).toLocaleString()} / ${shown.length.toLocaleString()}곳`
+        : '';
+    }
+  }
+
+  function draw() {
+    shown = hits.filter(h => !state.facet || h.work === state.facet);
+    page = 1;
+    drawPerBox();
+    render();
   }
   draw();
 }
