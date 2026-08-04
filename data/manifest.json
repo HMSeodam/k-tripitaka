@@ -208,13 +208,13 @@
    ],
    "verify": false,
    "note": "찬자를 淨影寺沙門慧遠(523~592)으로 제하나, 혜원의 진작이 아닐 것으로 보는 학계 의견이 있다. 저본(CBETA)에 위치표지가 매우 성글어(전체 4개) 대조 단위가 굵다.",
-   "units": 6,
+   "units": 8,
    "translated": 6,
-   "coverage": 1.0,
-   "chars_cn": 39440,
-   "chars_ko": 75726,
+   "coverage": 0.9979,
+   "chars_cn": 39447,
+   "chars_ko": 125598,
    "range": [
-    "0196a05",
+    "0175a06",
     "0196a05"
    ],
    "has_source": true,
@@ -755,8 +755,8 @@
  ],
  "totals": {
   "works": 20,
-  "units": 9132,
+  "units": 9134,
   "translated": 8858,
-  "chars_cn": 1290874
+  "chars_cn": 1290881
  }
 }
