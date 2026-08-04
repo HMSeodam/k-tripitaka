@@ -83,6 +83,43 @@
    "chapters": 15
   },
   {
+   "id": "geumganggyeong-yakso",
+   "title_cn": "佛說金剛般若波羅蜜經略疏",
+   "title_ko": "불설금강반야바라밀경약소",
+   "author_cn": "智儼(?)",
+   "author_ko": "지엄(?)",
+   "dynasty": "唐",
+   "canon": "T33 no.1704",
+   "canon_id": "T",
+   "canon_vol": 33,
+   "canon_no": 1704,
+   "canon_label": "大正藏 33",
+   "canon_ko": "대정신수대장경 제33책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "반야",
+   "tags": [
+    "금강경",
+    "지엄",
+    "화엄",
+    "반야"
+   ],
+   "verify": false,
+   "note": "찬자를 唐 至相寺 沙門 智儼(602~668)으로 제하나, 지엄의 저술인지에 대해서는 논란이 남아 있어 학계의 논의 여지가 있다. 인용 시 이 점을 밝힐 것. 권상·권하 전 2권.",
+   "units": 73,
+   "translated": 69,
+   "coverage": 0.9971,
+   "chars_cn": 17785,
+   "chars_ko": 61136,
+   "range": [
+    "0239a07",
+    "0251a20"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 3
+  },
+  {
    "id": "mireuk-yuui",
    "title_cn": "彌勒經遊意",
    "title_ko": "미륵경유의",
@@ -754,9 +791,9 @@
   }
  ],
  "totals": {
-  "works": 20,
-  "units": 9134,
-  "translated": 8858,
-  "chars_cn": 1290881
+  "works": 21,
+  "units": 9207,
+  "translated": 8927,
+  "chars_cn": 1308666
  }
 }
