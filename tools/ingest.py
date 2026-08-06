@@ -50,6 +50,8 @@ RE_APPARATUS_HEAD = re.compile(
     r"^[A-Z]\.\s|"
     r"문헌\s*정보|편집|안내|범례|용어\s*(?:표|대응)|검증|검수|선독|판본\s*정보|"
     r"교정\s*(?:기록|보고|사항)|정리\s*(?:기록|보고|사항)|작업\s*(?:기록|보고)|"
+    r"(?:편집|번역|대조|원문)\s*(?:검증|검수|확인)\s*(?:요약|결과|보고)?|"
+    r"검증\s*요약|검수\s*요약|"
     r"번역상|쟁점|한계|읽는\s*법|과단\s*계층|부록|참고\s*문헌|대역\s*목차"
 )
 # 단위 라벨: 위치표지·문단 번호·「원문/번역」 같은 꼬리표만으로 이루어진 줄.
@@ -432,7 +434,7 @@ def parse_docx(path: Path):
 
         mk = RE_MARKER.search(txt)
 
-        is_head = style.lower().startswith("heading") or style in (
+        is_head = "heading" in style.lower() or style in (
             "Unit Heading", "Unit Label", "Title", "Subtitle", "Small Meta"
         ) or re.match(r"^(문단\s*\d+|제\s*\d+\s*항|권\s*제?\d+)", txt)
 
