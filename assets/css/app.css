@@ -468,3 +468,9 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .pager{gap:.2rem}
   .pgbtn{min-width:1.8rem;height:1.8rem;font-size:.75rem}
 }
+
+/* 좁은 화면에서만 줄을 바꾸는 자리 (제목 등) */
+.mo-only{display:none}
+@media (max-width:900px){
+  .mo-only{display:inline}
+}
