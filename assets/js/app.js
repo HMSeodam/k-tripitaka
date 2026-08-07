@@ -253,8 +253,8 @@ async function viewHome() {
 
   const hero = el('div', 'hero');
   hero.innerHTML = `
-    <h1>천년의 문장, 오늘의 한글로</h1>
-    <p>한문 불교문헌을 온전히 읽고 이해할 수 있도록,
+    <h1>천년의 문장,<br class="mo-only"> 오늘의 한글로</h1>
+    <p>한문 불교문헌을 온전히 읽고 이해할 수 있도록,<br>
        신한글대장경이 새로운 번역의 길을 엽니다.</p>
     <div class="stat">
       <div><b>${m.totals.works}</b><span>수록 문헌</span></div>
