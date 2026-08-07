@@ -253,14 +253,11 @@ async function viewHome() {
 
   const hero = el('div', 'hero');
   hero.innerHTML = `
-    <h1>원문과 번역을 같은 좌표에서 읽습니다</h1>
-    <p>한문 불전의 원문을 대장경 위치표지 단위로 나누고, 그 자리에 한국어 직역을 붙였습니다.
-       한 낱말을 넣으면 원문과 번역을 함께 훑어 그 대목으로 데려다 놓습니다.</p>
+    <h1>천년의 문장, 오늘의 한글로</h1>
+    <p>한문 불교문헌을 온전히 읽고 이해할 수 있도록,
+       신한글대장경이 새로운 번역의 길을 엽니다.</p>
     <div class="stat">
       <div><b>${m.totals.works}</b><span>수록 문헌</span></div>
-      <div><b>${m.totals.units.toLocaleString()}</b><span>대조 단위</span></div>
-      <div><b>${m.totals.chars_cn.toLocaleString()}</b><span>원문 글자</span></div>
-      <div><b>${Math.round(m.totals.translated / m.totals.units * 100)}%</b><span>번역 대응</span></div>
     </div>`;
   main.append(hero);
 
