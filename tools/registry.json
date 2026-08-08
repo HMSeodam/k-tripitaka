@@ -809,6 +809,57 @@
       "source": "CBETA",
       "底本_publisher": "株式會社國書刊行會",
       "note": "사문 법보(法寶) 술. 현존본은 권제3 잔권으로, 「일승현밀장 제6」과 「불성동이장 제7」 두 장만 전한다. 법상종의 오성각별설에 맞서 일승·불성을 논한 자료이다."
+    },
+    {
+      "id": "beopwon-uirimjang",
+      "title_cn": "大乘法苑義林章",
+      "title_ko": "대승법원의림장",
+      "author_cn": "基",
+      "author_ko": "기",
+      "dynasty": "唐",
+      "canon": "T45 no.1861",
+      "canon_id": "T",
+      "canon_vol": 45,
+      "canon_no": 1861,
+      "canon_label": "大正藏 45",
+      "canon_full": "T45 no.1861",
+      "canon_ko": "대정신수대장경 제45책",
+      "collection": "유식",
+      "tags": [
+        "유식",
+        "기",
+        "법상종",
+        "의림장"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "大藏出版株式會社",
+      "note": "저자 기(基)는 규기(窺基) 또는 자은기(慈恩基)라고도 불린다. 전 7권."
+    },
+    {
+      "id": "suhyeongi",
+      "title_cn": "大方廣佛華嚴經搜玄分齊通智方軌",
+      "title_ko": "대방광불화엄경수현분제통지방궤",
+      "author_cn": "智儼",
+      "author_ko": "지엄",
+      "dynasty": "唐",
+      "canon": "T35 no.1732",
+      "canon_id": "T",
+      "canon_vol": 35,
+      "canon_no": 1732,
+      "canon_label": "大正藏 35",
+      "canon_full": "T35 no.1732",
+      "canon_ko": "대정신수대장경 제35책",
+      "collection": "화엄",
+      "tags": [
+        "화엄",
+        "지엄",
+        "수현기"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "大藏出版株式會社",
+      "note": "흔히 『수현기(搜玄記)』로 약칭한다. 지엄의 초기 저작으로 알려져 있다. 전 10권."
     }
   ],
   "rights": {
