@@ -120,6 +120,42 @@
    "chapters": 3
   },
   {
+   "id": "suhyeongi",
+   "title_cn": "大方廣佛華嚴經搜玄分齊通智方軌",
+   "title_ko": "대방광불화엄경수현분제통지방궤",
+   "author_cn": "智儼",
+   "author_ko": "지엄",
+   "dynasty": "唐",
+   "canon": "T35 no.1732",
+   "canon_id": "T",
+   "canon_vol": 35,
+   "canon_no": 1732,
+   "canon_label": "大正藏 35",
+   "canon_ko": "대정신수대장경 제35책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "지엄",
+    "수현기"
+   ],
+   "verify": false,
+   "note": "흔히 『수현기(搜玄記)』로 약칭한다. 지엄의 초기 저작으로 알려져 있다. 전 10권.",
+   "units": 263,
+   "translated": 261,
+   "coverage": 0.9997,
+   "chars_cn": 129648,
+   "chars_ko": 443861,
+   "range": [
+    "0013b26",
+    "0097c06"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 10
+  },
+  {
    "id": "cheongnyang-yakchaek",
    "title_cn": "大華嚴經略策",
    "title_ko": "대화엄경략책",
@@ -401,6 +437,43 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 0
+  },
+  {
+   "id": "beopwon-uirimjang",
+   "title_cn": "大乘法苑義林章",
+   "title_ko": "대승법원의림장",
+   "author_cn": "基",
+   "author_ko": "기",
+   "dynasty": "唐",
+   "canon": "T45 no.1861",
+   "canon_id": "T",
+   "canon_vol": 45,
+   "canon_no": 1861,
+   "canon_label": "大正藏 45",
+   "canon_ko": "대정신수대장경 제45책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "유식",
+   "tags": [
+    "유식",
+    "기",
+    "법상종",
+    "의림장"
+   ],
+   "verify": false,
+   "note": "저자 기(基)는 규기(窺基) 또는 자은기(慈恩基)라고도 불린다. 전 7권.",
+   "units": 366,
+   "translated": 310,
+   "coverage": 0.9984,
+   "chars_cn": 180782,
+   "chars_ko": 571593,
+   "range": [
+    "0245a07",
+    "0374c10"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 36
   },
   {
    "id": "sibhyeonmun",
@@ -1199,9 +1272,9 @@
   }
  ],
  "totals": {
-  "works": 32,
-  "units": 10209,
-  "translated": 9675,
-  "chars_cn": 1487012
+  "works": 34,
+  "units": 10838,
+  "translated": 10246,
+  "chars_cn": 1797442
  }
 }
