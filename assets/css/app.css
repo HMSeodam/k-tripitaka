@@ -135,20 +135,18 @@ button{background:none;border:0;cursor:pointer}
 .wrap{max-width:860px;margin:0 auto;transition:max-width .15s}
 .wrap.wide{max-width:1240px}
 
-/* 대장경 목판 워터마크 — 본문을 방해하지 않도록 흐름의 마지막에만 배치한다. */
+/* 장식 워터마크 — 기본은 숨기고 페이지별로 선택적으로 노출한다. */
 .main::after{
-  content:"";display:block;
-  width:min(210px, 24vw);height:320px;
+  content:"";display:none;
+  width:min(220px, 24vw);height:330px;
   margin:2.8rem max(0px, 1vw) 0 auto;
-  -webkit-mask-image:url(../decor/tripitaka-woodblock.svg);
-  mask-image:url(../decor/tripitaka-woodblock.svg);
-  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  -webkit-mask-position:right bottom;mask-position:right bottom;
-  -webkit-mask-size:contain;mask-size:contain;
-  background-color:var(--indigo);
-  opacity:.035;
+  background:url(../decor/tripitaka-woodblock.svg) no-repeat right bottom / contain;
+  opacity:.115;
+  filter:grayscale(1) contrast(.92) brightness(.92);
   pointer-events:none;user-select:none;
 }
+.page-work .main::after,
+.page-rights .main::after{display:block;}
 
 /* ─── 첫 화면 ──────────────────────────────────── */
 .hero{max-width:860px;margin:0 auto 2.2rem;padding-top:1.2rem}
@@ -159,26 +157,30 @@ button{background:none;border:0;cursor:pointer}
 .stat b{font-family:var(--mono);font-size:1.22rem;font-weight:500;color:var(--indigo)}
 .stat span{font-size:.72rem;letter-spacing:.12em;color:var(--ink-3)}
 
-/* 연화문 — 홈의 hero 우측 바깥 여백에 크게 놓되, 텍스트와는 겹치지 않게 한다. */
+/* 연화문 — 홈 hero 우측 바깥 여백에 식물도해풍 장식으로 배치한다. */
 .hero{position:relative}
 .hero::after{
   content:"";position:absolute;display:none;
-  top:clamp(2px, .8vw, 10px);left:calc(100% + 1.8rem);
-  width:clamp(220px, 20vw, 340px);height:clamp(180px, 18vw, 290px);
-  -webkit-mask-image:url(../decor/lotus-line.svg);
-  mask-image:url(../decor/lotus-line.svg);
-  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  -webkit-mask-position:left top;mask-position:left top;
-  -webkit-mask-size:contain;mask-size:contain;
-  background-color:var(--celadon-deep);
-  opacity:.068;
+  top:-8px;left:calc(100% + 1.6rem);
+  width:clamp(185px, 15vw, 235px);aspect-ratio:2 / 3;
+  background:url(../decor/lotus-line.svg) no-repeat left top / contain;
+  opacity:.155;
+  filter:grayscale(1) contrast(.96) brightness(.94);
   pointer-events:none;user-select:none;
 }
-@media (min-width:1400px){ .hero::after{display:block} }
-@media (min-width:1680px){ .hero::after{width:clamp(250px, 21vw, 360px);height:clamp(205px, 19vw, 310px)} }
-@media (min-width:1920px){ .hero::after{left:calc(100% + 2.2rem)} }
+@media (min-width:1400px){ .page-home .hero::after{display:block} }
+@media (min-width:1680px){ .page-home .hero::after{width:clamp(195px, 16vw, 250px)} }
+@media (min-width:1920px){ .page-home .hero::after{left:calc(100% + 2rem)} }
 
 .grid{max-width:860px;margin:0 auto;display:grid;gap:.7rem;grid-template-columns:repeat(auto-fill,minmax(248px,1fr))}
+.page-home .grid{position:relative;overflow:visible}
+.page-home .grid::after{
+  content:"";position:absolute;right:-1.2rem;bottom:-2.1rem;
+  width:min(320px, 34vw);aspect-ratio:3 / 2;
+  background:url(../decor/tripitaka-corridor.png) no-repeat right bottom / contain;
+  opacity:.16;filter:saturate(.88) brightness(.96);
+  pointer-events:none;user-select:none;
+}
 .card{background:var(--paper-2);border:1px solid var(--mist);border-radius:var(--radius);
   padding:.95rem 1rem;display:block;transition:border-color .15s,transform .15s}
 .card:hover{border-color:var(--celadon);transform:translateY(-1px);box-shadow:0 12px 28px rgba(14,31,38,.04)}
@@ -361,12 +363,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .tabbar svg{width:20px;height:20px}
   .tabbar .on{color:var(--indigo)}
   .brand-sub{display:none}
-  .main::after{display:none}
-}
-
-@media (max-width:900px){
-  .hero::after{display:none!important}
-  .sitefoot::before{width:64px;height:54px;opacity:.12}
+  .hero::after,.page-home .grid::after,.main::after{display:none!important}
 }
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -419,14 +416,10 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 }
 .sitefoot::before{
   content:"";display:block;
-  width:88px;height:76px;margin:0 auto 1rem;
-  -webkit-mask-image:url(../decor/lotus-line.svg);
-  mask-image:url(../decor/lotus-line.svg);
-  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  -webkit-mask-position:center top;mask-position:center top;
-  -webkit-mask-size:contain;mask-size:contain;
-  background-color:var(--celadon);
-  opacity:.16;
+  width:58px;height:88px;margin:0 auto .95rem;
+  background:url(../decor/lotus-line.svg) no-repeat center top / contain;
+  opacity:.11;
+  filter:grayscale(1) contrast(.94) brightness(1.02);
   pointer-events:none;user-select:none;
 }
 .sitefoot p{max-width:860px;margin:0 auto}
@@ -441,6 +434,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 }
 @media (max-width:900px){
   .sitefoot{padding:1.2rem 1rem 5.5rem}
+  .sitefoot::before{width:50px;height:76px;opacity:.10}
   .foot-grid{grid-template-columns:1fr;gap:.9rem}
 }
 
