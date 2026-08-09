@@ -837,6 +837,44 @@
    "chapters": 4
   },
   {
+   "id": "haein-sammaeron",
+   "title_cn": "海印三昧論",
+   "title_ko": "해인삼매론",
+   "author_cn": "明皛",
+   "author_ko": "명효",
+   "dynasty": "新羅",
+   "canon": "T45 no.1889",
+   "canon_id": "T",
+   "canon_vol": 45,
+   "canon_no": 1889,
+   "canon_label": "大正藏 45",
+   "canon_ko": "대정신수대장경 제45책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "명효",
+    "신라",
+    "해인삼매",
+    "다라니"
+   ],
+   "verify": false,
+   "note": "신라 명효(明皛)가 지었다. 『화엄경』 십지품의 해인삼매에 의거해 인문(印文)과 게송으로 일승의 요의를 밝힌 것으로, 의상의 『화엄일승법계도』와 함께 신라 화엄의 도인(圖印) 저술로 다루어진다. 1권.",
+   "units": 13,
+   "translated": 7,
+   "coverage": 0.9418,
+   "chars_cn": 2114,
+   "chars_ko": 6617,
+   "range": [
+    "0773c23",
+    "0775b24"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 0
+  },
+  {
    "id": "hwaeom-jeongi",
    "title_cn": "華嚴經傳記",
    "title_ko": "화엄경전기",
@@ -1122,6 +1160,43 @@
    "chapters": 18
   },
   {
+   "id": "seongyusik-hakgi",
+   "title_cn": "成唯識論學記",
+   "title_ko": "성유식론학기",
+   "author_cn": "太賢",
+   "author_ko": "태현",
+   "dynasty": "新羅",
+   "canon": "X50 no.819",
+   "canon_id": "X",
+   "canon_vol": 50,
+   "canon_no": 819,
+   "canon_label": "卍續藏 50",
+   "canon_ko": "만신찬속장경 제50책",
+   "source": "CBETA",
+   "底本_publisher": "株式會社國書刊行會",
+   "collection": "유식",
+   "tags": [
+    "유식",
+    "태현",
+    "신라",
+    "성유식론"
+   ],
+   "verify": false,
+   "note": "신라 태현(太賢)이 지었다. 권수에 '青丘沙門 太賢 集'이라 하는데, 청구(青丘)는 신라를 가리킨다. 『보살장아비달마고적기』의 일부로 편성되어 있으며, 신라 유식학을 대표하는 『성유식론』 주석서이다. 전 8권.",
+   "units": 1273,
+   "translated": 1245,
+   "coverage": 0.9975,
+   "chars_cn": 134988,
+   "chars_ko": 480420,
+   "range": [
+    "0027a07",
+    "0126b24"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 12
+  },
+  {
    "id": "ilseung-bulseong",
    "title_cn": "一乘佛性究竟論",
    "title_ko": "일승불성구경론",
@@ -1272,9 +1347,9 @@
   }
  ],
  "totals": {
-  "works": 34,
-  "units": 10838,
-  "translated": 10246,
-  "chars_cn": 1797442
+  "works": 36,
+  "units": 12124,
+  "translated": 11498,
+  "chars_cn": 1934544
  }
 }
