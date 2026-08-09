@@ -1,31 +1,29 @@
-<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <!--
-    신한글대장경 · 대장경 목판 line-art (팔만대장경 목판에서 착안한 추상 장식,
-    실제 문장을 옮긴 것이 아니며 판독 가능한 한문이 아닙니다)
-    CSS mask-image 전용. 실제 색은 사용하는 쪽의 background-color가 결정합니다.
-  -->
-  <!-- 세로로 긴 목판 5매, 높이가 조금씩 다르고 가장자리가 살짝 겹친다 -->
-  <g fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round">
-    <rect x="10"  y="40" width="46" height="100" rx="4"/>
-    <rect x="50"  y="15" width="46" height="125" rx="4"/>
-    <rect x="92"  y="50" width="44" height="90"  rx="4"/>
-    <rect x="132" y="20" width="46" height="120" rx="4"/>
-    <rect x="172" y="45" width="44" height="95"  rx="4"/>
-  </g>
-  <!-- 아주 희미한 세로 문자 자국 — 판독 불가능한 추상 표시일 뿐, 실제 문장 아님 -->
-  <g stroke="#000" stroke-width="1.4" stroke-linecap="round" opacity=".5">
-    <line x1="24"  y1="58" x2="24"  y2="76"/>
-    <line x1="38"  y1="66" x2="38"  y2="82"/>
-    <line x1="24"  y1="92" x2="24"  y2="106"/>
-    <line x1="64"  y1="34" x2="64"  y2="54"/>
-    <line x1="78"  y1="42" x2="78"  y2="60"/>
-    <line x1="64"  y1="70" x2="64"  y2="88"/>
-    <line x1="106" y1="66" x2="106" y2="82"/>
-    <line x1="120" y1="72" x2="120" y2="90"/>
-    <line x1="146" y1="40" x2="146" y2="58"/>
-    <line x1="160" y1="48" x2="160" y2="66"/>
-    <line x1="146" y1="78" x2="146" y2="94"/>
-    <line x1="186" y1="62" x2="186" y2="78"/>
-    <line x1="200" y1="70" x2="200" y2="86"/>
+<svg viewBox="0 0 220 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g fill="none" stroke="#000" stroke-linejoin="round" stroke-linecap="round">
+    <g stroke-width="2.2">
+      <rect x="6" y="112" width="34" height="236" rx="4"/>
+      <rect x="34" y="60" width="36" height="288" rx="4"/>
+      <rect x="64" y="132" width="32" height="216" rx="4"/>
+      <rect x="92" y="24" width="36" height="324" rx="4"/>
+      <rect x="122" y="84" width="33" height="264" rx="4"/>
+      <rect x="149" y="12" width="36" height="336" rx="4"/>
+      <rect x="180" y="108" width="34" height="240" rx="4"/>
+    </g>
+    <g stroke-width="1.05" opacity=".72">
+      <path d="M17 138v18m0 21v12m0 20v14m0 20v15m0 22v17"/>
+      <path d="M29 150v12m0 18v17m0 22v14m0 20v15m0 23v11"/>
+      <path d="M45 88v15m0 18v14m0 20v18m0 24v14m0 20v16m0 23v15"/>
+      <path d="M58 80v11m0 16v14m0 20v18m0 22v14m0 19v16m0 22v14"/>
+      <path d="M74 160v15m0 18v17m0 22v13m0 20v16m0 22v14"/>
+      <path d="M85 150v12m0 18v14m0 21v18m0 23v15m0 20v12"/>
+      <path d="M103 49v14m0 16v15m0 19v18m0 21v14m0 19v16m0 21v15m0 19v18"/>
+      <path d="M116 40v11m0 16v13m0 19v16m0 21v17m0 21v14m0 21v15m0 19v16m0 21v13"/>
+      <path d="M133 110v14m0 18v16m0 21v13m0 18v18m0 22v15m0 21v12"/>
+      <path d="M145 96v12m0 16v14m0 19v17m0 22v14m0 20v16m0 22v15"/>
+      <path d="M160 38v14m0 16v15m0 18v17m0 22v14m0 20v16m0 23v15m0 19v18m0 20v14"/>
+      <path d="M174 28v11m0 16v13m0 20v16m0 20v17m0 22v14m0 20v14m0 21v18m0 20v15"/>
+      <path d="M191 136v15m0 18v14m0 20v17m0 24v14m0 20v16m0 22v14"/>
+      <path d="M203 145v12m0 17v16m0 20v13m0 20v18m0 22v14m0 20v12"/>
+    </g>
   </g>
 </svg>
