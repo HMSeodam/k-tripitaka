@@ -860,6 +860,59 @@
       "source": "CBETA",
       "底本_publisher": "大藏出版株式會社",
       "note": "흔히 『수현기(搜玄記)』로 약칭한다. 지엄의 초기 저작으로 알려져 있다. 전 10권."
+    },
+    {
+      "id": "haein-sammaeron",
+      "title_cn": "海印三昧論",
+      "title_ko": "해인삼매론",
+      "author_cn": "明皛",
+      "author_ko": "명효",
+      "dynasty": "新羅",
+      "canon": "T45 no.1889",
+      "canon_id": "T",
+      "canon_vol": 45,
+      "canon_no": 1889,
+      "canon_label": "大正藏 45",
+      "canon_full": "T45 no.1889",
+      "canon_ko": "대정신수대장경 제45책",
+      "collection": "화엄",
+      "tags": [
+        "화엄",
+        "명효",
+        "신라",
+        "해인삼매",
+        "다라니"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "大藏出版株式會社",
+      "note": "신라 명효(明皛)가 지었다. 『화엄경』 십지품의 해인삼매에 의거해 인문(印文)과 게송으로 일승의 요의를 밝힌 것으로, 의상의 『화엄일승법계도』와 함께 신라 화엄의 도인(圖印) 저술로 다루어진다. 1권."
+    },
+    {
+      "id": "seongyusik-hakgi",
+      "title_cn": "成唯識論學記",
+      "title_ko": "성유식론학기",
+      "author_cn": "太賢",
+      "author_ko": "태현",
+      "dynasty": "新羅",
+      "canon": "X50 no.819",
+      "canon_id": "X",
+      "canon_vol": 50,
+      "canon_no": 819,
+      "canon_label": "卍續藏 50",
+      "canon_full": "X50 no.819",
+      "canon_ko": "만신찬속장경 제50책",
+      "collection": "유식",
+      "tags": [
+        "유식",
+        "태현",
+        "신라",
+        "성유식론"
+      ],
+      "verify": false,
+      "source": "CBETA",
+      "底本_publisher": "株式會社國書刊行會",
+      "note": "신라 태현(太賢)이 지었다. 권수에 '青丘沙門 太賢 集'이라 하는데, 청구(青丘)는 신라를 가리킨다. 『보살장아비달마고적기』의 일부로 편성되어 있으며, 신라 유식학을 대표하는 『성유식론』 주석서이다. 전 8권."
     }
   ],
   "rights": {
