@@ -1,0 +1,31 @@
+<svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!--
+    신한글대장경 · 대장경 목판 line-art (팔만대장경 목판에서 착안한 추상 장식,
+    실제 문장을 옮긴 것이 아니며 판독 가능한 한문이 아닙니다)
+    CSS mask-image 전용. 실제 색은 사용하는 쪽의 background-color가 결정합니다.
+  -->
+  <!-- 세로로 긴 목판 5매, 높이가 조금씩 다르고 가장자리가 살짝 겹친다 -->
+  <g fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <rect x="10"  y="40" width="46" height="100" rx="4"/>
+    <rect x="50"  y="15" width="46" height="125" rx="4"/>
+    <rect x="92"  y="50" width="44" height="90"  rx="4"/>
+    <rect x="132" y="20" width="46" height="120" rx="4"/>
+    <rect x="172" y="45" width="44" height="95"  rx="4"/>
+  </g>
+  <!-- 아주 희미한 세로 문자 자국 — 판독 불가능한 추상 표시일 뿐, 실제 문장 아님 -->
+  <g stroke="#000" stroke-width="1.4" stroke-linecap="round" opacity=".5">
+    <line x1="24"  y1="58" x2="24"  y2="76"/>
+    <line x1="38"  y1="66" x2="38"  y2="82"/>
+    <line x1="24"  y1="92" x2="24"  y2="106"/>
+    <line x1="64"  y1="34" x2="64"  y2="54"/>
+    <line x1="78"  y1="42" x2="78"  y2="60"/>
+    <line x1="64"  y1="70" x2="64"  y2="88"/>
+    <line x1="106" y1="66" x2="106" y2="82"/>
+    <line x1="120" y1="72" x2="120" y2="90"/>
+    <line x1="146" y1="40" x2="146" y2="58"/>
+    <line x1="160" y1="48" x2="160" y2="66"/>
+    <line x1="146" y1="78" x2="146" y2="94"/>
+    <line x1="186" y1="62" x2="186" y2="78"/>
+    <line x1="200" y1="70" x2="200" y2="86"/>
+  </g>
+</svg>

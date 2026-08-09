@@ -1,0 +1,49 @@
+<svg viewBox="0 0 220 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!--
+    신한글대장경 · 연화문 line-art (연화당초문에서 착안, 특정 문화재 비복제)
+    이 SVG는 CSS mask-image로만 사용됩니다. 내부 색상(#000)은 의미가 없고
+    실제로 보이는 색은 사용하는 쪽의 background-color(예: celadon-deep 변수)가
+    결정합니다. 즉 색을 바꾸려면 이 파일이 아니라 app.css의 background-color를
+    바꾸면 됩니다.
+  -->
+  <defs>
+    <path id="petal" d="M0,0 C-13,-13 -12,-40 0,-58 C12,-40 13,-13 0,0 Z"/>
+    <path id="leaf" d="M0,0 C-9,-6 -20,-4 -28,0 C-20,4 -9,6 0,0 Z"/>
+    <path id="curl" d="M0,0 C6,-6 6,-16 -2,-20 C-9,-23 -16,-18 -15,-11 C-14,-5 -8,-3 -5,-7"/>
+  </defs>
+  <g fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 줄기 -->
+    <path d="M132,242 C108,196 150,166 120,122 C97,92 128,76 130,64"/>
+    <path d="M120,122 C97,136 80,142 72,160"/>
+
+    <!-- 큰 연화(위) : 7판 부채꼴 -->
+    <g transform="translate(130,64)">
+      <use href="#petal" transform="rotate(-75)"/>
+      <use href="#petal" transform="rotate(-50)"/>
+      <use href="#petal" transform="rotate(-25)"/>
+      <use href="#petal" transform="rotate(0)"/>
+      <use href="#petal" transform="rotate(25)"/>
+      <use href="#petal" transform="rotate(50)"/>
+      <use href="#petal" transform="rotate(75)"/>
+      <circle r="4" fill="#000" stroke="none"/>
+    </g>
+
+    <!-- 작은 연화봉오리(아래) -->
+    <g transform="translate(72,160) scale(.5)">
+      <use href="#petal" transform="rotate(-60)"/>
+      <use href="#petal" transform="rotate(-30)"/>
+      <use href="#petal" transform="rotate(0)"/>
+      <use href="#petal" transform="rotate(30)"/>
+      <use href="#petal" transform="rotate(60)"/>
+      <circle r="4" fill="#000" stroke="none"/>
+    </g>
+
+    <!-- 잎 -->
+    <use href="#leaf" transform="translate(150,196)"/>
+    <use href="#leaf" transform="translate(92,210) scale(-1,1)"/>
+
+    <!-- 당초 덩굴손 -->
+    <use href="#curl" transform="translate(158,228)"/>
+    <use href="#curl" transform="translate(58,222) scale(-1,1)"/>
+  </g>
+</svg>
