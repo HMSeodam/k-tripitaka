@@ -616,6 +616,35 @@ def split_by_ko_markers(units):
 
 
 # ── 정렬(병합) ───────────────────────────────────────────────────────
+# ── 각주 줄 나누기 ───────────────────────────────────────────────
+# 번역 docx 가운데는 그 단위의 교감·판독 메모를 한 문단에 몰아 쓰고
+# 「 / 」로만 항목을 가르는 형식이 있다. 화면에서는 한 덩어리로 뭉쳐
+# 보이므로, 항목마다 줄을 나눠 둔다.
+RE_NOTE_LABEL = re.compile(
+    r"^\s*(?:[^\[\]\n]{0,24}?(?:메모|주기|비고))\s*[|｜:：]\s*")
+RE_NOTE_SPLIT = re.compile(r"\s*/\s*(?=\[)")
+
+
+def split_note_items(units):
+    """각주 문단을 항목([태그]로 시작하는 조각)마다 한 줄로 나눈다."""
+    for u in units:
+        if not u.get("nt"):
+            continue
+        out = []
+        for t in u["nt"]:
+            body = RE_NOTE_LABEL.sub("", t, count=1).strip()
+            if not body:                      # 라벨뿐인 줄은 버린다
+                continue
+            if not body.startswith("["):      # 라벨을 못 떼면 원문 그대로
+                body = t.strip()
+            for piece in RE_NOTE_SPLIT.split(body):
+                piece = piece.strip().rstrip("/").strip()
+                if piece:
+                    out.append(piece)
+        u["nt"] = out
+    return units
+
+
 def merge(txt_units, dx):
     """원문 TXT 를 정본으로 두고, 번역 docx 단위를 위치표지·본문 대조로 붙인다.
 
@@ -971,6 +1000,7 @@ def build_work(entry):
             dx = parse_docx(dp)
 
     units, dxmap = merge(txt_units, dx)
+    units = split_note_items(units)
 
     # ── 분권 구성 ────────────────────────────────────────────────
     raw_secs = []
