@@ -622,25 +622,51 @@ def split_by_ko_markers(units):
 # 보이므로, 항목마다 줄을 나눠 둔다.
 RE_NOTE_LABEL = re.compile(
     r"^\s*(?:[^\[\]\n]{0,24}?(?:메모|주기|비고))\s*[|｜:：]\s*")
-RE_NOTE_SPLIT = re.compile(r"\s*/\s*(?=\[)")
+QUOTE_PAIRS = {"\u2018": "\u2019", "\u201c": "\u201d",
+               "\u300c": "\u300d", "\u300e": "\u300f",
+               "(": ")", "\uff08": "\uff09"}
+QUOTE_CLOSE = set(QUOTE_PAIRS.values())
+
+
+def split_note_line(t: str):
+    """각주 한 문단을 「 / 」 자리에서 항목마다 끊는다.
+
+    따옴표·괄호 안의 빗금은 건드리지 않는다. 번역문을 인용하며
+    ‘첫째 … / 둘째 …’처럼 쓴 자리가 있어서, 이것까지 끊으면
+    한 각주가 엉뚱하게 두 줄로 갈라진다."""
+    out, buf, stack, i = [], [], [], 0
+    while i < len(t):
+        ch = t[i]
+        if ch in QUOTE_PAIRS:
+            stack.append(QUOTE_PAIRS[ch])
+        elif stack and ch == stack[-1]:
+            stack.pop()
+        elif ch in QUOTE_CLOSE and ch in stack:
+            while stack and stack.pop() != ch:
+                pass
+        if (not stack and ch == "/" and i > 0
+                and t[i - 1] in " \t" and i + 1 < len(t) and t[i + 1] in " \t"):
+            out.append("".join(buf).strip())
+            buf = []
+            i += 1
+            continue
+        buf.append(ch)
+        i += 1
+    out.append("".join(buf).strip())
+    return [x for x in out if x]
 
 
 def split_note_items(units):
-    """각주 문단을 항목([태그]로 시작하는 조각)마다 한 줄로 나눈다."""
+    """각주 문단에서 칸 이름(‘교감·번역 메모 |’)을 떼고 항목마다 줄을 나눈다."""
     for u in units:
         if not u.get("nt"):
             continue
         out = []
         for t in u["nt"]:
             body = RE_NOTE_LABEL.sub("", t, count=1).strip()
-            if not body:                      # 라벨뿐인 줄은 버린다
+            if not body:                      # 칸 이름뿐인 줄은 버린다
                 continue
-            if not body.startswith("["):      # 라벨을 못 떼면 원문 그대로
-                body = t.strip()
-            for piece in RE_NOTE_SPLIT.split(body):
-                piece = piece.strip().rstrip("/").strip()
-                if piece:
-                    out.append(piece)
+            out.extend(split_note_line(body))
         u["nt"] = out
     return units
 
