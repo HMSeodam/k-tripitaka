@@ -50,6 +50,7 @@ RE_APPARATUS_HEAD = re.compile(
     r"^[A-Z]\.\s|"
     r"문헌\s*정보|편집|안내|범례|용어\s*(?:표|대응)|검증|검수|선독|판본\s*정보|"
     r"교정\s*(?:기록|보고|사항)|정리\s*(?:기록|보고|사항)|작업\s*(?:기록|보고)|"
+    r"(?:정리|편집|번역|작업|교열|대조|처리|표기|배열)\s*(?:기준|방침|원칙|규칙|방법)|"
     r"(?:최종|전체|일괄)\s*(?:정리|교열|점검|확인)|"
     r"(?:편집|번역|대조|원문)\s*(?:검증|검수|확인)\s*(?:요약|결과|보고)?|"
     r"검증\s*요약|검수\s*요약|"
@@ -549,6 +550,16 @@ def parse_docx(path: Path):
 
     if cur:
         units.append(cur)
+
+    # 원문 자리에 한문이 아니라 한국어 작업 설명이 들어앉은 단위는 본문이 아니다.
+    # (번역 docx 말미의 「정리 기준」 같은 대목이 '원문' 라벨 아래 놓이는 일이 있다)
+    kept = []
+    for u in units:
+        if any(RE_CJK.search(x) and hangul_ratio(x) < 0.3 for x in u["cn"]):
+            kept.append(u)
+        else:
+            appendix.extend(u["cn"] + u["ko"] + u["nt"])
+    units = kept
 
     # 번역 표지대로 단위를 쪼개면 번호가 밀리므로, 절 표제의 위치도 함께 옮긴다
     units, remap = split_by_ko_markers(units)
