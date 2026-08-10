@@ -106,7 +106,8 @@ LABEL_HEADS = {"원문", "원문 목차", "한국어 목차", "한국어 직역"
                "번역", "직역"}
 # 원문 안의 권 표제 (원문 TXT 만 있는 문헌의 분권 검출용)
 RE_JUAN_LINE = re.compile(
-    r"^.{0,24}?卷(?:第[一二三四五六七八九十]+|[上中下])(?:[(（].{0,12}?[)）])?\s*$"
+    r"^.{0,24}?卷(?:第[一二三四五六七八九十百]+|[上中下])"
+    r"(?:之[上中下]|[上中下])?(?:[(（].{0,12}?[)）])?\s*$"
 )
 
 NOTE_PREFIX = re.compile(
@@ -888,8 +889,13 @@ def detect_juan_from_source(units):
     for idx, u in enumerate(units):
         for line in u["cn"]:
             line = line.strip()
-            if RE_JUAN_LINE.match(line) and line not in seen:
-                seen.add(line)
+            # 교감 표지와 서명 부분은 빼고 '卷第三' 꼴만 견준다.
+            # 같은 권의 여는 줄과 닫는 줄, 서명에 오자가 섞인 줄을
+            # 서로 다른 권으로 세지 않기 위함이다.
+            key = RE_APPARATUS.sub("", line)
+            key = key[key.find("卷"):] if "卷" in key else key
+            if RE_JUAN_LINE.match(line) and key not in seen:
+                seen.add(key)
                 secs.append({"lv": 1, "t": line, "i": idx})
                 break
     return secs
@@ -1055,6 +1061,17 @@ def build_work(entry):
         raw_secs = detect_juan_from_source(units)
 
     sections, chapters = build_sections(raw_secs, len(units))
+
+    # 번역 docx가 권마다 표제를 달아 두지 않은 문헌은, 권 나눔이 엉뚱하게 잡힌다.
+    # (한 권 제목이 뒤 권까지 끌려가 '…(2) (3)'처럼 되풀이된다)
+    # 이럴 때는 원문에 남아 있는 권 표제를 따르는 편이 낫다.
+    # 번역 docx가 권마다 표제를 달아 두면 그쪽이 한국어 병기까지 있어 낫다.
+    # 표제가 거의 없을 때만(=권이 3개 이하로 잡힐 때) 원문 표제로 갈아탄다.
+    if len(chapters) <= 3:
+        juan = detect_juan_from_source(units)
+        if len(juan) >= 4 and len(juan) > len(chapters):
+            _, chapters = build_sections(juan, len(units))
+
 
     # 단위는 적지만 글자 수가 많은 문헌(묶음형 번역)도 나눈다
     total_chars = sum(len(norm_search(" ".join(u["cn"]))) for u in units)
