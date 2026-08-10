@@ -1125,6 +1125,43 @@
    "chapters": 31
   },
   {
+   "id": "ilsim-imun-daeui",
+   "title_cn": "起信論一心二門大意",
+   "title_ko": "기신론 일심이문대의",
+   "author_cn": "智愷",
+   "author_ko": "지개",
+   "dynasty": "陳(전칭)",
+   "canon": "X45 no.754",
+   "canon_id": "X",
+   "canon_vol": 45,
+   "canon_no": 754,
+   "canon_label": "卍續藏 45",
+   "canon_ko": "만신찬속장경 제45책",
+   "source": "CBETA",
+   "底本_publisher": "株式會社國書刊行會",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "일심이문",
+    "지개",
+    "가탁"
+   ],
+   "verify": false,
+   "note": "권수에 '楊州 智愷 作'이라 하고 CBETA 목록도 陳 智愷 찬으로 표기하나, 후대의 가탁으로 보이며 실제 저자에 대해서는 논란이 있다. 지개(智愷)는 진제(眞諦) 문하의 혜개(慧愷, 518~568)를 가리키는 것으로 이해되어 왔으나, 본문이 성정본각(性淨本覺)·수염본각(隨染本覺)의 구분을 전제하고 십신·십해·십행·십회향·사선근의 위차를 서술하는 등 원효 이후 『기신론』 주석 전통의 개념 틀을 따르고 있어 6세기 찬술로 보기 어렵다. 또 서문에 '余幸生東隅'라 하여 스스로 동방 변방에서 났다고 밝히므로 신라·일본 등 동아시아 주변부 찬술로 보는 견해가 있다. 『기신론』의 일심이문을 사구송(四句頌)으로 요약하고 스스로 풀이한 짧은 저작이다. 1권.",
+   "units": 15,
+   "translated": 9,
+   "coverage": 0.9455,
+   "chars_cn": 1798,
+   "chars_ko": 5441,
+   "range": [
+    "0152a06",
+    "0153b06"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 0
+  },
+  {
    "id": "daeseung-donyi-yakjip",
    "title_cn": "起信論同異集",
    "title_ko": "대승기신론동이략집",
@@ -1384,9 +1421,9 @@
   }
  ],
  "totals": {
-  "works": 37,
-  "units": 13657,
-  "translated": 12732,
-  "chars_cn": 2529215
+  "works": 38,
+  "units": 13672,
+  "translated": 12741,
+  "chars_cn": 2531013
  }
 }
