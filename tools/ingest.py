@@ -443,6 +443,17 @@ def parse_docx(path: Path):
             kind = classify_head(txt, style)
             if kind == "label":
                 continue
+            # 한문 표제 바로 뒤에 그 한국어 번역이 오는 문서가 있다.
+            # 따로 두면 번역이 사라지므로 앞 표제에 이어 붙인다.
+            if (kind == "structure" and blocks
+                    and blocks[-1].get("kind") == "head"
+                    and blocks[-1].get("hkind") == "structure"
+                    and is_source_line(blocks[-1]["text"])
+                    and not is_source_line(txt)
+                    and " — " not in blocks[-1]["text"]):
+                blocks[-1]["text"] += " — " + txt
+                cur_head = blocks[-1]["text"]
+                continue
             if kind != "apparatus":
                 cur_head = txt
                 if mk:
