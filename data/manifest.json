@@ -318,10 +318,10 @@
    ],
    "verify": false,
    "note": "찬자를 淨影寺沙門慧遠(523~592)으로 제하나, 혜원의 진작이 아닐 것으로 보는 학계 의견이 있다.",
-   "units": 8,
+   "units": 7,
    "translated": 6,
-   "coverage": 0.9979,
-   "chars_cn": 39447,
+   "coverage": 0.9997,
+   "chars_cn": 39375,
    "chars_ko": 125598,
    "range": [
     "0175a06",
@@ -426,18 +426,18 @@
    ],
    "verify": false,
    "note": "정영사(淨影寺) 혜원(慧遠, 523~592)의 저술로 알려져 있으나, 일부분은 이후에 붙여졌을 가능성도 제기되고 있다. 교취·의취·염취·정취·잡취의 오취로 나누어 불교 교학의 주요 개념을 망라한 백과사전식 저작[類書]이다. 전 20권.",
-   "units": 1533,
-   "translated": 1234,
-   "coverage": 0.9908,
-   "chars_cn": 594671,
-   "chars_ko": 1833994,
+   "units": 1531,
+   "translated": 1233,
+   "coverage": 0.9909,
+   "chars_cn": 594593,
+   "chars_ko": 1833747,
    "range": [
     "0465a06",
     "0875c26"
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 28
+   "chapters": 27
   },
   {
    "id": "bojangron",
@@ -462,10 +462,10 @@
    ],
    "verify": false,
    "note": "찬자를 長安沙門釋僧肇로 제하나, 승조(僧肇, 384~414)의 진작이 아니라 후대에 가탁된 위작으로 보는 견해가 유력하다. 도가적 어휘와 개념이 짙게 나타나는 점이 근거로 지적된다.",
-   "units": 56,
+   "units": 53,
    "translated": 52,
-   "coverage": 0.9938,
-   "chars_cn": 9780,
+   "coverage": 0.9996,
+   "chars_cn": 9723,
    "chars_ko": 29651,
    "range": [
     "0143b18",
@@ -499,11 +499,11 @@
    ],
    "verify": false,
    "note": "저자 기(基)는 규기(窺基) 또는 자은기(慈恩基)라고도 불린다. 전 7권.",
-   "units": 366,
-   "translated": 310,
+   "units": 365,
+   "translated": 309,
    "coverage": 0.9984,
-   "chars_cn": 180782,
-   "chars_ko": 571593,
+   "chars_cn": 180769,
+   "chars_ko": 571554,
    "range": [
     "0245a07",
     "0374c10"
@@ -572,10 +572,10 @@
    ],
    "verify": false,
    "note": "화엄 제2조 지엄(智儼)이 『화엄경』의 요의를 오십여 조목의 문답으로 간추린 것. 상·하 2권.",
-   "units": 114,
+   "units": 113,
    "translated": 54,
-   "coverage": 0.9662,
-   "chars_cn": 24740,
+   "coverage": 0.9681,
+   "chars_cn": 24692,
    "chars_ko": 72705,
    "range": [
     "0519a25",
@@ -610,10 +610,10 @@
    ],
    "verify": false,
    "note": "흔히 『공목장(孔目章)』으로 약칭한다. 종남산 지상사 사문 석지엄 집(集), 전 4권.",
-   "units": 332,
+   "units": 331,
    "translated": 173,
-   "coverage": 0.9829,
-   "chars_cn": 74445,
+   "coverage": 0.9836,
+   "chars_cn": 74393,
    "chars_ko": 214505,
    "range": [
     "0536c06",
@@ -681,11 +681,11 @@
     "삼보"
    ],
    "verify": false,
-   "units": 66,
-   "translated": 48,
-   "coverage": 0.9943,
-   "chars_cn": 19625,
-   "chars_ko": 59288,
+   "units": 63,
+   "translated": 46,
+   "coverage": 0.9951,
+   "chars_cn": 19471,
+   "chars_ko": 59061,
    "range": [
     "0613a08",
     "0626b17"
@@ -860,10 +860,10 @@
    ],
    "verify": false,
    "note": "당 청량산 대화엄사 사문 징관(澄觀) 술, 2권. 두순 찬으로 전하는 『화엄법계관문』을 본문으로 삼아 주석한 것으로, 진공관·이사무애관·주변함용관의 법계삼관을 풀이한다. 같은 관문에 대한 종밀의 주석(T45 no.1884)과 대비된다.",
-   "units": 112,
+   "units": 111,
    "translated": 105,
-   "coverage": 0.9932,
-   "chars_cn": 15971,
+   "coverage": 0.9963,
+   "chars_cn": 15922,
    "chars_ko": 56645,
    "range": [
     "0672a15",
@@ -933,11 +933,11 @@
     "전기"
    ],
    "verify": false,
-   "units": 125,
-   "translated": 115,
+   "units": 124,
+   "translated": 114,
    "coverage": 0.9974,
-   "chars_cn": 25778,
-   "chars_ko": 72730,
+   "chars_cn": 25722,
+   "chars_ko": 72553,
    "range": [
     "0153a15",
     "0172c15"
@@ -1075,18 +1075,18 @@
     "선교일치"
    ],
    "verify": false,
-   "units": 657,
-   "translated": 623,
+   "units": 650,
+   "translated": 616,
    "coverage": 0.9984,
-   "chars_cn": 128796,
-   "chars_ko": 366769,
+   "chars_cn": 128608,
+   "chars_ko": 365819,
    "range": [
     "0323a07",
     "0418b24"
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 13
+   "chapters": 14
   },
   {
    "id": "wongak-daeso-seogui",
@@ -1152,7 +1152,7 @@
    "translated": 9,
    "coverage": 0.9455,
    "chars_cn": 1798,
-   "chars_ko": 5441,
+   "chars_ko": 5277,
    "range": [
     "0152a06",
     "0153b06"
@@ -1257,10 +1257,10 @@
    ],
    "verify": false,
    "note": "신라 태현(太賢)이 지었다. 권수에 '青丘沙門 太賢 集'이라 하는데, 청구(青丘)는 신라를 가리킨다. 『보살장아비달마고적기』의 일부로 편성되어 있으며, 신라 유식학을 대표하는 『성유식론』 주석서이다. 전 8권.",
-   "units": 1273,
+   "units": 1272,
    "translated": 1245,
-   "coverage": 0.9975,
-   "chars_cn": 134988,
+   "coverage": 0.9978,
+   "chars_cn": 134943,
    "chars_ko": 480420,
    "range": [
     "0027a07",
@@ -1406,11 +1406,11 @@
    ],
    "verify": false,
    "note": "CBETA 건륭장(乾隆大藏經, 龍藏) 수록본. 4권. 법장 술·종밀 록. 대정장에는 수록되지 않은 판본이다.",
-   "units": 1992,
-   "translated": 1992,
+   "units": 1991,
+   "translated": 1991,
    "coverage": 1.0,
-   "chars_cn": 47226,
-   "chars_ko": 161984,
+   "chars_cn": 47208,
+   "chars_ko": 161900,
    "range": [
     "0084b03",
     "0145a08"
@@ -1422,8 +1422,8 @@
  ],
  "totals": {
   "works": 38,
-  "units": 13672,
-  "translated": 12741,
-  "chars_cn": 2531013
+  "units": 13649,
+  "translated": 12728,
+  "chars_cn": 2530183
  }
 }
