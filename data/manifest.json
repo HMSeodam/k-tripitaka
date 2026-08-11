@@ -263,6 +263,43 @@
    "chapters": 0
   },
   {
+   "id": "yugaron-gi",
+   "title_cn": "瑜伽論記",
+   "title_ko": "유가론기",
+   "author_cn": "遁倫",
+   "author_ko": "둔륜",
+   "dynasty": "唐(신라 출신)",
+   "canon": "T42 no.1828",
+   "canon_id": "T",
+   "canon_vol": 42,
+   "canon_no": 1828,
+   "canon_label": "大正藏 42",
+   "canon_ko": "대정신수대장경 제42책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "유식",
+   "tags": [
+    "유식",
+    "유가사지론",
+    "둔륜",
+    "주석"
+   ],
+   "verify": false,
+   "note": "『유가사지론』에 대한 주석으로, 규기·원측 등 여러 주석가의 해석을 모아 대비한 집성(集成) 형식이다. 찬자 둔륜(遁倫)은 신라 출신 승려로, 이름을 도륜(道倫)으로 보는 설도 있다. 48권. 권말에 향보(享保) 계축년(1733) 사문 성위(性威)의 간행 지어(識語)가 붙어 있다.",
+   "units": 433,
+   "translated": 242,
+   "coverage": 0.9978,
+   "chars_cn": 814508,
+   "chars_ko": 2509346,
+   "range": [
+    "0311a06",
+    "0868b04"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 49
+  },
+  {
    "id": "beopgye-muchabyeollon-so",
    "title_cn": "大乘法界無差別論疏",
    "title_ko": "대승법계무차별론소",
@@ -912,6 +949,43 @@
    "chapters": 0
   },
   {
+   "id": "beopjang-hwasangjeon",
+   "title_cn": "唐大薦福寺故寺主翻經大德法藏和尚傳",
+   "title_ko": "당 대천복사 고사주 번경대덕 법장화상전",
+   "author_cn": "崔致遠",
+   "author_ko": "최치원",
+   "dynasty": "唐(신라 출신)",
+   "canon": "T50 no.2054",
+   "canon_id": "T",
+   "canon_vol": 50,
+   "canon_no": 2054,
+   "canon_label": "大正藏 50",
+   "canon_ko": "대정신수대장경 제50책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "법장",
+    "최치원",
+    "전기"
+   ],
+   "verify": false,
+   "note": "화엄종 제3조 현수법장(賢首法藏, 643~712)의 전기. 찬자 최치원(崔致遠, 857~?)은 신라 출신 관료로, 12세에 당에 유학하여 빈공과에 급제하고 관직에 있다가 귀국하였다. 권수에 「新刊賢首國師碑傳敘」와 염조은(閻朝隱)이 지은 법장 비문이 함께 실려 있고, 권말에는 의천 『신편제종교장총록』의 관련 기록과 용화도충(龍華道忠)의 정오(正誤)가 붙어 있다. 1권.",
+   "units": 74,
+   "translated": 57,
+   "coverage": 0.9819,
+   "chars_cn": 14544,
+   "chars_ko": 46328,
+   "range": [
+    "0280a12",
+    "0289c25"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 7
+  },
+  {
    "id": "hwaeom-jeongi",
    "title_cn": "華嚴經傳記",
    "title_ko": "화엄경전기",
@@ -1494,9 +1568,9 @@
   }
  ],
  "totals": {
-  "works": 40,
-  "units": 16800,
-  "translated": 14222,
-  "chars_cn": 2763326
+  "works": 42,
+  "units": 17307,
+  "translated": 14521,
+  "chars_cn": 3592378
  }
 }
