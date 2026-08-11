@@ -1000,12 +1000,13 @@ def build_sections(sections, n_units):
     if n_units < 60:
         return secs, []
 
-    # 권 층위 고르기: 2~40권으로 나뉘고 한 권이 평균 3단위 이상인 가장 상위 층위
+    # 권 층위 고르기: 2~120권으로 나뉘고 한 권이 평균 3단위 이상인 가장 상위 층위
+    # (48권짜리 『유가론기』처럼 권수가 많은 문헌도 권 표제를 살려 쓰기 위함)
     levels = sorted({s["lv"] for s in secs})
     chapter_lv = None
     for lv in levels:
         n = sum(1 for s in secs if s["lv"] <= lv)
-        if 2 <= n <= 40 and n_units / n >= 3:
+        if 2 <= n <= 120 and n_units / n >= 3:
             chapter_lv = lv
             break
     if chapter_lv is None:
