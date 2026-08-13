@@ -304,6 +304,44 @@
    "chapters": 0
   },
   {
+   "id": "yeolban-gyeongso",
+   "title_cn": "大般涅槃經疏",
+   "title_ko": "대반열반경소",
+   "author_cn": "灌頂 撰 · 湛然 再治",
+   "author_ko": "관정 찬 · 담연 재치",
+   "dynasty": "隋~唐",
+   "canon": "T38 no.1767",
+   "canon_id": "T",
+   "canon_vol": 38,
+   "canon_no": 1767,
+   "canon_label": "大正藏 38",
+   "canon_ko": "대정신수대장경 제38책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "열반경",
+   "tags": [
+    "열반경",
+    "천태",
+    "관정",
+    "담연",
+    "주석"
+   ],
+   "verify": false,
+   "note": "천태 지의(智顗)의 강설을 제자 장안관정(章安灌頂, 561~632)이 정리하여 이룬 남본 『대반열반경』 주석으로, 뒤에 형계담연(荊溪湛然, 711~782)이 산보(刪補)·재치(再治)하였다. 권수 표기는 '隋章安頂法師撰 唐天台沙門湛然再治'이다. 소청열반중(召請涅槃眾)·개연열반시(開演涅槃施)·시현열반행(示現涅槃行)·문답열반의(問答涅槃義)·절섭열반용(折攝涅槃用)의 다섯으로 경을 과단하며, 같은 찬자의 『대반열반경현의』가 그 총론에 해당한다. 권수에 원(元) 사정(師正)의 「科南本涅槃經序」가 실려 있다. 33권.",
+   "units": 449,
+   "translated": 448,
+   "coverage": 0.9997,
+   "chars_cn": 272614,
+   "chars_ko": 934555,
+   "range": [
+    "0041c23",
+    "0224b07"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 35
+  },
+  {
    "id": "yeolban-yuui",
    "title_cn": "涅槃經遊意",
    "title_ko": "열반경유의",
@@ -1753,9 +1791,9 @@
   }
  ],
  "totals": {
-  "works": 47,
-  "units": 28295,
-  "translated": 25002,
-  "chars_cn": 5151923
+  "works": 48,
+  "units": 28744,
+  "translated": 25450,
+  "chars_cn": 5424537
  }
 }
