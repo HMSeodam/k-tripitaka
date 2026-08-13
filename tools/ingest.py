@@ -229,7 +229,7 @@ def parse_source_docx(path: Path):
     한문 단락만 취하고, 편집 범례·과단 표제 같은 한국어 줄은 버린다."""
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
-    d = docx.Document(str(path))
+    d = open_docx(path)
     units, order, cur_marker = [], 0, None
     for p in d.paragraphs:
         txt = re.sub(r"[ \t]+", " ", p.text).strip()
@@ -254,13 +254,61 @@ def parse_source_docx(path: Path):
 PURE_MARKER = re.compile(r"^\[(\d{3,4}[abc]\d{2})\]$")
 
 
+# ── docx 문단 펴기 ──────────────────────────────────────────────
+# 번역 docx 가운데는 한 문단 안에 줄바꿈만으로
+#   [0377a05] ⏎ 원문 ⏎ <한문> ⏎ 한국어 번역 ⏎ <번역>
+# 을 몰아 담는 형식이 있다. 이대로는 원문과 번역이 한 덩어리로 붙어
+# 짝이 지어지지 않으므로, 줄마다 따로 선 문단인 것처럼 펴 준다.
+INNER_LABEL = re.compile(r"^(?:원문|한국어(?:\s*(?:직역|번역))?|번역|직역)$")
+
+
+class _Para:
+    """python-docx 문단과 같은 모양(text·style.name)을 가진 대역."""
+
+    __slots__ = ("text", "style")
+
+    def __init__(self, text, style_name):
+        self.text = text
+        self.style = type("S", (), {"name": style_name})()
+
+
+class _Doc:
+    """문단만 펴 놓은 docx 대역. tables 등은 원본을 그대로 넘긴다."""
+
+    def __init__(self, doc, paras):
+        self._doc = doc
+        self.paragraphs = paras
+
+    def __getattr__(self, name):
+        return getattr(self._doc, name)
+
+
+def open_docx(path: Path):
+    d = docx.Document(str(path))
+    out, split_any = [], False
+    for p in d.paragraphs:
+        lines = [x.strip() for x in p.text.split("\n")]
+        lines = [x for x in lines if x]
+        # 안쪽에 '원문'·'한국어 번역' 같은 칸 이름이 줄로 서 있을 때만 편다
+        if len(lines) > 1 and any(INNER_LABEL.match(x) for x in lines):
+            split_any = True
+            style = (p.style.name or "").strip()
+            for x in lines:
+                if INNER_LABEL.match(x):
+                    continue
+                out.append(_Para(x, style))
+        else:
+            out.append(p)
+    return _Doc(d, out) if split_any else d
+
+
 def is_translation_only(path: Path) -> bool:
     """원문 없이 번역만 담긴 docx 인가.
 
     한문 원문 단락이 사실상 없고, '[0459a11]' 처럼 표지만 홀로 선 문단이
     여럿이면 번역 전용 형식으로 본다. 이런 문서는 sources/<id>/원문*.txt
     쪽에서 원문을 따로 대야 하며, merge() 의 표지 대응만으로 짝짓는다."""
-    d = docx.Document(str(path))
+    d = open_docx(path)
     paras = [re.sub(r"[ \t]+", " ", p.text).strip() for p in d.paragraphs]
     paras = [t for t in paras if t]
     if not paras:
@@ -277,7 +325,7 @@ def parse_translation_only_docx(path: Path):
     순서로 구성된다고 본다. 표지가 처음 나오는 순간부터 '본문'으로 보고,
     표지가 나온 뒤에 다시 나오는 1단계 표제(Heading 1)는 본문이 끝나고
     뒷부분(부록)이 시작된 것으로 본다."""
-    d = docx.Document(str(path))
+    d = open_docx(path)
     units, front, appendix = [], [], []
     mode = "front"          # front | body | back
     cur = None
@@ -324,7 +372,7 @@ def is_table_aligned(path: Path) -> bool:
     """대조 본문이 표(위치표지 | 원문 | 번역)로 짜인 docx 인가."""
     if docx is None:
         return False
-    d = docx.Document(str(path))
+    d = open_docx(path)
     for t in d.tables:
         if len(t.columns) < 3 or len(t.rows) < 3:
             continue
@@ -345,7 +393,7 @@ def parse_table_docx(path: Path):
     두 칸짜리 표는 서지·용어표로 넘긴다. 표 바깥 문단은 해제로 모은다."""
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
-    d = docx.Document(str(path))
+    d = open_docx(path)
 
     units, tables, front = [], [], []
 
@@ -397,7 +445,7 @@ def parse_table_docx(path: Path):
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
-    d = docx.Document(str(path))
+    d = open_docx(path)
 
     # 1) 표: 서지 정보 / 용어 대응표 회수
     tables = []
