@@ -83,6 +83,79 @@
    "chapters": 15
   },
   {
+   "id": "seokmahayeon-non",
+   "title_cn": "釋摩訶衍論",
+   "title_ko": "석마하연론",
+   "author_cn": "龍樹 造 · 筏提摩多 譯",
+   "author_ko": "용수 조 · 벌제마다 역",
+   "dynasty": "姚秦(전칭)",
+   "canon": "T32 no.1668",
+   "canon_id": "T",
+   "canon_vol": 32,
+   "canon_no": 1668,
+   "canon_label": "大正藏 32",
+   "canon_ko": "대정신수대장경 제32책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "석마하연론",
+    "주석",
+    "가탁"
+   ],
+   "verify": false,
+   "note": "『대승기신론』에 대한 주석으로, 권수에 요진(姚秦) 벌제마다(筏提摩多) 번역, 용수(龍樹) 조(造)로 제하고 요흥(姚興) 황제의 서문을 싣고 있다. 그러나 이 전칭은 일찍부터 의심받아, 신라 월충(月忠)의 저작이라는 설이 초기부터 제기되었다. 오우미노 미후네 등이 이미 위찬(僞撰)으로 보았으나, 뒤에 일본 밀교에서 크게 중시되어 구카이(空海) 이래 진언종 교학의 주요 전거가 되었다. 본각·불각을 33종 법문으로 나누고 불이마하연(不二摩訶衍)을 세우는 등 『기신론』 본문을 크게 넘어서는 독자적 교학을 전개한다. 10권.",
+   "units": 546,
+   "translated": 361,
+   "coverage": 0.9286,
+   "chars_cn": 103698,
+   "chars_ko": 292144,
+   "range": [
+    "0591c28",
+    "0668a02"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 12
+  },
+  {
+   "id": "daejongji-hyeonmun-bollon",
+   "title_cn": "大宗地玄文本論",
+   "title_ko": "대종지현문본론",
+   "author_cn": "馬鳴 造 · 真諦 譯",
+   "author_ko": "마명 조 · 진제 역",
+   "dynasty": "陳(전칭)",
+   "canon": "T32 no.1669",
+   "canon_id": "T",
+   "canon_vol": 32,
+   "canon_no": 1669,
+   "canon_label": "大正藏 32",
+   "canon_ko": "대정신수대장경 제32책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "대결택분",
+    "가탁"
+   ],
+   "verify": false,
+   "note": "권수에 마명(馬鳴) 조(造), 진제(眞諦) 역으로 제하나 이 전칭은 신뢰하기 어렵다. 『석마하연론』과 문구상의 일치점이 있다는 지적이 제기되어, 두 문헌의 성립을 연관 지어 보는 견해가 있다. 전체를 40개의 대결택분(大決擇分)으로 나누고 각 분마다 게송을 먼저 들고 '論曰'로 풀이하는 일정한 형식을 취한다. 20권.",
+   "units": 262,
+   "translated": 130,
+   "coverage": 0.7796,
+   "chars_cn": 29123,
+   "chars_ko": 80228,
+   "range": [
+    "0668c29",
+    "0693b09"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 40
+  },
+  {
    "id": "geumganggyeong-yakso",
    "title_cn": "佛說金剛般若波羅蜜經略疏",
    "title_ko": "불설금강반야바라밀경약소",
@@ -624,6 +697,43 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 22
+  },
+  {
+   "id": "naeui-yaktamgi",
+   "title_cn": "大乘起信論內義略探記",
+   "title_ko": "대승기신론내의약탐기",
+   "author_cn": "太賢",
+   "author_ko": "태현",
+   "dynasty": "新羅",
+   "canon": "T44 no.1848",
+   "canon_id": "T",
+   "canon_vol": 44,
+   "canon_no": 1848,
+   "canon_label": "大正藏 44",
+   "canon_ko": "대정신수대장경 제44책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "태현",
+    "신라",
+    "유식"
+   ],
+   "verify": false,
+   "note": "신라 유가조(瑜伽祖)로 불린 태현(太賢, 8세기)의 『대승기신론』 주석. 논의 대의를 서술하는 술론대의(述論大意)와 본문의 뜻을 탐구하는 탐론중의(探論中義)의 두 문으로 나누어 풀이한다. 권말에 홍장(弘長) 원년(1261) 일본 신오산(神尾山)에서의 서사 기록이 붙어 있다. 1권.",
+   "units": 38,
+   "translated": 37,
+   "coverage": 0.9994,
+   "chars_cn": 18548,
+   "chars_ko": 62095,
+   "range": [
+    "0409b29",
+    "0422b11"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 0
   },
   {
    "id": "daeseung-uijang",
@@ -1279,6 +1389,43 @@
    "chapters": 6
   },
   {
+   "id": "damgwang-gwangseok",
+   "title_cn": "大乘起信論廣釋",
+   "title_ko": "대승기신론광석",
+   "author_cn": "曇曠",
+   "author_ko": "담광",
+   "dynasty": "唐",
+   "canon": "T85 no.2814",
+   "canon_id": "T",
+   "canon_vol": 85,
+   "canon_no": 2814,
+   "canon_label": "大正藏 85",
+   "canon_ko": "대정신수대장경 제85책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "기신론",
+   "tags": [
+    "기신론",
+    "담광",
+    "돈황",
+    "주석"
+   ],
+   "verify": false,
+   "note": "당(唐) 담광(曇曠, ?~788경)의 『대승기신론』 주석으로, 돈황사본으로만 전하여 대정장 고일부(古逸部)에 수록되었다. 담광은 장안 서명사에서 유식·구사와 『금강반야경』·『기신론』을 익힌 뒤 하서(河西)로 가 사주(沙州) 용흥사에서 저술하였고, 토번의 찬보가 물은 불교 문제에 답한 『대승이십이문』으로도 알려져 있다. 같은 찬자의 『대승기신론약술』과 짝을 이룬다. 현재 남아있는 부분은 문헌 첫머리가 아니라 해석 도중에서 시작하는 제3권부터이며, 결락(□)이 남아 있다.",
+   "units": 347,
+   "translated": 346,
+   "coverage": 0.9995,
+   "chars_cn": 73452,
+   "chars_ko": 251521,
+   "range": [
+    "1121c19",
+    "1173c23"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 4
+  },
+  {
    "id": "daeseung-ipdo",
    "title_cn": "大乘入道次第開決",
    "title_ko": "대승입도차제개결",
@@ -1791,9 +1938,9 @@
   }
  ],
  "totals": {
-  "works": 48,
-  "units": 28744,
-  "translated": 25450,
-  "chars_cn": 5424537
+  "works": 52,
+  "units": 29937,
+  "translated": 26324,
+  "chars_cn": 5649358
  }
 }
