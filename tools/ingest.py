@@ -102,6 +102,10 @@ RE_UNIT_HEAD = re.compile(
 )
 # 라벨 성격의 표제 — 무시하되 단위를 끊지 않는다
 RE_NOTE_HEAD = re.compile(r"(?:^|\s)(?:주|주석|각주|교감)$")
+# 각주 묶음의 칸 이름. '교감·번역 메모'처럼 스타일 구분 없이 라벨 문단만으로
+# 각주 시작을 알리는 docx 가 있어, 이 줄 아래는 각주로 모은다.
+RE_NOTE_LABEL_HEAD = re.compile(
+    r"^[^\[\]\n]{0,14}(?:메모|주기|비고|각주|주석)\s*[:：]?$")
 LABEL_HEADS = {"원문", "원문 목차", "한국어 목차", "한국어 직역", "한국어 번역",
                "번역", "직역"}
 # 원문 안의 권 표제 (원문 TXT 만 있는 문헌의 분권 검출용)
@@ -464,7 +468,8 @@ def parse_docx(path: Path):
         style = (p.style.name or "").strip()
 
         # '주' / '주석' / '각주' / '제1문 주' 는 스타일과 무관하게 각주 시작으로 본다
-        if len(txt) <= 8 and RE_NOTE_HEAD.search(txt):
+        if (len(txt) <= 8 and RE_NOTE_HEAD.search(txt)) or (
+                len(txt) <= 16 and RE_NOTE_LABEL_HEAD.match(txt)):
             blocks.append({"kind": "head", "hkind": "note", "text": txt,
                            "lv": head_level(style), "m": cur_marker})
             continue
