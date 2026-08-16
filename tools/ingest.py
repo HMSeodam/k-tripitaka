@@ -106,6 +106,23 @@ RE_NOTE_HEAD = re.compile(r"(?:^|\s)(?:주|주석|각주|교감)$")
 # 각주 시작을 알리는 docx 가 있어, 이 줄 아래는 각주로 모은다.
 RE_NOTE_LABEL_HEAD = re.compile(
     r"^[^\[\]\n]{0,14}(?:메모|주기|비고|각주|주석)\s*[:：]?$")
+# 칸 이름에 '· 계속' 같은 꼬리가 붙는 docx 가 있다.
+# ('원문 · 계속' / '한국어 직역 · 계속') 꼬리를 떼고 칸 이름을 견준다.
+RE_LABEL_TAIL = re.compile(
+    r"\s*[·・|/／\-–—]\s*(?:계속|이어짐|이어서|continued|cont\.?)\s*$", re.I)
+
+
+# 도판 자리를 말로 대신한 번역 문단. 도판을 띄우면 필요 없어진다.
+RE_FIG_CAPTION = re.compile(
+    r"(?:문자\s*본문|본문\s*문자)[^。.\n]{0,24}?(?:없|비어)"
+    r"|이\s*(?:위치|자리)에[^。.\n]{0,24}?(?:도판|그림|圖|계도|界圖)"
+    r"[^。.\n]{0,12}?(?:배치|삽입|들어)")
+
+
+def label_key(t: str) -> str:
+    return RE_LABEL_TAIL.sub("", t).rstrip("：: ").strip()
+
+
 LABEL_HEADS = {"원문", "원문 목차", "한국어 목차", "한국어 직역", "한국어 번역",
                "번역", "직역"}
 # 원문 안의 권 표제 (원문 TXT 만 있는 문헌의 분권 검출용)
@@ -214,7 +231,7 @@ def classify_head(text: str, style: str) -> str:
     t = text.strip()
     if RE_NOTE_HEAD.search(t):
         return "note"
-    if t in LABEL_HEADS or t.rstrip("：: ") in LABEL_HEADS:
+    if t in LABEL_HEADS or label_key(t) in LABEL_HEADS:
         return "label"
     if RE_UNIT_HEAD.match(t):
         return "unit"
@@ -473,7 +490,7 @@ def parse_docx(path: Path):
             blocks.append({"kind": "head", "hkind": "note", "text": txt,
                            "lv": head_level(style), "m": cur_marker})
             continue
-        if txt in LABELS or txt.rstrip("：: ") in LABELS:
+        if txt in LABELS or label_key(txt) in LABELS:
             continue
         # 표지만 홀로 선 문단([0297a11])은 위치 표시일 뿐 본문이 아니다.
         # 걸러 내지 않으면 앞 단위의 번역 끝에 군더더기로 달라붙는다.
@@ -1187,6 +1204,9 @@ def build_work(entry):
                 print(f"  ! {wid}: 도판 {fname} 의 자리 [{marker}] 를 찾지 못했습니다")
                 continue
             u.setdefault("fig", []).append(fname)
+            # 도판을 실제로 띄우므로, 그 자리를 말로 때운 번역 문단
+            # ('문자 본문은 없으며, 이 위치에 …가 배치된다')은 군더더기가 된다.
+            u["ko"] = [t for t in u["ko"] if not RE_FIG_CAPTION.search(t)]
 
     meta = dict(entry)
     meta.pop("figures", None)
