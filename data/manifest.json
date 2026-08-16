@@ -522,6 +522,43 @@
    "chapters": 0
   },
   {
+   "id": "haengsacho",
+   "title_cn": "四分律刪繁補闕行事鈔",
+   "title_ko": "사분율산번보궐행사초",
+   "author_cn": "道宣",
+   "author_ko": "도선",
+   "dynasty": "唐",
+   "canon": "T40 no.1804",
+   "canon_id": "T",
+   "canon_vol": 40,
+   "canon_no": 1804,
+   "canon_label": "大正藏 40",
+   "canon_ko": "대정신수대장경 제40책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "율",
+   "tags": [
+    "율",
+    "남산율종",
+    "도선",
+    "사분율"
+   ],
+   "verify": false,
+   "note": "당(唐) 남산율종의 개조 도선(道宣, 596~667)이 『사분율』의 번잡한 대목을 덜어 내고 빠진 곳을 보태어 실제 행사(行事)의 지침으로 엮은 저작. 무덕 9년(626)에 처음 이루고 뒤에 거듭 고쳐 3권 12편으로 완성하였다. 권상은 대중 사무의 운영, 권중은 계체(戒體)의 지범과 참회, 권하는 개인의 수행과 사찰 운영을 다룬다. 도선의 이른바 남산삼대부(南山三大部) 가운데 첫째로 꼽히며, 뒤에 원조(元照)의 『자지기』를 비롯한 수많은 주석을 낳아 동아시아 율학의 근간이 되었다. 권하 말미에 무덕 9년 6월 찬술 경위를 밝힌 자기(自記)가 붙어 있다. 3권.",
+   "units": 458,
+   "translated": 458,
+   "coverage": 1.0,
+   "chars_cn": 233498,
+   "chars_ko": 829091,
+   "range": [
+    "0001a06",
+    "0156c27"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 37
+  },
+  {
    "id": "yugaron-gi",
    "title_cn": "瑜伽論記",
    "title_ko": "유가론기",
@@ -2013,9 +2050,9 @@
   }
  ],
  "totals": {
-  "works": 54,
-  "units": 34771,
-  "translated": 30554,
-  "chars_cn": 5982184
+  "works": 55,
+  "units": 35229,
+  "translated": 31012,
+  "chars_cn": 6215682
  }
 }
