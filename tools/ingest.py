@@ -1166,7 +1166,30 @@ def build_work(entry):
     chars_ko = sum(len("".join(u["ko"])) for u in units)
     markers = sorted({u["m"] for u in units if u["m"] and not u.get("x")})
 
+    # 저본에 실린 도판을 그 자리의 단위에 붙인다.
+    # registry 의 figures = {"위치표지": "파일명"} 을 따르고,
+    # 파일은 assets/figures/<문헌id>/ 에 둔다.
+    figs = entry.get("figures") or {}
+    if figs:
+        first, last = {}, {}
+        for u in units:
+            first.setdefault(u.get("m"), u)
+            last[u.get("m")] = u
+        marks = sorted(m for m in first if m)
+        for marker, fname in sorted(figs.items()):
+            u = first.get(marker)
+            if u is None:
+                # 저본에서 도판만 놓인 표지는 원문이 비어 단위가 서지 않는다.
+                # 그 앞 표지의 마지막 단위 끝에 붙여 저본과 같은 자리에 오게 한다.
+                prev = [m for m in marks if m < marker]
+                u = last.get(prev[-1]) if prev else None
+            if u is None:
+                print(f"  ! {wid}: 도판 {fname} 의 자리 [{marker}] 를 찾지 못했습니다")
+                continue
+            u.setdefault("fig", []).append(fname)
+
     meta = dict(entry)
+    meta.pop("figures", None)
     meta.update({
         "units": len(units),
         "translated": n_ko,
