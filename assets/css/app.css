@@ -222,6 +222,13 @@ button{background:none;border:0;cursor:pointer}
 .notes p{margin:.3rem 0;padding-left:1.1em;text-indent:-1.1em}
 .nokr{font-size:.78rem;color:var(--ink-3);font-style:italic}
 
+/* 저본 도판 — 원문 칸 안에 그 자리대로 놓는다.
+   좁은 화면에서도 넘치지 않게 폭에 맞춘다. */
+.fig{margin:.9rem 0;text-align:center}
+.fig img{max-width:min(100%,460px);height:auto;display:inline-block;
+  background:#fff;border:1px solid var(--mist);border-radius:4px;padding:.4rem}
+.fig figcaption{margin-top:.3rem;font-size:calc(.74rem * var(--fs));color:var(--ink-3)}
+
 /* 표제만 있는 단위(권두 제목·찬자 등)는 본문과 다르게 조판한다 */
 /* 권두 표제·찬자처럼 짧은 줄만 표제답게 조판한다(.titleish).
    저본에 위치표지가 없어 본문이 통째로 들어온 단위까지 표제 취급하면 안 된다.
