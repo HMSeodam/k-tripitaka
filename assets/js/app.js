@@ -168,19 +168,6 @@ function unitNode(u, wid) {
   p.innerHTML = markupCN(u.cn.join('\n'));
   cnbox.append(p);
 
-  // 저본에 실린 도판(결계도 등)은 원문 쪽 그 자리에 붙인다
-  if (u.fig && u.fig.length) {
-    u.fig.forEach(name => {
-      const fig = el('figure', 'fig');
-      const img = el('img');
-      img.src = `${BASE}assets/figures/${wid}/${name}`;
-      img.alt = '저본 도판';
-      img.loading = 'lazy';
-      fig.append(img, el('figcaption', null, '저본 도판'));
-      cnbox.append(fig);
-    });
-  }
-
   const kobox = el('div', 'kobox');
   if (u.ko && u.ko.length) {
     u.ko.forEach(t => kobox.append(el('p', 'ko', stripKoMarker(t))));
@@ -189,6 +176,22 @@ function unitNode(u, wid) {
   }
 
   n.append(rail, cnbox, kobox);
+
+  // 저본에 실린 도판(결계도 등). 원문·번역 어느 쪽만 볼 때도 보이도록
+  // 단위 아래에 따로 둔다.
+  if (u.fig && u.fig.length) {
+    const figs = el('div', 'figs');
+    u.fig.forEach(name => {
+      const fig = el('figure', 'fig');
+      const img = el('img');
+      img.src = `${BASE}assets/figures/${wid}/${name}`;
+      img.alt = '저본 도판';
+      img.loading = 'lazy';
+      fig.append(img, el('figcaption', null, '저본 도판'));
+      figs.append(fig);
+    });
+    n.append(figs);
+  }
 
   if (u.nt && u.nt.length) {
     const nt = el('div', 'notes');
