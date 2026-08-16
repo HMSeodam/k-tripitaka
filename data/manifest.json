@@ -548,8 +548,8 @@
    "units": 458,
    "translated": 458,
    "coverage": 1.0,
-   "chars_cn": 233498,
-   "chars_ko": 829091,
+   "chars_cn": 232796,
+   "chars_ko": 828361,
    "range": [
     "0001a06",
     "0156c27"
@@ -2053,6 +2053,6 @@
   "works": 55,
   "units": 35229,
   "translated": 31012,
-  "chars_cn": 6215682
+  "chars_cn": 6214980
  }
 }
