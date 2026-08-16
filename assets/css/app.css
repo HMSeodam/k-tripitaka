@@ -216,14 +216,15 @@ button{background:none;border:0;cursor:pointer}
 .ko+.ko{margin-top:.3rem}
 .mk{font-family:var(--mono);font-size:.74rem;color:#A9BBBF;margin-right:.3rem}
 .app{color:#B9C6C2;font-size:.85em}
-.notes{grid-column:2;grid-row:3;margin-top:.5rem;clear:both;padding:.5rem .7rem;font-size:calc(.82rem * var(--fs));
+.notes{grid-column:2;grid-row:4;margin-top:.5rem;clear:both;padding:.5rem .7rem;font-size:calc(.82rem * var(--fs));
   border-left:2px solid var(--celadon);background:var(--celadon-wash);
   border-radius:0 6px 6px 0;color:var(--celadon-deep)}
 .notes p{margin:.3rem 0;padding-left:1.1em;text-indent:-1.1em}
 .nokr{font-size:.78rem;color:var(--ink-3);font-style:italic}
 
-/* 저본 도판 — 원문 칸 안에 그 자리대로 놓는다.
-   좁은 화면에서도 넘치지 않게 폭에 맞춘다. */
+/* 저본 도판 — 저본과 같은 자리에 놓되, 원문·번역 어느 쪽만 볼 때도
+   보이도록 단위 아래 한 줄로 둔다. 좁은 화면에서는 폭에 맞춘다. */
+.figs{grid-column:2;grid-row:3;clear:both}
 .fig{margin:.9rem 0;text-align:center}
 .fig img{max-width:min(100%,460px);height:auto;display:inline-block;
   background:#fff;border:1px solid var(--mist);border-radius:4px;padding:.4rem}
@@ -242,7 +243,8 @@ button{background:none;border:0;cursor:pointer}
 .split .unit{grid-template-columns:var(--rail) minmax(0,1fr) minmax(0,1fr)}
 .split .cnbox{grid-column:2;grid-row:1}
 .split .kobox{grid-column:3;grid-row:1}
-.split .notes{grid-column:2/-1;grid-row:2}
+.split .figs{grid-column:2/-1;grid-row:2}
+.split .notes{grid-column:2/-1;grid-row:3}
 .split .unit.nomark.titleish .cn,.split .unit.nomark.titleish .ko{text-align:left}
 .split .unit.nomark{grid-template-columns:var(--rail) minmax(0,1fr) minmax(0,1fr)}
 
@@ -310,10 +312,12 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .split .unit,.split .unit.nomark,
   body.hide-ko .split .unit,body.hide-cn .split .unit{
     grid-template-columns:var(--rail) minmax(0,1fr)}
-  .split .cnbox,.split .kobox,.split .notes,body.hide-cn .split .kobox{grid-column:2}
+  .split .cnbox,.split .kobox,.split .figs,.split .notes,
+  body.hide-cn .split .kobox{grid-column:2}
   .split .cnbox,body.hide-cn .split .kobox{grid-row:1}
   .split .kobox{grid-row:2}
-  .split .notes{grid-row:3}
+  .split .figs{grid-row:3}
+  .split .notes{grid-row:4}
   :root{--rail:58px;--cn-size:1.02rem}
   .tabbar{
     display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;
