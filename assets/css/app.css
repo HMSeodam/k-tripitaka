@@ -85,6 +85,8 @@ button{background:none;border:0;cursor:pointer}
   border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash);
 }
 .lab-short{display:none}
+/* 좁은 화면에서만 드는 줄바꿈 */
+.br-m{display:none}
 .seg{display:flex;border:1px solid var(--mist);border-radius:var(--radius);overflow:hidden;background:var(--paper-2)}
 .seg button{padding:.34rem .68rem;font-size:.8rem;color:var(--ink-3)}
 .seg button.on{background:var(--indigo);color:#fff}
@@ -283,12 +285,11 @@ body.hide-cn .split .kobox{grid-column:2;grid-row:1}
 .hit-ko{font-size:.87rem;color:var(--ink-3);margin:.2rem 0 0}
 mark{background:var(--amber-wash);color:var(--amber);padding:0 .1em;border-radius:2px;font-weight:600}
 
-/* 안내 글은 줄을 고르게 나눈다.
-   text-wrap:balance 가 각 줄 길이를 맞춰 주고,
-   word-break:keep-all 이 한국어 낱말이 중간에 끊기는 것을 막는다.
-   지원하지 않는 브라우저에서는 예전처럼 흘려 짜인다. */
+/* 안내 글. word-break:keep-all 이 한국어 낱말이 중간에 끊기는 것을 막는다.
+   줄 나눔은 글쓴이가 정하므로(<br class="br-m">) 줄 길이를 자동으로
+   맞추지는 않는다. */
 .empty{max-width:34rem;margin:3rem auto;text-align:center;color:var(--ink-3);
-  text-wrap:balance;word-break:keep-all;line-height:1.75;padding:0 .5rem}
+  word-break:keep-all;line-height:1.75;padding:0 .4rem}
 /* 첫 줄의 <b> 만 제목처럼 조판한다. 문장 속 <b> 는 굵게만 든다. */
 .empty>b:first-child{display:block;color:var(--ink-2);font-size:1rem;margin-bottom:.4rem}
 .empty b{color:var(--ink-2);font-weight:600}
@@ -331,6 +332,8 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .applinks a{padding:.3rem .45rem;font-size:.72rem}
   .lab-full{display:none}
   .lab-short{display:inline}
+  .br-m{display:inline}
+  .empty{font-size:.92rem}
   .split .unit,.split .unit.nomark,
   body.hide-ko .split .unit,body.hide-cn .split .unit{
     grid-template-columns:var(--rail) minmax(0,1fr)}
