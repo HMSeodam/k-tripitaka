@@ -283,7 +283,12 @@ body.hide-cn .split .kobox{grid-column:2;grid-row:1}
 .hit-ko{font-size:.87rem;color:var(--ink-3);margin:.2rem 0 0}
 mark{background:var(--amber-wash);color:var(--amber);padding:0 .1em;border-radius:2px;font-weight:600}
 
-.empty{max-width:860px;margin:3rem auto;text-align:center;color:var(--ink-3)}
+/* 안내 글은 줄을 고르게 나눈다.
+   text-wrap:balance 가 각 줄 길이를 맞춰 주고,
+   word-break:keep-all 이 한국어 낱말이 중간에 끊기는 것을 막는다.
+   지원하지 않는 브라우저에서는 예전처럼 흘려 짜인다. */
+.empty{max-width:34rem;margin:3rem auto;text-align:center;color:var(--ink-3);
+  text-wrap:balance;word-break:keep-all;line-height:1.75;padding:0 .5rem}
 /* 첫 줄의 <b> 만 제목처럼 조판한다. 문장 속 <b> 는 굵게만 든다. */
 .empty>b:first-child{display:block;color:var(--ink-2);font-size:1rem;margin-bottom:.4rem}
 .empty b{color:var(--ink-2);font-weight:600}
