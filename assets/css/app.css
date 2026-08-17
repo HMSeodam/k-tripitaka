@@ -222,6 +222,12 @@ button{background:none;border:0;cursor:pointer}
 .notes p{margin:.3rem 0;padding-left:1.1em;text-indent:-1.1em}
 .nokr{font-size:.78rem;color:var(--ink-3);font-style:italic}
 
+/* 이체자 함께 찾기 토글 — 검색 범위 단추 옆에 작게 둔다.
+   꺼면 판본이 쓴 글자 그대로만 맞춘다. */
+#varSeg{margin-left:.3rem}
+#varBtn{font-size:.8rem;padding:.34rem .62rem;white-space:nowrap}
+#varBtn:not(.on){color:var(--ink-3);opacity:.65}
+
 /* 저본 도판 — 저본과 같은 자리에 놓되, 원문·번역 어느 쪽만 볼 때도
    보이도록 단위 아래 한 줄로 둔다. 좁은 화면에서는 폭에 맞춘다. */
 .figs{grid-column:2;grid-row:3;clear:both}
