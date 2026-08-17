@@ -973,7 +973,7 @@ async function viewSearch(q, scope) {
 
   if (!total) {
     list.innerHTML = `<div class="empty"><b>찾은 곳이 없습니다</b>
-      ${state.variants ? '다른 표기로 바꿔 보세요. 이체자는 함께 찾고 있습니다(卽·即, 眞·真, 敎·教, 說·説, 观·觀).' : '이체자 함께 찾기가 꺼져 있어 판본이 쓴 글자 그대로만 맞춥니다. 위의 <b>이체자</b> 단추를 켜면 넓혀 찾습니다.'}</div>`;
+      ${state.variants ? '다른 표기로 바꿔 보세요. 이체자는 함께 찾고 있습니다(卽·即, 眞·真, 敎·教, 說·説, 观·觀).' : '이체자 함께 찾기가 꺼져 있어 판본이 쓴 글자 그대로만 맞춥니다. 검색칸의 <b>이체자</b>를 켜면 넓혀 찾습니다.'}</div>`;
     return;
   }
 
@@ -1221,13 +1221,7 @@ function syncScope() {
   document.querySelectorAll('#scopeSeg button').forEach(b =>
     b.classList.toggle('on', b.dataset.scope === state.scope));
   const vb = $('#varBtn');
-  if (vb) {
-    vb.classList.toggle('on', state.variants);
-    vb.setAttribute('aria-pressed', state.variants ? 'true' : 'false');
-    vb.title = state.variants
-      ? '이체자 함께 찾기 — 켜짐 (卽·即, 眞·真 등을 같은 글자로 봅니다)'
-      : '이체자 함께 찾기 — 꺼짐 (판본이 쓴 글자 그대로만 찾습니다)';
-  }
+  if (vb) vb.checked = state.variants;
 }
 
 /** 지금 검색어로 다시 찾아간다. */
@@ -1251,8 +1245,8 @@ $('#scopeSeg').addEventListener('click', e => {
   state.scope = b.dataset.scope; syncScope();
   rerunSearch();
 });
-$('#varBtn')?.addEventListener('click', () => {
-  state.variants = !state.variants; syncScope();
+$('#varBtn')?.addEventListener('change', e => {
+  state.variants = e.target.checked;
   rerunSearch();
 });
 document.querySelector('[data-tab="search"]').addEventListener('click', () => $('#q').focus());
