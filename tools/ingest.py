@@ -56,6 +56,10 @@ RE_APPARATUS_HEAD = re.compile(
     r"검증\s*요약|검수\s*요약|"
     r"번역상|쟁점|한계|읽는\s*법|과단\s*계층|부록|참고\s*문헌|대역\s*목차"
 )
+# 「1. …」 「2.3 …」 처럼 번호를 매긴 표제는 번역 docx 가 스스로 붙인
+# 문서 차례이지 저본의 권·품이 아니다. 저본의 표제는 「제1 발심」·「권제1」·
+# 「初篇」 꼴이라 이 규칙에 걸리지 않는다.
+RE_DOC_OUTLINE = re.compile(r"^\d{1,2}(?:\.\d{1,2})*[.、]\s|^\d{1,2}(?:\.\d{1,2})+\s")
 # 단위 라벨: 위치표지·문단 번호·「원문/번역」 같은 꼬리표만으로 이루어진 줄.
 # 한글이 섞여 있어 번역문으로 오인되기 쉬우므로 본문에 들어가기 전에 걸러 낸다.
 #   예) "[1206c22]  문단 001 · 원문" / "문단 003 · 한국어 직역" / "005. 번역"
@@ -293,7 +297,7 @@ def classify_head(text: str, style: str) -> str:
         return "label"
     if RE_UNIT_HEAD.match(t):
         return "unit"
-    if RE_APPARATUS_HEAD.search(t):
+    if RE_APPARATUS_HEAD.search(t) or RE_DOC_OUTLINE.match(t):
         return "apparatus"
     return "structure"
 
@@ -457,11 +461,17 @@ def is_table_aligned(path: Path) -> bool:
             continue
         head = [c.text.strip() for c in t.rows[0].cells]
         joined = " ".join(head)
-        if "위치표지" in joined and "원문" in joined:
+        # 번역 칸이 없으면 본문 대조표가 아니다.
+        # (‘위치표지 | 원문 | 유형 | 처리’ 같은 교감 목록을 본문으로 오인하지 않도록)
+        has_ko = any(k in joined for k in ("번역", "한국어", "직역", "국역"))
+        if "위치표지" in joined and "원문" in joined and has_ko:
             return True
-        # 표제가 없어도 첫 칸이 위치표지 꼴이면 대조표로 본다
+        # 표제가 없어도 첫 칸이 위치표지 꼴이고, 어느 칸엔가
+        # 한국어 본문이 들어 있으면 대조표로 본다
         if PURE_MARKER.match(head[0] if head else ""):
-            return True
+            body = " ".join(c.text for r in t.rows[:6] for c in r.cells)
+            if hangul_ratio(body) > 0.15:
+                return True
     return False
 
 
