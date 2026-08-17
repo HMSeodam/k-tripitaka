@@ -973,7 +973,7 @@ async function viewSearch(q, scope) {
 
   if (!total) {
     list.innerHTML = `<div class="empty"><b>찾은 곳이 없습니다</b>
-      ${state.variants ? '다른 표기로 바꿔 보세요. 이체자는 함께 찾고 있습니다(卽·即, 眞·真, 敎·教, 說·説, 观·觀).' : '이체자를 포함한 검색 기능이 꺼져 있어<br class="br-m">원본 글자 그대로만 찾습니다.<br>검색칸의 <b>이체자</b> 버튼을 누른 뒤 재검색 해보세요.'}</div>`;
+      ${state.variants ? '다른 표기로 바꿔 보세요. 이체자는 함께 찾고 있습니다(卽·即, 眞·真, 敎·教, 說·説, 观·觀).' : '이체자를 포함한 검색 기능이 꺼져 있어 <br class="br-m">원본 글자 그대로만 찾습니다.<br>검색칸의 <b>이체자</b> 버튼을 누른 뒤 재검색 해보세요.'}</div>`;
     return;
   }
 
