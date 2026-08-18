@@ -108,8 +108,15 @@ RE_UNIT_HEAD = re.compile(
 RE_NOTE_HEAD = re.compile(r"(?:^|\s)(?:주|주석|각주|교감)$")
 # 각주 묶음의 칸 이름. '교감·번역 메모'처럼 스타일 구분 없이 라벨 문단만으로
 # 각주 시작을 알리는 docx 가 있어, 이 줄 아래는 각주로 모은다.
+# 각주 묶음의 칸 이름. 라벨의 '끝 낱말'이 각주 계열이어야 한다.
+#   주석·교감 / 교감 / 교감·번역 메모  → 각주 칸
+#   【주석서 번역】 / 교감 표시 규칙     → 각주 칸이 아님
 RE_NOTE_LABEL_HEAD = re.compile(
-    r"^[^\[\]\n]{0,14}(?:메모|주기|비고|각주|주석)\s*[:：]?$")
+    r"^(?=.{1,16}$)[^\[\]\n。.]*"
+    r"(?:메모|주기|비고|각주|주석|교감|교정)"
+    r"\s*[】\]）)]?\s*[:：]?$")
+# 다만 '교감 표시 규칙'처럼 안내 표제인 것은 각주 칸 이름이 아니다.
+RE_NOTE_LABEL_NOT = re.compile(r"규칙|원칙|방식|기준|방법|안내|범례|일러두기")
 # 칸 이름에 '· 계속' 같은 꼬리가 붙는 docx 가 있다.
 # ('원문 · 계속' / '한국어 직역 · 계속') 꼬리를 떼고 칸 이름을 견준다.
 RE_LABEL_TAIL = re.compile(
@@ -554,7 +561,8 @@ def parse_docx(path: Path):
 
         # '주' / '주석' / '각주' / '제1문 주' 는 스타일과 무관하게 각주 시작으로 본다
         if (len(txt) <= 8 and RE_NOTE_HEAD.search(txt)) or (
-                len(txt) <= 16 and RE_NOTE_LABEL_HEAD.match(txt)):
+                RE_NOTE_LABEL_HEAD.match(txt)
+                and not RE_NOTE_LABEL_NOT.search(txt)):
             blocks.append({"kind": "head", "hkind": "note", "text": txt,
                            "lv": head_level(style), "m": cur_marker})
             continue
