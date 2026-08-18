@@ -637,7 +637,9 @@ async function viewHome() {
     const a = el('a', 'card'); a.href = `#/w/${w.id}`;
     a.append(el('h3', null, w.title_cn));
     a.append(el('div', 'ko', w.title_ko));
-    a.append(el('div', 'ko2', `${w.dynasty} ${w.author_ko} · ${w.author_cn}`));
+    // 찬자 표기가 여느 꼴에 맞지 않는 문헌은 registry 의 author_line 을 그대로 쓴다
+    a.append(el('div', 'ko2',
+      w.author_line || `${w.dynasty} ${w.author_ko} · ${w.author_cn}`));
     const row = el('div', 'row');
     row.append(el('span', 'wl-canon', w.canon_label || w.canon));
     row.append(el('span', null, `${w.units.toLocaleString()}단위`));
@@ -710,7 +712,9 @@ async function viewWork(id, anchor, hit) {
   const rows = [
     ['원제', `<span class="cnw">${esc(w.title_cn)}</span>`],
     ['국역명', esc(w.title_ko)],
-    ['찬자', `<span class="cnw">${esc(w.author_cn)}</span> · ${esc(w.author_ko)} (${esc(w.dynasty)})`],
+    ['찬자', w.author_line
+      ? esc(w.author_line)
+      : `<span class="cnw">${esc(w.author_cn)}</span> · ${esc(w.author_ko)} (${esc(w.dynasty)})`],
     ['대장경', `<span class="cnw">${esc(w.canon)}</span>` +
       (w.canon_ko ? ` <span style="color:var(--ink-3)">— ${esc(w.canon_ko)}</span>` : '') +
       (w.verify ? ' <span class="tag warn">서지 확인 필요</span>' : '')],
