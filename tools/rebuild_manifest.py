@@ -37,6 +37,7 @@ KEEP = [
     "collection", "tags", "verify", "note",
     "units", "translated", "coverage", "chars_cn", "chars_ko",
     "range", "has_source", "has_translation", "chapters",
+    "canon_full", "author_line",
 ]
 
 
