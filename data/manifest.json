@@ -80,7 +80,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 15
+   "chapters": 15,
+   "canon_full": "T30 no.1568 · T42 no.1826"
   },
   {
    "id": "seokmahayeon-non",
@@ -117,7 +118,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 12
+   "chapters": 12,
+   "canon_full": "T32 no.1668"
   },
   {
    "id": "daejongji-hyeonmun-bollon",
@@ -153,7 +155,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 40
+   "chapters": 40,
+   "canon_full": "T32 no.1669"
   },
   {
    "id": "geumganggyeong-yakso",
@@ -190,7 +193,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2
+   "chapters": 2,
+   "canon_full": "T33 no.1704"
   },
   {
    "id": "simeom-yuchan",
@@ -228,7 +232,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4
+   "chapters": 4,
+   "canon_full": "T33 no.1710"
   },
   {
    "id": "simeom-chan",
@@ -266,7 +271,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T33 no.1711"
   },
   {
    "id": "simeom-yakso",
@@ -304,7 +310,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T33 no.1712"
   },
   {
    "id": "suhyeongi",
@@ -340,7 +347,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 10
+   "chapters": 10,
+   "canon_full": "T35 no.1732"
   },
   {
    "id": "tamhyeongi",
@@ -377,7 +385,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 40
+   "chapters": 40,
+   "canon_full": "T35 no.1733"
   },
   {
    "id": "cheongnyang-so",
@@ -414,7 +423,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 67
+   "chapters": 67,
+   "canon_full": "T35 no.1735"
   },
   {
    "id": "cheongnyang-yakchaek",
@@ -451,7 +461,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T36 no.1737"
   },
   {
    "id": "yeolban-jiphae",
@@ -488,7 +499,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 89
+   "chapters": 89,
+   "canon_full": "T37 no.1763"
   },
   {
    "id": "yeolban-uigi",
@@ -525,7 +537,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 32
+   "chapters": 32,
+   "canon_full": "T37 no.1764"
   },
   {
    "id": "yeolban-hyeonui",
@@ -562,7 +575,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T38 no.1765"
   },
   {
    "id": "yeolban-gyeongso",
@@ -600,7 +614,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 35
+   "chapters": 35,
+   "canon_full": "T38 no.1767"
   },
   {
    "id": "yeolban-yuui",
@@ -637,7 +652,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3
+   "chapters": 3,
+   "canon_full": "T38 no.1768"
   },
   {
    "id": "mireuk-yuui",
@@ -672,7 +688,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 12
+   "chapters": 12,
+   "canon_full": "T38 no.1771"
   },
   {
    "id": "ipneunggasimhyeonui",
@@ -707,7 +724,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T39 no.1790"
   },
   {
    "id": "haengsacho",
@@ -744,7 +762,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 37
+   "chapters": 37,
+   "canon_full": "T40 no.1804"
   },
   {
    "id": "beommanggyeong-gyebonso",
@@ -782,7 +801,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 60
+   "chapters": 60,
+   "canon_full": "T40 no.1813"
   },
   {
    "id": "yugaron-gi",
@@ -819,7 +839,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 49
+   "chapters": 49,
+   "canon_full": "T42 no.1828"
   },
   {
    "id": "beopgye-muchabyeollon-so",
@@ -852,7 +873,8 @@
    "range": null,
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T44 no.1838"
   },
   {
    "id": "gisin-uiso-hyewon",
@@ -888,7 +910,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T44 no.1843"
   },
   {
    "id": "gisin-uigi",
@@ -925,7 +948,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4
+   "chapters": 4,
+   "canon_full": "T44 no.1846"
   },
   {
    "id": "gisin-uigi-byeolgi",
@@ -960,7 +984,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T44 no.1847"
   },
   {
    "id": "gisin-pilsakgi",
@@ -996,7 +1021,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 22
+   "chapters": 22,
+   "canon_full": "T44 no.1848"
   },
   {
    "id": "naeui-yaktamgi",
@@ -1033,7 +1059,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T44 no.1849"
   },
   {
    "id": "daeseung-uijang",
@@ -1070,7 +1097,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 27
+   "chapters": 27,
+   "canon_full": "T44 no.1851"
   },
   {
    "id": "bojangron",
@@ -1106,7 +1134,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1857"
   },
   {
    "id": "beopwon-uirimjang",
@@ -1143,7 +1172,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 36
+   "chapters": 36,
+   "canon_full": "T45 no.1861"
   },
   {
    "id": "ilseung-gyoui-bunjejang",
@@ -1181,7 +1211,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1866"
   },
   {
    "id": "sibhyeonmun",
@@ -1218,7 +1249,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1868"
   },
   {
    "id": "osip-yomundap",
@@ -1254,7 +1286,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1869"
   },
   {
    "id": "gongmokjang",
@@ -1292,7 +1325,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5
+   "chapters": 5,
+   "canon_full": "T45 no.1870"
   },
   {
    "id": "hwaeom-chaengnim",
@@ -1328,7 +1362,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1872"
   },
   {
    "id": "hwaeom-mundap",
@@ -1366,7 +1401,9 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2
+   "chapters": 2,
+   "canon_full": "T45 no.1873",
+   "author_line": "唐 법장(?) · 신라 의상 강의록"
   },
   {
    "id": "hwaeom-sambojang",
@@ -1401,7 +1438,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 8
+   "chapters": 8,
+   "canon_full": "T45 no.1874"
   },
   {
    "id": "uihaebaekmun",
@@ -1435,7 +1473,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 11
+   "chapters": 11,
+   "canon_full": "T45 no.1875"
   },
   {
    "id": "mangjin-hwanwongwan",
@@ -1472,7 +1511,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1876"
   },
   {
    "id": "yusim-beopgyegi",
@@ -1506,7 +1546,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1877"
   },
   {
    "id": "balborisimjang",
@@ -1543,7 +1584,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 10
+   "chapters": 10,
+   "canon_full": "T45 no.1878"
   },
   {
    "id": "beopgye-hyeongyeong",
@@ -1580,7 +1622,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4
+   "chapters": 4,
+   "canon_full": "T45 no.1883"
   },
   {
    "id": "haein-sammaeron",
@@ -1618,7 +1661,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "T45 no.1889"
   },
   {
    "id": "daehye-eorok",
@@ -1656,7 +1700,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 36
+   "chapters": 36,
+   "canon_full": "T47 no.1998A · T47 no.1998B"
   },
   {
    "id": "jonggyeongnok",
@@ -1693,7 +1738,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 103
+   "chapters": 103,
+   "canon_full": "T48 no.2016"
   },
   {
    "id": "beopjang-hwasangjeon",
@@ -1730,7 +1776,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 7
+   "chapters": 7,
+   "canon_full": "T50 no.2054"
   },
   {
    "id": "hwaeom-jeongi",
@@ -1765,7 +1812,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 14
+   "chapters": 14,
+   "canon_full": "T51 no.2073"
   },
   {
    "id": "gisin-yaksul",
@@ -1800,7 +1848,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 6
+   "chapters": 6,
+   "canon_full": "T85 no.2813"
   },
   {
    "id": "damgwang-gwangseok",
@@ -1837,7 +1886,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4
+   "chapters": 4,
+   "canon_full": "T85 no.2814"
   },
   {
    "id": "daeseung-ipdo",
@@ -1874,7 +1924,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3
+   "chapters": 3,
+   "canon_full": "T85 no.2823"
   },
   {
    "id": "munui-yogyeol-mundap",
@@ -1909,7 +1960,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 9
+   "chapters": 9,
+   "canon_full": "X08 no.237"
   },
   {
    "id": "wongak-daeso",
@@ -1944,7 +1996,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 14
+   "chapters": 14,
+   "canon_full": "X9 no.243"
   },
   {
    "id": "wongak-daeso-seogui",
@@ -1980,7 +2033,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 31
+   "chapters": 31,
+   "canon_full": "X09 no.245"
   },
   {
    "id": "neungeom-yohae",
@@ -2017,7 +2071,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 36
+   "chapters": 36,
+   "canon_full": "X11 no.270"
   },
   {
    "id": "milleom-gyeongso",
@@ -2055,7 +2110,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 8
+   "chapters": 8,
+   "canon_full": "X21 no.368"
   },
   {
    "id": "ilsim-imun-daeui",
@@ -2092,7 +2148,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "X45 no.754"
   },
   {
    "id": "gisin-uiso-damyeon",
@@ -2128,7 +2185,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3
+   "chapters": 3,
+   "canon_full": "X45 no.755"
   },
   {
    "id": "daeseung-donyi-yakjip",
@@ -2164,7 +2222,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "X45 no.759"
   },
   {
    "id": "sa-ron-hyeonuigi",
@@ -2200,7 +2259,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 18
+   "chapters": 18,
+   "canon_full": "X46 no.784"
   },
   {
    "id": "seongyusik-hakgi",
@@ -2237,7 +2297,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 12
+   "chapters": 12,
+   "canon_full": "X50 no.819"
   },
   {
    "id": "ilseung-bulseong",
@@ -2274,7 +2335,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0
+   "chapters": 0,
+   "canon_full": "X55 no.902"
   },
   {
    "id": "donggyo-ilseungchaek",
@@ -2312,7 +2374,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4
+   "chapters": 4,
+   "canon_full": "X58 no.1016"
   },
   {
    "id": "ju-donggyo-mundap",
@@ -2350,7 +2413,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 8
+   "chapters": 8,
+   "canon_full": "X58 no.1017"
   },
   {
    "id": "gisin-so-jongmil",
@@ -2386,7 +2450,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 20
+   "chapters": 20,
+   "canon_full": "L141 no.1600"
   },
   {
    "id": "cheonmok-jungbong-gwangnok",
@@ -2423,7 +2488,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 41
+   "chapters": 41,
+   "canon_full": "B25 no.145"
   }
  ],
  "totals": {
