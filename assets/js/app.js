@@ -550,7 +550,22 @@ function unitNode(u, wid) {
 
   if (u.nt && u.nt.length) {
     const nt = el('div', 'notes');
-    u.nt.forEach(t => nt.append(el('p', null, t)));
+    u.nt.forEach(t => {
+      // 한불전 교감주는 요지만 내고, 자세한 내용은 손을 얹거나
+      // 눌렀을 때 쪽지로 편다. (t 가 문자열이면 예전처럼 한 줄로)
+      if (typeof t === 'string') { nt.append(el('p', null, t)); return; }
+      const p = el('p', 'note-more');
+      p.append(el('span', 'note-gist', t.t));
+      const box = el('span', 'note-detail');
+      (t.d || []).forEach(x => box.append(el('span', 'note-line', x)));
+      p.append(box);
+      p.tabIndex = 0;
+      p.addEventListener('click', e => {
+        if (e.target.closest('.note-detail')) return;
+        p.classList.toggle('open');
+      });
+      nt.append(p);
+    });
     n.append(nt);
   }
   return n;
@@ -615,6 +630,9 @@ const CANON_NAME = {
   X: '卍新纂續藏經 · 만신찬속장경',
   L: '乾隆大藏經 · 건륭대장경',
   K: '高麗大藏經 · 고려대장경',
+  B: '大藏經補編 · 대장경보편',
+  BJ: '韓國佛敎全書 · 한국불교전서',
+  ZW: '藏外佛敎文獻 · 장외불교문헌',
 };
 
 /* ─── 화면: 문헌 목록 ────────────────────────────── */
@@ -722,9 +740,13 @@ async function viewWork(id, anchor, hit) {
     ['수록 범위', w.range ? `${w.range[0]} – ${w.range[1]}` : '—'],
     ['대조 단위', `${w.units.toLocaleString()}개 · 번역 대응 ${Math.round(w.coverage * 100)}%`],
     ['원문 글자', w.chars_cn.toLocaleString() + '자'],
-    ['원문 출처', `${esc(w.source || 'CBETA')} 電子佛典集成` +
+    ['원문 출처', (w.source === 'KABC'
+        ? 'KABC 한국불교전서 · 동국대학교 불교학술원'
+        : `${esc(w.source || 'CBETA')} 電子佛典集成`) +
       (w['底本_publisher'] ? ` · 저본 판권자 <span class="cnw">${esc(w['底本_publisher'])}</span> ©` : '') +
-      ' · <a href="#/rights">CC BY-NC-SA 4.0</a>'],
+      (w.source === 'KABC'
+        ? ' · <a href="#/rights">이용 조건</a>'
+        : ' · <a href="#/rights">CC BY-NC-SA 4.0</a>')],
   ];
   tb.innerHTML = rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('');
   info.append(tb);
@@ -1119,7 +1141,9 @@ async function viewRights() {
     <section>
       <h2>한문 원문</h2>
       <p>이 사이트의 한문 원문은 <b>${esc(R.source_db || 'CBETA 電子佛典集成')}</b>
-         (${esc(R.source_org || '')})에서 가져왔습니다.</p>
+         (${esc(R.source_org || '')})와
+         <b>KABC 한국불교전서</b>(동국대학교 불교학술원)에서 가져왔습니다.
+         문헌마다 어느 쪽에서 왔는지는 서지에 밝혀 두었습니다.</p>
       <p>CBETA 版權宣告에 따르면 대정신수대장경·만신찬속장경·역대장경보집 등은
          <b>${esc(R.license || 'CC BY-NC-SA 4.0')}</b>
          (저작자표시–비영리–동일조건변경허락) 조건으로 공개되어 있습니다.
@@ -1142,7 +1166,8 @@ async function viewRights() {
 
     <section>
       <h2>다른 전자 대장경을 쓸 때</h2>
-      <p>기관마다 조건이 다릅니다. 이 사이트는 재배포가 허용된 CBETA만 수록합니다.</p>
+      <p>기관마다 조건이 다릅니다. 이 사이트는 재배포가 허용된 CBETA와,
+        보호기간이 끝난 원문만 옮겨 온 KABC 한국불교전서를 수록합니다.</p>
       <table class="src-table">
         <tr><th>CBETA</th>
             <td><b class="ok">수록 가능</b><br>
@@ -1151,10 +1176,12 @@ async function viewRights() {
             <td><b class="no">수록 불가</b><br>
                 利用条件 제3조가 인터넷·기타 매체를 통한 재배포를 당분간 금지합니다.
                 저작권법상 인용은 별개이므로, 링크를 걸거나 필요한 대목만 인용하는 방식으로 쓰십시오.</td></tr>
-        <tr><th>KABC</th>
-            <td><b class="ask">문의 필요</b><br>
-                모든 콘텐츠 활용에 출처 명시를 요구하지만, 전문의 제3자 재배포를 명시적으로
-                허용한 조항은 확인되지 않았습니다. 대량 수록에 앞서 동국대 불교학술원에 문의하십시오.</td></tr>
+        <tr><th>KABC<br><span class="src-sub">한국불교전서</span></th>
+            <td><b class="ok">원문 한정 수록</b><br>
+                한문 원문은 저작권 보호기간이 끝난 고전이므로 옮겨 실었습니다.
+                한국어 번역은 KABC의 역주와 무관하게 이 사이트에서 따로 생성한 것입니다.
+                KABC 편집자의 교감 판단은 요지만 간추려 각주에 밝히고 교감문 전재는 피했습니다.
+                이용하실 때 출처를 함께 밝혀 주십시오.</td></tr>
       </table>
       <p class="rights-note">여기 적은 것은 각 기관이 공개한 이용 조건을 정리한 것이며 법률 자문이 아닙니다.
         조건은 바뀔 수 있으니 수록 전에 해당 기관의 최신 고지를 확인하십시오.</p>
@@ -1172,7 +1199,8 @@ async function viewRights() {
     <section>
       <h2>이 사이트를 인용할 때</h2>
       <p class="rights-cite">한민수 편, 『신한글대장경』, 동명대학교.
-         원문 출처: CBETA 電子佛典集成 (CC BY-NC-SA 4.0). 열람일: <span id="today"></span>.</p>
+         원문 출처: CBETA 電子佛典集成 (CC BY-NC-SA 4.0) · KABC 한국불교전서
+         (동국대학교 불교학술원). 열람일: <span id="today"></span>.</p>
       <p>문헌 단위를 지목하려면 열람 화면 왼쪽의 위치표지를 누르십시오.
          해당 대목의 주소가 복사됩니다.</p>
     </section>
