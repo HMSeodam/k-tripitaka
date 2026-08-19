@@ -75,8 +75,8 @@
    "chars_cn": 38597,
    "chars_ko": 118193,
    "range": [
-    "0159c06",
-    "0230b29"
+    "0212b17",
+    "0167c01"
    ],
    "has_source": true,
    "has_translation": true,
@@ -425,6 +425,46 @@
    "has_translation": true,
    "chapters": 67,
    "canon_full": "T35 no.1735"
+  },
+  {
+   "id": "cheongnyang-yeonuicho",
+   "title_cn": "大方廣佛華嚴經隨疏演義鈔",
+   "title_ko": "대방광불화엄경수소연의초",
+   "author_cn": "澄觀",
+   "author_ko": "징관",
+   "dynasty": "唐",
+   "canon": "T36 no.1736",
+   "canon_id": "T",
+   "canon_vol": 36,
+   "canon_no": 1736,
+   "canon_label": "大正藏 36",
+   "canon_ko": "대정신수대장경 제36책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "화엄",
+   "tags": [
+    "화엄",
+    "징관",
+    "청량",
+    "연의초",
+    "화엄경소",
+    "자주"
+   ],
+   "verify": false,
+   "note": "청량 징관(澄觀, 738~839)이 자신이 지은 『대방광불화엄경소』를 스스로 풀이한 주석. 90권. 흔히 『연의초(演義鈔)』로 줄여 부르며, 『소』와 짝을 이루어 이른바 소초(疏鈔)를 이룬다. 서문에서 징관은 강석에 모인 이들의 거듭된 청에 응하여 『소』의 뜻을 다시 조리하였다고 밝히고, 번거로우면 장구에 지치고 간략하면 원류가 어두워지는 사이에서 절충하고자 하였다고 하였다. 경문의 자구 해석에 그치지 않고 인도·중국의 경론과 유가·도가 문헌까지 널리 끌어들여 화엄 교학의 백과사전적 성격을 띠며, 사법계(四法界)와 십현(十玄) 등 징관 교학의 핵심 개념이 여기에서 정리된 형태로 나타난다. 규봉 종밀 이후 화엄 주석의 표준 전거가 되었다.",
+   "units": 4774,
+   "translated": 4462,
+   "coverage": 0.9952,
+   "chars_cn": 970944,
+   "chars_ko": 3347963,
+   "range": [
+    "0001a06",
+    "0701a13"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 92,
+   "canon_full": "T36 no.1736"
   },
   {
    "id": "cheongnyang-yakchaek",
@@ -2522,8 +2562,8 @@
    "chars_cn": 248455,
    "chars_ko": 689480,
    "range": [
-    "卷一 第10張",
-    "第9張"
+    "卷一 第1張",
+    "卷十 第19張"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2561,8 +2601,8 @@
    "chars_cn": 5971,
    "chars_ko": 19160,
    "range": [
-    "第10張",
-    "第9張"
+    "第1張",
+    "第11張"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2601,13 +2641,15 @@
    "chars_cn": 96274,
    "chars_ko": 243920,
    "range": [
-    "卷一 第10張",
-    "序"
+    "序",
+    "卷三 第80張"
    ],
    "has_source": true,
    "has_translation": true,
    "chapters": 3,
-   "canon_full": "韓佛全 4"
+   "canon_full": "韓佛全 4",
+   "author_line": "唐 이통현 述 · 高麗 지눌 錄",
+   "author_short": "唐 이통현 술 · 高麗 지눌 록"
   },
   {
    "id": "ilseung-beopgyedo-wontonggi",
@@ -2640,8 +2682,8 @@
    "chars_cn": 36897,
    "chars_ko": 114026,
    "range": [
-    "卷上 第10張",
-    "卷下 第9張"
+    "卷上 第1張",
+    "卷下 第46張"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2679,8 +2721,8 @@
    "chars_cn": 75666,
    "chars_ko": 218619,
    "range": [
-    "卷上 第10張",
-    "卷下 第9張"
+    "卷上 第1張",
+    "卷下 第44張"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2718,8 +2760,8 @@
    "chars_cn": 74007,
    "chars_ko": 219571,
    "range": [
-    "卷上 第10張",
-    "卷下 第9張"
+    "卷上 第1張",
+    "卷下 第38張"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2757,13 +2799,56 @@
    "chars_cn": 39537,
    "chars_ko": 109010,
    "range": [
-    "卷上 第10張",
-    "卷下 第9張"
+    "卷上 第1張",
+    "卷下 第30張"
    ],
    "has_source": true,
    "has_translation": true,
    "chapters": 4,
    "canon_full": "韓佛全 4"
+  },
+  {
+   "id": "daehwaeom-beopgyedoju",
+   "title_cn": "大華嚴法界圖註",
+   "title_ko": "대화엄법계도주",
+   "author_cn": "雪岑",
+   "author_ko": "설잠(김시습)",
+   "dynasty": "朝鮮",
+   "canon": "韓佛全 7",
+   "canon_id": "HB",
+   "canon_vol": 7,
+   "canon_no": 0,
+   "canon_label": "韓佛全 7",
+   "canon_ko": "한국불교전서 제7책",
+   "source": "KABC",
+   "底本_publisher": "東國大學校出版部",
+   "collection": "한불전",
+   "tags": [
+    "한불전",
+    "화엄",
+    "법계도",
+    "김시습",
+    "설잠",
+    "의상",
+    "선교회통"
+   ],
+   "verify": false,
+   "note": "매월당 김시습(金時習, 1435~1493)이 설잠(雪岑)이라는 법명으로 의상(義相, 625~702)의 『대화엄일승법계도』를 주석한 책. 1권. 『화엄일승법계도주(華嚴一乘法界圖註)』로도 불린다. 법성게 30구를 구절마다 나누어 주를 달되, 『증도가』·『벽암록』 계열의 선어(禪語)로 착어하여 교학적 해설과 선문적 제창을 겹쳐 놓은 것이 특징이다. 서두의 서문에서 김시습은 후대의 『법계도기총수록』이 원융불이(圓融不二)의 법을 고체수일(固體守一)의 것으로 만들었다고 비판하며, 하나의 해인도(海印圖)로 가없는 교해(敎海)를 포섭한다는 관점을 세운다. 조선 전기에 선과 화엄을 회통시킨 대표적 저술로 평가된다. 저본은 소화 19년 통도사 소장 간본 필사본(동국대학교 소장)이며, 서울대학교 소장 필사본(甲)과 『매월당전집』 소재본(乙)으로 교감되어 있다. 본편 뒤에 KABC 편집자가 보입한 부록이 이어진다.",
+   "units": 236,
+   "translated": 236,
+   "coverage": 1.0,
+   "chars_cn": 5780,
+   "chars_ko": 17299,
+   "range": [
+    "1",
+    "236"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 0,
+   "canon_full": "韓佛全 7",
+   "author_line": "朝鮮 청한비구 설잠(김시습) 撰 · 新羅 義相 『大華嚴一乘法界圖』 소석",
+   "author_short": "朝鮮 설잠(김시습) 註"
   },
   {
    "id": "hwaeom-seokje",
@@ -2797,7 +2882,7 @@
    "chars_ko": 18460,
    "range": [
     "1",
-    "99"
+    "166"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2836,7 +2921,7 @@
    "chars_ko": 37039,
    "range": [
     "1",
-    "99"
+    "276"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2876,7 +2961,7 @@
    "chars_ko": 22523,
    "range": [
     "1",
-    "99"
+    "236"
    ],
    "has_source": true,
    "has_translation": true,
@@ -2885,9 +2970,9 @@
   }
  ],
  "totals": {
-  "works": 75,
-  "units": 46440,
-  "translated": 41844,
-  "chars_cn": 8297445
+  "works": 77,
+  "units": 51450,
+  "translated": 46542,
+  "chars_cn": 9274169
  }
 }
