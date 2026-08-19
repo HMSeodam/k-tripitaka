@@ -703,7 +703,8 @@ KABC_LABELS = {"원문", "한국어 직역", "한국어 번역", "교감주", "�
                "주석", "번역", "직역"}
 KABC_CONT = re.compile(r"^(?:원문|한국어\s*직역|번역)\s*[(（]\s*이어짐\s*[)）]")
 # 각주에서 화면에 늘 보일 줄(요지)과, 얹었을 때만 보일 줄(상세)을 가른다.
-NOTE_SUMMARY_KEYS = ("교감 내용 번역", "KABC 교감 내용 번역", "교감 내용 한국어 번역")
+NOTE_SUMMARY_KEYS = ("교감 내용 번역", "KABC 교감 내용 번역", "교감 내용 한국어 번역",
+                     "번역", "교감문 번역", "교감 원문 번역")
 CJK_NUM = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7,
            "八": 8, "九": 9, "十": 10, "○": 0, "零": 0}
 
@@ -726,18 +727,46 @@ def cjk_int(s: str):
     return CJK_NUM[s]
 
 
+CJK_TEN = "一二三四五六七八九"
+
+
+def han_juan(n: int) -> str:
+    """1~99 를 '一'·'十'·'一十九' 아닌 '十九' 꼴의 한자 숫자로."""
+    if n <= 0:
+        return ""
+    if n < 10:
+        return CJK_TEN[n - 1]
+    tens, ones = divmod(n, 10)
+    head = "十" if tens == 1 else CJK_TEN[tens - 1] + "十"
+    return head + (CJK_TEN[ones - 1] if ones else "")
+
+
+def norm_juan(juan: str) -> str:
+    """'卷一○'처럼 자리마다 적은 권차를 '卷十' 꼴로 고른다.
+
+    '卷上'·'卷下'처럼 숫자가 아닌 권차는 손대지 않는다."""
+    if not juan.startswith("卷"):
+        return juan
+    body = juan[1:]
+    if not body or any(c not in CJK_NUM for c in body):
+        return juan
+    n = cjk_int(body)
+    return f"卷{han_juan(n)}" if n else juan
+
+
 def norm_kabc_loc(raw: str) -> str:
     """저본 위치를 '卷上 第1張' 꼴로 고른다."""
     t = re.sub(r"\s+", " ", raw).strip()
     if not t or "없음" in t:
         return ""
-    m = re.search(r"(卷[上中下一二三四五六七八九十\d]*)?\s*第\s*"
-                  r"([一二三四五六七八九十○\d]+)\s*張", t)
+    # 권차에 '卷一○'(권10)처럼 ○ 가 섞여 오므로 ○·零 도 권차로 읽는다.
+    m = re.search(r"(卷[上中下一二三四五六七八九十○零\d]*)?\s*第\s*"
+                  r"([一二三四五六七八九十○零\d]+)\s*張", t)
     if not m:
         # '序 — 張 위치표지 이전' 처럼 설명이 붙은 것은 앞머리만 남긴다
         return re.split(r"\s*[—–-]\s*", t)[0].strip()[:12]
     n = cjk_int(m.group(2))
-    juan = (m.group(1) or "").strip()
+    juan = norm_juan((m.group(1) or "").strip())
     return f"{juan} 第{n}張".strip() if n is not None else t
 
 
@@ -826,17 +855,20 @@ def parse_kabc_docx(path: Path):
                 units[-1]["ko"].append(t)
             cont = False
             continue
-        if style == "Editorial Note":
-            if units:
-                # 대괄호 표지로 시작하면 새 각주, 아니면 앞 각주에 이어진다
-                if re.match(r"^\[", t) or not units[-1]["nt"]:
-                    a, b = split_kabc_note(t)
-                    units[-1]["nt"].append(a)
-                    units[-1]["ntd"].append(b)
-                else:
-                    a, b = split_kabc_note(t)
-                    joined = "\n".join(x for x in (units[-1]["ntd"][-1], a, b) if x)
-                    units[-1]["ntd"][-1] = joined
+        # 각주 문단의 스타일 이름은 문서마다 다르다.
+        # (Editorial Note · Critical Note · 교감주 …)
+        # 다만 'Front Note' 는 본문 앞 해제이므로 각주로 보지 않는다.
+        is_note = (style.endswith("Note") or "교감주" in style) and style != "Front Note"
+        if is_note and units:
+            # 대괄호 표지로 시작하면 새 각주, 아니면 앞 각주에 이어진다
+            if re.match(r"^\[", t) or not units[-1]["nt"]:
+                a, b = split_kabc_note(t)
+                units[-1]["nt"].append(a)
+                units[-1]["ntd"].append(b)
+            else:
+                a, b = split_kabc_note(t)
+                joined = "\n".join(x for x in (units[-1]["ntd"][-1], a, b) if x)
+                units[-1]["ntd"][-1] = joined
             continue
 
         if style.startswith("Heading") and started:

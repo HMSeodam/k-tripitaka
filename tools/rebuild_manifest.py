@@ -37,7 +37,7 @@ KEEP = [
     "collection", "tags", "verify", "note",
     "units", "translated", "coverage", "chars_cn", "chars_ko",
     "range", "has_source", "has_translation", "chapters",
-    "canon_full", "author_line",
+    "canon_full", "author_line", "author_short",
 ]
 
 
@@ -61,7 +61,10 @@ def stats_from_units(doc):
     cn = sum(body_len(u.get("cn", [])) for u in units)
     done = sum(body_len(u.get("cn", [])) for u in units if u.get("ko"))
     ko = sum(len("".join(u.get("ko", []))) for u in units)
-    marks = sorted({u["m"] for u in units if u.get("m")})
+    # 위치표지는 문자열로 정렬하면 안 된다.
+    # '第9張' 이 '第10張' 뒤로 가고 '卷十' 이 '卷四' 앞으로 간다.
+    # 수록 범위는 본문에 놓인 순서의 처음과 끝이다.
+    marks = [u["m"] for u in units if u.get("m")]
     return {
         "units": len(units),
         "translated": n_ko,
