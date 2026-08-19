@@ -224,6 +224,26 @@ button{background:none;border:0;cursor:pointer}
 .notes p{margin:.3rem 0;padding-left:1.1em;text-indent:-1.1em}
 .nokr{font-size:.78rem;color:var(--ink-3);font-style:italic}
 
+/* 한불전 교감주 — 요지만 내고 자세한 내용은 쪽지로 편다.
+   넓은 화면에서는 손을 얹으면, 좁은 화면에서는 누르면 열린다. */
+.src-sub{display:block;font-weight:400;font-size:.72rem;color:var(--ink-3)}
+.note-more{position:relative;cursor:help}
+.note-gist{border-bottom:1px dotted var(--celadon);padding-bottom:1px}
+.note-more::after{content:'▾';margin-left:.2em;font-size:.8em;opacity:.55}
+.note-detail{display:none;position:absolute;left:0;top:100%;z-index:40;
+  min-width:min(34rem,86vw);max-width:min(40rem,92vw);max-height:22rem;overflow:auto;
+  margin-top:.3rem;padding:.6rem .75rem;text-indent:0;
+  background:var(--paper-2);color:var(--ink-2);
+  border:1px solid var(--mist);border-radius:6px;
+  box-shadow:0 6px 20px rgba(14,31,38,.14);
+  font-size:calc(.8rem * var(--fs));line-height:1.7;text-align:left;
+  word-break:keep-all}
+.note-line{display:block}
+.note-line+.note-line{margin-top:.28rem}
+.note-more.open::after{content:'▴'}
+.note-more.open>.note-detail{display:block}
+@media (hover:hover){ .note-more:hover>.note-detail{display:block} }
+
 /* 이체자 함께 찾기 토글 — 검색 범위 단추 옆에 작게 둔다.
    꺼면 판본이 쓴 글자 그대로만 맞춘다. */
 /* 검색칸 안 오른쪽에 놓이는 작은 확인칸. 돋보기 단추와 나란히 둔다. */
