@@ -456,7 +456,7 @@
    "translated": 4462,
    "coverage": 0.9952,
    "chars_cn": 970944,
-   "chars_ko": 3347963,
+   "chars_ko": 3347939,
    "range": [
     "0001a06",
     "0701a13"
@@ -1993,7 +1993,7 @@
    "translated": 768,
    "coverage": 0.9944,
    "chars_cn": 48906,
-   "chars_ko": 108306,
+   "chars_ko": 108292,
    "range": [
     "0414a06",
     "0447c23"
