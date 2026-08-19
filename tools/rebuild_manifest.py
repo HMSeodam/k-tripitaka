@@ -27,7 +27,7 @@ OUT = ROOT / "data" / "manifest.json"
 REG = ROOT / "tools" / "registry.json"
 
 # 대장경 나열 순서 (대정장 → 만신찬속장 → 건륭장 → 고려장 → 보편 → 장외)
-CANON_ORDER = {"T": 0, "X": 1, "L": 2, "K": 3, "B": 4, "ZW": 5}
+CANON_ORDER = {"T": 0, "X": 1, "L": 2, "K": 3, "B": 4, "ZW": 5, "HB": 6}
 
 # manifest 에 실을 서지·통계 항목
 KEEP = [

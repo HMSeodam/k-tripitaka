@@ -538,6 +538,334 @@ def parse_table_docx(path: Path):
             "front": front, "appendix": [], "sections": []}
 
 
+# ── KABC(한국불교전서) 번역 docx ───────────────────────────────────
+# CBETA 계열과 달리 원문 txt 는 15~16자마다 줄이 끊겨 있어 그대로 실을 수
+# 없다. 번역 docx 가 이미 문단으로 이어 붙인 원문을 담고 있으므로,
+# 이 갈래는 docx 하나만으로 본문을 세운다.
+#
+# 블록 차례
+#   [저본 위치: 卷上 第2張]  →  원문  →  한국어 직역  →  교감주
+RE_KABC_LOC = re.compile(r"^\[저본\s*위치\s*[:：]\s*(.+?)\]\s*$")
+RE_KABC_JANG = re.compile(
+    r"(卷[上中下一二三四五六七八九十\d]*)?\s*第\s*([一二三四五六七八九十百○\d]+)\s*張")
+RE_NOTE_START = re.compile(r"^\[(?:교감|KABC|번역자|위치표지|편집)[^\]]*\]")
+# 각주에서 요지로 삼을 줄
+RE_NOTE_GIST = re.compile(r"^(?:KABC\s*)?교감\s*내용\s*번역\s*[:：]\s*")
+# 각주에서 빼는 줄 — KABC 편집자의 교감문을 그대로 옮긴 대목과,
+# 본문을 되풀이하는 대목이다.
+RE_NOTE_DROP = re.compile(
+    # 줄머리에 '[교감 3)]' 같은 표지가 붙어 있어도 함께 본다
+    r"^(?:\[[^\]]*\]\s*)?(?:"
+    # ① KABC 편집자의 교감문을 그대로 옮긴 줄
+    r"KABC\s*(?:교감\s*원문|저본[·\s]*편집)\s*[:：])|"
+    # ② 본문·번역을 되풀이하는 줄 (화면에 이미 있는 것)
+    r"^(?:\[[^\]]*\]\s*)?(?:저본|이문)[·\s]*(?:추정)?\s*"
+    r"(?:적용[^:：]{0,10}|기준[^:：]{0,12}|번역)\s*[:：]")
+
+HAN_NUM = {"○": 0, "零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+           "六": 6, "七": 7, "八": 8, "九": 9}
+
+
+def han_to_int(s: str):
+    """한자 숫자를 아라비아 숫자로. '第一○張'·'第二十八張' 둘 다 읽는다."""
+    s = s.strip()
+    if s.isdigit():
+        return int(s)
+    if not s or any(c not in HAN_NUM and c not in "十百" for c in s):
+        return None
+    # 자릿수 표기(二十八)와 나열 표기(一○) 를 함께 다룬다
+    if "十" in s or "百" in s:
+        total, cur = 0, 0
+        for c in s:
+            if c == "十":
+                total += (cur or 1) * 10
+                cur = 0
+            elif c == "百":
+                total += (cur or 1) * 100
+                cur = 0
+            else:
+                cur = HAN_NUM.get(c, 0)
+        return total + cur
+    n = 0
+    for c in s:
+        n = n * 10 + HAN_NUM.get(c, 0)
+    return n
+
+
+def kabc_marker(text: str):
+    """'[저본 위치: 卷上 第一張]' 의 속살을 '卷上第1張' 꼴로 고른다.
+
+    같은 문헌 안에서도 '第一張' 과 '第2張' 이 섞여 나오므로 숫자를
+    아라비아로 통일한다. 표지가 없는 문헌은 None 을 돌려준다."""
+    if "없음" in text:
+        return None
+    m = RE_KABC_JANG.search(text)
+    if not m:
+        return None
+    juan, num = m.group(1) or "", m.group(2)
+    n = han_to_int(num)
+    if n is None:
+        return None
+    return f"{juan}第{n}張"
+
+
+def split_kabc_note(lines):
+    """각주 한 덩이를 (요지, 상세) 로 가른다.
+
+    화면에는 요지만 내고, 상세는 손을 얹었을 때 뜨게 한다."""
+    keep = [x for x in lines if not RE_NOTE_DROP.match(x)]
+    gist = ""
+    for x in keep:
+        if RE_NOTE_GIST.match(x):
+            gist = RE_NOTE_GIST.sub("", x).strip()
+            break
+    if not gist:
+        head = keep[0] if keep else (lines[0] if lines else "")
+        gist = re.sub(r"^\[[^\]]*\]\s*", "", head).strip() or head
+    # 상세는 손을 얹었을 때 뜨는 쪽지다. '저본 독법'처럼 본문을 통째로
+    # 되풀이하는 줄이 있어, 읽을 만한 길이로 잘라 둔다.
+    # (원문 전체는 이미 본문 칸에 있으므로 잃는 것이 없다)
+    detail = []
+    for x in keep:
+        x = x.strip()
+        if not x or x == gist:
+            continue
+        if len(x) > 140:
+            x = x[:138].rstrip() + "…"
+        detail.append(x)
+    return gist, detail
+
+
+def parse_kabc_docx(path: Path):
+    """KABC 번역 docx 하나로 본문 단위를 세운다."""
+    if docx is None:
+        raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
+    d = open_docx(path)
+    units, front, cur, marker = [], [], None, None
+    note_buf, in_body = [], False
+
+    def flush_note():
+        nonlocal note_buf
+        if cur is not None and note_buf:
+            gist, detail = split_kabc_note(note_buf)
+            if gist:
+                cur["nt"].append({"t": gist, "d": detail} if detail else gist)
+        note_buf = []
+
+    for p in d.paragraphs:
+        txt = re.sub(r"[ \t]+", " ", p.text).strip()
+        if not txt:
+            continue
+        style = (p.style.name or "").strip()
+
+        loc = RE_KABC_LOC.match(txt)
+        if loc:
+            flush_note()
+            marker = kabc_marker(loc.group(1))
+            in_body = True
+            continue
+        if style == "Source Text":
+            flush_note()
+            cur = {"i": len(units) + 1, "m": marker, "cn": [txt],
+                   "ko": [], "nt": []}
+            units.append(cur)
+            in_body = True
+            continue
+        if style == "Translation Text":
+            flush_note()
+            if cur is not None:
+                cur["ko"].append(txt)
+            continue
+        if style == "Editorial Note":
+            if RE_NOTE_START.match(txt) or not note_buf:
+                flush_note()
+            note_buf.extend(x.strip() for x in txt.split("\n") if x.strip())
+            continue
+        if not in_body and style not in LABELS:
+            front.append(txt)
+    flush_note()
+
+    # 위치표지가 아예 없는 문헌은 단위 순번을 표지로 삼는다
+    if units and not any(u["m"] for u in units):
+        for u in units:
+            u["m"] = None
+    return {"units": units, "front": front, "appendix": [], "tables": []}
+
+
+# ── KABC(한국불교전서) 번역본 ─────────────────────────────────
+# KABC 저본은 15~16자마다 줄을 끊어 두어 그대로 실을 수 없다.
+# 대신 번역 docx 가 문단으로 묶어 둔 원문을 본문으로 삼는다.
+# 문단 차례는 다음과 같다.
+#   [저본 위치: 卷上 第1張] / 원문 / <한문> / 한국어 직역 / <번역> / 교감주 / <각주>
+KABC_LOC = re.compile(r"^\[저본\s*위치\s*[:：]\s*(.*?)\]\s*$")
+KABC_LAYER = re.compile(r"^\[문헌\s*층위\s*[:：]")
+KABC_LABELS = {"원문", "한국어 직역", "한국어 번역", "교감주", "기타 각주",
+               "주석", "번역", "직역"}
+KABC_CONT = re.compile(r"^(?:원문|한국어\s*직역|번역)\s*[(（]\s*이어짐\s*[)）]")
+# 각주에서 화면에 늘 보일 줄(요지)과, 얹었을 때만 보일 줄(상세)을 가른다.
+NOTE_SUMMARY_KEYS = ("교감 내용 번역", "KABC 교감 내용 번역", "교감 내용 한국어 번역")
+CJK_NUM = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7,
+           "八": 8, "九": 9, "十": 10, "○": 0, "零": 0}
+
+
+def cjk_int(s: str):
+    """'二八' · '一○' · '三十八' 같은 한자 숫자를 아라비아 숫자로."""
+    s = s.strip()
+    if s.isdigit():
+        return int(s)
+    if not s or any(c not in CJK_NUM for c in s):
+        return None
+    if "十" in s:                       # 三十八 · 十六 · 二十
+        a, _, b = s.partition("十")
+        return (CJK_NUM[a] if a else 1) * 10 + (CJK_NUM[b] if b else 0)
+    if len(s) > 1:                      # 一○ · 二八 처럼 자리마다 적은 꼴
+        n = 0
+        for c in s:
+            n = n * 10 + CJK_NUM[c]
+        return n
+    return CJK_NUM[s]
+
+
+def norm_kabc_loc(raw: str) -> str:
+    """저본 위치를 '卷上 第1張' 꼴로 고른다."""
+    t = re.sub(r"\s+", " ", raw).strip()
+    if not t or "없음" in t:
+        return ""
+    m = re.search(r"(卷[上中下一二三四五六七八九十\d]*)?\s*第\s*"
+                  r"([一二三四五六七八九十○\d]+)\s*張", t)
+    if not m:
+        # '序 — 張 위치표지 이전' 처럼 설명이 붙은 것은 앞머리만 남긴다
+        return re.split(r"\s*[—–-]\s*", t)[0].strip()[:12]
+    n = cjk_int(m.group(2))
+    juan = (m.group(1) or "").strip()
+    return f"{juan} 第{n}張".strip() if n is not None else t
+
+
+def split_kabc_note(text: str):
+    """각주 한 덩이를 (요지, 상세)로 가른다."""
+    lines = [x.strip() for x in text.split("\n") if x.strip()]
+    if not lines:
+        return "", ""
+    head, summary, detail = lines[0], "", []
+    for ln in lines[1:]:
+        key, _, val = ln.partition(":")
+        if not val:
+            key, _, val = ln.partition("：")
+        if val and key.strip() in NOTE_SUMMARY_KEYS and not summary:
+            summary = val.strip()
+        else:
+            detail.append(ln)
+    if summary:
+        tag = re.match(r"^\[[^\]]{1,16}\]", head)
+        summary = f"{tag.group(0)} {summary}" if tag else summary
+        detail.insert(0, head)
+    else:
+        summary = head
+    return summary, "\n".join(detail)
+
+
+def read_docx_tables(path: Path):
+    """docx 안의 표를 (행 × 칸) 목록으로 읽는다. 서지·용어표 추출용."""
+    if docx is None:
+        return []
+    d = open_docx(path)
+    out = []
+    for t in d.tables:
+        rows = [[c.text.strip() for c in r.cells] for r in t.rows]
+        if rows:
+            out.append(rows)
+    return out
+
+
+def is_kabc_docx(path: Path) -> bool:
+    if docx is None:
+        return False
+    d = open_docx(path)
+    for p in d.paragraphs[:400]:
+        if KABC_LOC.match(p.text.strip()):
+            return True
+    return False
+
+
+def parse_kabc_docx(path: Path):
+    """KABC 번역본을 읽는다. 원문·번역·각주를 모두 이 파일에서 얻는다."""
+    d = open_docx(path)
+    units, front, secs = [], [], []
+    loc, cont, started = "", False, False
+    note_open = False
+
+    for p in d.paragraphs:
+        t = re.sub(r"[ \t]+", " ", p.text).strip()
+        if not t:
+            continue
+        style = (p.style.name or "").strip()
+
+        m = KABC_LOC.match(t)
+        if m:
+            loc = norm_kabc_loc(m.group(1))
+            continue
+        if KABC_LAYER.match(t):
+            continue
+        if KABC_CONT.match(t):
+            cont = True
+            continue
+        if t in KABC_LABELS:
+            note_open = t in ("교감주", "기타 각주", "주석")
+            continue
+
+        if style == "Source Text":
+            if cont and units:
+                units[-1]["cn"].append(t)
+            else:
+                units.append({"i": len(units), "m": loc or None,
+                              "cn": [t], "ko": [], "nt": [], "ntd": []})
+            cont, started, note_open = False, True, False
+            continue
+        if style == "Translation Text":
+            if units:
+                units[-1]["ko"].append(t)
+            cont = False
+            continue
+        if style == "Editorial Note":
+            if units:
+                # 대괄호 표지로 시작하면 새 각주, 아니면 앞 각주에 이어진다
+                if re.match(r"^\[", t) or not units[-1]["nt"]:
+                    a, b = split_kabc_note(t)
+                    units[-1]["nt"].append(a)
+                    units[-1]["ntd"].append(b)
+                else:
+                    a, b = split_kabc_note(t)
+                    joined = "\n".join(x for x in (units[-1]["ntd"][-1], a, b) if x)
+                    units[-1]["ntd"][-1] = joined
+            continue
+
+        if style.startswith("Heading") and started:
+            secs.append({"lv": 2 if style.endswith("2") else 1,
+                         "t": t, "at": len(units)})
+        elif not started:
+            front.append(t)
+
+    # 각주는 여러 문단에 나뉘어 오기도 한다. 덩어리를 다 모은 뒤에
+    # 요지와 상세로 갈라, 화면이 바로 쓸 수 있는 꼴로 담는다.
+    #   문자열       → 예전처럼 한 줄로 보인다
+    #   {t:…, d:[…]} → 요지만 보이고 상세는 얹거나 누르면 편다
+    for u in units:
+        out = []
+        for k in range(len(u["nt"])):
+            whole = "\n".join(x for x in (u["nt"][k], u["ntd"][k]) if x)
+            gist, detail = split_kabc_note(whole)
+            lines = [x.strip() for x in detail.split("\n") if x.strip()]
+            out.append({"t": gist, "d": lines} if lines else gist)
+        u["nt"] = out
+        u.pop("ntd", None)
+
+    # 위치표지가 아예 없는 문헌은 문단 순번을 표지로 삼는다
+    if not any(u["m"] for u in units):
+        for k, u in enumerate(units, 1):
+            u["m"] = f"{k}"
+    return {"units": units, "front": front, "secs": secs}
+
+
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
@@ -1181,7 +1509,17 @@ def build_work(entry):
             u["src"] = tp.stem
         txt_units.extend(part)
     dp = wdir / "번역.docx"
-    if dp.exists():
+    kabc = entry.get("source") == "KABC"
+    if kabc:
+        # 한국불교전서 계열은 저본 txt 가 15~16자마다 끊겨 있어 본문으로
+        # 쓸 수 없다. 번역 docx 안의 원문이 이미 문단으로 이어져 있으므로
+        # 그쪽 하나로 단위를 세운다. (저본 txt 는 대조 근거로만 둔다)
+        dx = parse_kabc_docx(dp)
+        dx.setdefault("sections", dx.get("secs", []))
+        dx.setdefault("appendix", [])
+        dx.setdefault("tables", read_docx_tables(dp))
+        units, dxmap = dx["units"], {}
+    elif dp.exists():
         if is_table_aligned(dp):
             dx = parse_table_docx(dp)
         elif is_translation_only(dp):
@@ -1189,12 +1527,13 @@ def build_work(entry):
         else:
             dx = parse_docx(dp)
 
-    units, dxmap = merge(txt_units, dx)
-    units = split_note_items(units)
+    if not kabc:
+        units, dxmap = merge(txt_units, dx)
+        units = split_note_items(units)
 
     # ── 분권 구성 ────────────────────────────────────────────────
     raw_secs = []
-    if dx:
+    if dx and not kabc:
         for sec in dx["sections"]:
             j = dxmap.get(sec["i"])
             if j is None:
@@ -1285,6 +1624,7 @@ def build_work(entry):
             u["ko"] = [t for t in u["ko"] if not RE_FIG_CAPTION.search(t)]
 
     meta = dict(entry)
+    units_marks = [u["m"] for u in units if u.get("m")]
     meta.pop("figures", None)
     meta.update({
         "units": len(units),
@@ -1292,7 +1632,11 @@ def build_work(entry):
         "coverage": round(chars_done / chars_cn, 4) if chars_cn else 0,
         "chars_cn": chars_cn,
         "chars_ko": chars_ko,
-        "range": [markers[0], markers[-1]] if markers else None,
+        # 위치표지는 대개 사전순이 곧 문헌 순서지만, 한불전의 張 표지는
+        # 「第9張」이 「第10張」보다 뒤로 밀리므로 본문에 나온 차례를 따른다.
+        # (회본처럼 원문을 이어 붙인 문헌은 사전순 쪽이 낫다)
+        "range": ([units_marks[0], units_marks[-1]] if kabc and units_marks
+                  else ([markers[0], markers[-1]] if markers else None)),
         "has_source": bool(txt_units),
         "has_translation": bool(dx),
         "chapters": len(chapters),
@@ -1387,7 +1731,7 @@ def main():
         print(f"  {m['id']:<22} 단위 {m['units']:>5}  번역 {m['translated']:>5}"
               f"  ({m['coverage']*100:5.1f}%)  {m['range']}")
     # 대장경 순서(T → X → L, 책 번호, 경 번호)로 정렬해 둔다
-    CANON_ORDER = {"T": 0, "X": 1, "L": 2, "K": 3, "B": 4, "ZW": 5}
+    CANON_ORDER = {"T": 0, "X": 1, "L": 2, "K": 3, "B": 4, "ZW": 5, "BJ": 6, "HB": 6}
     metas.sort(key=lambda m: (CANON_ORDER.get(m.get("canon_id", ""), 9),
                               m.get("canon_vol", 0), m.get("canon_no", 0)))
     manifest = {
