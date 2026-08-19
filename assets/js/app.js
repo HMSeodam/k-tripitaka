@@ -549,8 +549,7 @@ function unitNode(u, wid) {
   }
 
   if (u.nt && u.nt.length) {
-    const nt = el('div', 'notes');
-    u.nt.forEach(t => {
+    const nt = el('div', 'notes');    u.nt.forEach(t => {
       // 한불전 교감주는 요지만 내고, 자세한 내용은 손을 얹거나
       // 눌렀을 때 쪽지로 편다. (t 가 문자열이면 예전처럼 한 줄로)
       if (typeof t === 'string') { nt.append(el('p', null, t)); return; }
@@ -560,16 +559,51 @@ function unitNode(u, wid) {
       (t.d || []).forEach(x => box.append(el('span', 'note-line', x)));
       p.append(box);
       p.tabIndex = 0;
+      p.setAttribute('role', 'button');
+      p.setAttribute('aria-expanded', 'false');
       p.addEventListener('click', e => {
-        if (e.target.closest('.note-detail')) return;
-        p.classList.toggle('open');
+        // 이 클릭은 '바깥을 눌렀다'로 세지 않는다.
+        e.stopPropagation();
+        const wasOpen = p.classList.contains('open');
+        closeNote();
+        if (wasOpen) {
+          // 쪽지 안쪽을 눌러 닫은 경우, 커서가 그대로 있으면
+          // hover 규칙이 즉시 다시 편다. 커서가 떠날 때까지만 막는다.
+          p.classList.add('hover-off');
+        } else {
+          openNote = p;
+          p.classList.add('open');
+          p.classList.remove('hover-off');
+          p.setAttribute('aria-expanded', 'true');
+        }
       });
+      p.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); p.click(); }
+      });
+      p.addEventListener('mouseleave', () => p.classList.remove('hover-off'));
       nt.append(p);
     });
     n.append(nt);
   }
   return n;
 }
+
+/* 교감주 쪽지(팝오버)
+   한 번에 하나만 연다. 화면 어디를 누르든 — 쪽지 안쪽이든 바깥이든 —
+   닫힌다. Esc 와 화면 넘김으로도 닫힌다. 웹에서 흔히 쓰는 방식이다. */
+let openNote = null;
+
+function closeNote() {
+  if (!openNote) return;
+  openNote.classList.remove('open');
+  openNote.setAttribute('aria-expanded', 'false');
+  openNote = null;
+}
+
+document.addEventListener('click', closeNote);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNote(); });
+window.addEventListener('scroll', closeNote, true);
+window.addEventListener('hashchange', closeNote);
 
 function copyAnchor(wid, u, ev) {
   const url = location.origin + location.pathname + `#/w/${wid}/${u.m || 'u' + u.i}`;
@@ -606,7 +640,8 @@ async function renderSide(active) {
 
     const src = el('div', 'wl-src');
     src.append(el('span', 'wl-canon', w.canon_label || w.canon));
-    src.append(el('span', null, `${w.dynasty} ${w.author_ko}`));
+    // 시대가 서로 다른 저자가 겹친 문헌은 author_short 로 따로 적는다
+    src.append(el('span', null, w.author_short || `${w.dynasty} ${w.author_ko}`));
     a.append(src);
 
     const meta = el('div', 'wl-meta');
@@ -631,6 +666,7 @@ const CANON_NAME = {
   L: '乾隆大藏經 · 건륭대장경',
   K: '高麗大藏經 · 고려대장경',
   B: '大藏經補編 · 대장경보편',
+  HB: '韓國佛敎全書 · 한국불교전서',
   BJ: '韓國佛敎全書 · 한국불교전서',
   ZW: '藏外佛敎文獻 · 장외불교문헌',
 };
@@ -745,7 +781,7 @@ async function viewWork(id, anchor, hit) {
         : `${esc(w.source || 'CBETA')} 電子佛典集成`) +
       (w['底本_publisher'] ? ` · 저본 판권자 <span class="cnw">${esc(w['底本_publisher'])}</span> ©` : '') +
       (w.source === 'KABC'
-        ? ' · <a href="#/rights">이용 조건</a>'
+        ? ' · <a href="#/rights">CC BY-NC-SA</a>'
         : ' · <a href="#/rights">CC BY-NC-SA 4.0</a>')],
   ];
   tb.innerHTML = rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('');
@@ -1155,10 +1191,16 @@ async function viewRights() {
         <li><b>실질 내용 무변경</b> — 원문의 글자와 교감 표지를 임의로 고치지 않았습니다.</li>
       </ul>
       <p class="rights-note">저본 판권자: 대정신수대장경 大藏出版株式會社 ©,
-         만신찬속장경 株式會社國書刊行會 ©, 건륭대장경 新文豐出版公司.<br>
+         만신찬속장경 株式會社國書刊行會 ©, 건륭대장경 新文豐出版公司,
+         한국불교전서 東國大學校出版部 ©.<br>
          CBETA 판본: ${esc(R.cbeta_version || '확인 필요')}<br>
          원문 이용 조건 전문은 <a href="${esc(R.source_url || 'https://cbeta.org/copyright')}"
          target="_blank" rel="noopener">CBETA 版權宣告</a>을 보십시오.</p>
+      <p class="rights-note">KABC 불교기록문화유산 아카이브는 누리집 아래쪽에
+         <b>저작자표시–비영리–동일조건변경허락(CC BY-NC-SA)</b> 표시를 걸어 두었습니다.
+         이 사이트가 따르는 조건과 같습니다. 다만 버전 번호는 밝혀져 있지 않습니다.
+         서비스 주체는 동국대학교 불교학술원 불교기록문화유산 아카이브(ABC) 사업단이며,
+         저본 『한국불교전서』의 판권은 동국대학교출판부에 있습니다.</p>
       <p class="rights-warn">CBETA 수록 문헌 가운데 인순법사·여징·태허·연배 등
          근현대 저자의 저작집(類別 B)은 CC 조건이 적용되지 않습니다.
          이 사이트는 해당 문헌을 수록하지 않습니다.</p>
@@ -1178,9 +1220,10 @@ async function viewRights() {
                 저작권법상 인용은 별개이므로, 링크를 걸거나 필요한 대목만 인용하는 방식으로 쓰십시오.</td></tr>
         <tr><th>KABC<br><span class="src-sub">한국불교전서</span></th>
             <td><b class="ok">원문 한정 수록</b><br>
-                한문 원문은 저작권 보호기간이 끝난 고전이므로 옮겨 실었습니다.
+                CC BY-NC-SA 표시를 걸고 있으며, 한문 원문 자체는 저작권 보호기간이 끝난 고전입니다.
                 한국어 번역은 KABC의 역주와 무관하게 이 사이트에서 따로 생성한 것입니다.
-                KABC 편집자의 교감 판단은 요지만 간추려 각주에 밝히고 교감문 전재는 피했습니다.
+                KABC 편집자의 교감 판단은 요지를 한국어로 옮겨 각주 앞머리에 두고,
+                근거가 되는 교감문은 쪽지 안쪽에 출처를 밝혀 함께 보였습니다.
                 이용하실 때 출처를 함께 밝혀 주십시오.</td></tr>
       </table>
       <p class="rights-note">여기 적은 것은 각 기관이 공개한 이용 조건을 정리한 것이며 법률 자문이 아닙니다.
@@ -1200,7 +1243,7 @@ async function viewRights() {
       <h2>이 사이트를 인용할 때</h2>
       <p class="rights-cite">한민수 편, 『신한글대장경』, 동명대학교.
          원문 출처: CBETA 電子佛典集成 (CC BY-NC-SA 4.0) · KABC 한국불교전서
-         (동국대학교 불교학술원). 열람일: <span id="today"></span>.</p>
+         (동국대학교 불교학술원, CC BY-NC-SA). 열람일: <span id="today"></span>.</p>
       <p>문헌 단위를 지목하려면 열람 화면 왼쪽의 위치표지를 누르십시오.
          해당 대목의 주소가 복사됩니다.</p>
     </section>
