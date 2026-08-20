@@ -200,7 +200,10 @@ button{background:none;border:0;cursor:pointer}
 .unit.nomark .rail{border-right-color:transparent}
 .rail button{
   font-family:var(--mono);font-size:.7rem;color:var(--ink-3);
-  letter-spacing:.01em;line-height:1.9;white-space:nowrap;
+  letter-spacing:.01em;line-height:1.9;
+  /* 표지가 여백보다 길면 본문 위로 넘치지 않고 접힌다 */
+  display:block;max-width:100%;
+  white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
 }
 .rail button:hover{color:var(--celadon-deep)}
 
