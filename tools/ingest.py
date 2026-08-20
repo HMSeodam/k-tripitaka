@@ -1013,6 +1013,21 @@ def parse_docx(path: Path):
 
         mk = RE_MARKER.search(txt)
 
+        # '第二卷  |  제2권.' 처럼 한 문단에 한문 표제와 그 번역을 나란히
+        # 담은 문서가 있다. 표제로 흘려보내면 번역이 사라지므로
+        # 원문·번역 두 조각으로 갈라 준다.
+        pair = re.split(r"\s*[|｜]\s*", txt)
+        if (len(pair) == 2 and style in ("Small Meta", "Unit Label")
+                and pair[0] and pair[1]
+                and is_source_line(pair[0]) and not is_source_line(pair[1])):
+            if mk:
+                cur_marker = mk.group(1)
+            blocks.append({"kind": "cn", "text": pair[0],
+                           "m": cur_marker, "head": cur_head})
+            blocks.append({"kind": "ko", "text": pair[1],
+                           "m": cur_marker, "head": cur_head})
+            continue
+
         is_head = "heading" in style.lower() or style in (
             "Unit Heading", "Unit Label", "Title", "Subtitle", "Small Meta"
         ) or re.match(r"^(문단\s*\d+|제\s*\d+\s*항|권\s*제?\d+)", txt)
