@@ -717,6 +717,10 @@ KABC_APPARATUS_LABEL = re.compile(r"교감\s*(?:원문|내용)|이문\s*원문")
 KABC_APPARATUS_LAYER = re.compile(r"교감층|교감\s*주$|편집층")
 # 판본기호. 본문에는 결코 나오지 않고 교감문에만 나온다.
 RE_PANBON = re.compile(r"\{[底甲乙丙丁戊己編校]\}")
+# KABC TXT 는 맨 끝에 출처 한 줄을 붙인다.
+#   『기신본말오중』 起信本末五重(ABC, H0320 v12, p.850c01-853b25)
+# 본문도 번역도 아니므로 버린다.
+RE_ABC_TAIL = re.compile(r"\(\s*ABC\s*,\s*H\d{3,4}\s*v\d+")
 # 각주에서 화면에 늘 보일 줄(요지)과, 얹었을 때만 보일 줄(상세)을 가른다.
 NOTE_SUMMARY_KEYS = ("교감 내용 번역", "KABC 교감 내용 번역", "교감 내용 한국어 번역",
                      "번역", "교감문 번역", "교감 원문 번역", "한국어")
@@ -778,8 +782,10 @@ def norm_kabc_loc(raw: str) -> str:
     m = re.search(r"(卷[上中下一二三四五六七八九十○零\d]*)?\s*第\s*"
                   r"([一二三四五六七八九十○零\d]+)\s*張", t)
     if not m:
-        # '序 — 張 위치표지 이전' 처럼 설명이 붙은 것은 앞머리만 남긴다
-        return re.split(r"\s*[—–-]\s*", t)[0].strip()[:12]
+        # '序 — 張 위치표지 이전' · '권두 서문·서례·범례' 처럼 설명이 붙은 것은
+        # 첫 마디만 남긴다. 좌측 여백이 좁아 길면 본문 위로 넘친다.
+        head = re.split(r"\s*[—–-]\s*", t)[0].strip()
+        return re.split(r"\s+", head)[0][:8]
     n = cjk_int(m.group(2))
     juan = norm_juan((m.group(1) or "").strip())
     return f"{juan} 第{n}張".strip() if n is not None else t
@@ -846,6 +852,7 @@ def parse_kabc_docx(path: Path):
     loc, cont, started = "", False, False
     note_open = False
     apparatus = False        # 지금 읽는 대목이 본문이 아니라 교감층인가
+    skip_tail = False        # KABC 출처 표시줄과 그에 딸린 문단을 흘려보낸다
 
     for p in d.paragraphs:
         raw = p.text
@@ -861,6 +868,7 @@ def parse_kabc_docx(path: Path):
             # '卷下 第38張 후속 KABC 교감주' 처럼 위치 자체가 교감을 밝히기도 한다
             apparatus = bool(KABC_APPARATUS_LAYER.search(raw)
                              or "교감" in raw)
+            skip_tail = False
             continue
         if KABC_LAYER.match(t):
             apparatus = bool(KABC_APPARATUS_LAYER.search(t))
@@ -878,6 +886,11 @@ def parse_kabc_docx(path: Path):
             continue
 
         if style == "Source Text":
+            if RE_ABC_TAIL.search(t):
+                # KABC 출처 표시줄. 본문이 아니므로 버리고,
+                # 뒤따르는 번역·검토주도 함께 흘려보낸다.
+                skip_tail = True
+                continue
             if apparatus and units:
                 # 교감문이 본문 자리에 실려 왔다. 앞 단위의 각주로 돌린다.
                 units[-1]["nt"].append(t)
@@ -892,6 +905,8 @@ def parse_kabc_docx(path: Path):
             cont, started, note_open = False, True, False
             continue
         if style == "Translation Text":
+            if skip_tail:
+                continue
             if apparatus and units and units[-1]["nt"]:
                 # 교감문의 한국어 번역. 요지로 앞에 세우고 원문은 상세로 내린다.
                 units[-1]["ntd"][-1] = units[-1]["nt"][-1]
@@ -906,6 +921,8 @@ def parse_kabc_docx(path: Path):
         # (Editorial Note · Critical Note · 교감주 …)
         # 다만 'Front Note' 는 본문 앞 해제이므로 각주로 보지 않는다.
         is_note = (style.endswith("Note") or "교감주" in style) and style != "Front Note"
+        if is_note and skip_tail:
+            continue
         if is_note and units:
             # 대괄호 표지로 시작하면 새 각주, 아니면 앞 각주에 이어진다
             if re.match(r"^\[", t) or not units[-1]["nt"]:
