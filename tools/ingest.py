@@ -708,9 +708,18 @@ KABC_LAYER = re.compile(r"^\[문헌\s*층위\s*[:：]")
 KABC_LABELS = {"원문", "한국어 직역", "한국어 번역", "교감주", "기타 각주",
                "주석", "번역", "직역"}
 KABC_CONT = re.compile(r"^(?:원문|한국어\s*직역|번역)\s*[(（]\s*이어짐\s*[)）]")
+# KABC 저본 TXT 는 교감문을 본문 줄 사이에 그대로 끼워 둔다.
+# 번역 docx 를 만들 때 그것을 본문으로 잘못 읽으면 교감문이 본문 단위로
+# 올라온다. 아래 두 가지 신호로 그런 대목을 붙잡아 앞 단위의 각주로 돌린다.
+#   1) 라벨이 그냥 '원문' 이 아니라 'KABC 교감 원문' 처럼 교감을 밝힐 때
+#   2) [문헌 층위: … 교감층] 처럼 층위 자체가 교감이라고 밝힐 때
+KABC_APPARATUS_LABEL = re.compile(r"교감\s*(?:원문|내용)|이문\s*원문")
+KABC_APPARATUS_LAYER = re.compile(r"교감층|교감\s*주$|편집층")
+# 판본기호. 본문에는 결코 나오지 않고 교감문에만 나온다.
+RE_PANBON = re.compile(r"\{[底甲乙丙丁戊己編校]\}")
 # 각주에서 화면에 늘 보일 줄(요지)과, 얹었을 때만 보일 줄(상세)을 가른다.
 NOTE_SUMMARY_KEYS = ("교감 내용 번역", "KABC 교감 내용 번역", "교감 내용 한국어 번역",
-                     "번역", "교감문 번역", "교감 원문 번역")
+                     "번역", "교감문 번역", "교감 원문 번역", "한국어")
 CJK_NUM = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7,
            "八": 8, "九": 9, "十": 10, "○": 0, "零": 0}
 
@@ -776,8 +785,16 @@ def norm_kabc_loc(raw: str) -> str:
     return f"{juan} 第{n}張".strip() if n is not None else t
 
 
+# 항목을 줄바꿈이 아니라 두 칸 이상 띄어쓰기로 잇는 docx 가 있다.
+#   [교감] 2)干  KABC: 「干」作「于」{甲}  한국어: 甲본에서는 …  저본 독법: …
+# 그런 덩이는 항목 이름 앞에서 줄을 나눠 준다.
+RE_NOTE_ITEM = re.compile(r" {2,}(?=[가-힣A-Za-z][^:：\n]{0,14}[:：])")
+
+
 def split_kabc_note(text: str):
     """각주 한 덩이를 (요지, 상세)로 가른다."""
+    if "\n" not in text:
+        text = RE_NOTE_ITEM.sub("\n", text)
     lines = [x.strip() for x in text.split("\n") if x.strip()]
     if not lines:
         return "", ""
@@ -828,18 +845,25 @@ def parse_kabc_docx(path: Path):
     units, front, secs = [], [], []
     loc, cont, started = "", False, False
     note_open = False
+    apparatus = False        # 지금 읽는 대목이 본문이 아니라 교감층인가
 
     for p in d.paragraphs:
-        t = re.sub(r"[ \t]+", " ", p.text).strip()
+        raw = p.text
+        t = re.sub(r"[ \t]+", " ", raw).strip()
         if not t:
             continue
         style = (p.style.name or "").strip()
 
         m = KABC_LOC.match(t)
         if m:
-            loc = norm_kabc_loc(m.group(1))
+            raw = m.group(1)
+            loc = norm_kabc_loc(raw)
+            # '卷下 第38張 후속 KABC 교감주' 처럼 위치 자체가 교감을 밝히기도 한다
+            apparatus = bool(KABC_APPARATUS_LAYER.search(raw)
+                             or "교감" in raw)
             continue
         if KABC_LAYER.match(t):
+            apparatus = bool(KABC_APPARATUS_LAYER.search(t))
             continue
         if KABC_CONT.match(t):
             cont = True
@@ -847,8 +871,19 @@ def parse_kabc_docx(path: Path):
         if t in KABC_LABELS:
             note_open = t in ("교감주", "기타 각주", "주석")
             continue
+        if KABC_APPARATUS_LABEL.search(t) and len(t) <= 20:
+            # 'KABC 교감 원문' · '교감 내용 한국어 번역' 같은 라벨.
+            # 이 아래의 원문·번역 문단은 본문이 아니라 교감이다.
+            apparatus = True
+            continue
 
         if style == "Source Text":
+            if apparatus and units:
+                # 교감문이 본문 자리에 실려 왔다. 앞 단위의 각주로 돌린다.
+                units[-1]["nt"].append(t)
+                units[-1]["ntd"].append("")
+                cont = False
+                continue
             if cont and units:
                 units[-1]["cn"].append(t)
             else:
@@ -857,6 +892,12 @@ def parse_kabc_docx(path: Path):
             cont, started, note_open = False, True, False
             continue
         if style == "Translation Text":
+            if apparatus and units and units[-1]["nt"]:
+                # 교감문의 한국어 번역. 요지로 앞에 세우고 원문은 상세로 내린다.
+                units[-1]["ntd"][-1] = units[-1]["nt"][-1]
+                units[-1]["nt"][-1] = t
+                cont = False
+                continue
             if units:
                 units[-1]["ko"].append(t)
             cont = False
@@ -868,11 +909,11 @@ def parse_kabc_docx(path: Path):
         if is_note and units:
             # 대괄호 표지로 시작하면 새 각주, 아니면 앞 각주에 이어진다
             if re.match(r"^\[", t) or not units[-1]["nt"]:
-                a, b = split_kabc_note(t)
+                a, b = split_kabc_note(raw.strip())
                 units[-1]["nt"].append(a)
                 units[-1]["ntd"].append(b)
             else:
-                a, b = split_kabc_note(t)
+                a, b = split_kabc_note(raw.strip())
                 joined = "\n".join(x for x in (units[-1]["ntd"][-1], a, b) if x)
                 units[-1]["ntd"][-1] = joined
             continue
@@ -1768,12 +1809,30 @@ def main():
         reg["works"] = reg["works"] + fresh
     sync_variant_tables(ROOT)
 
-    metas = []
+    metas, panbon_warn = [], []
     for entry in reg["works"]:
         m = build_work(entry)
         metas.append(m)
         print(f"  {m['id']:<22} 단위 {m['units']:>5}  번역 {m['translated']:>5}"
               f"  ({m['coverage']*100:5.1f}%)  {m['range']}")
+        # 본문에 판본기호({底}{甲}…)가 남아 있으면 교감문을 본문으로
+        # 잘못 읽은 것이다. 자동으로 고치지 않고 알리기만 한다.
+        wp = ROOT / "data" / "works" / f"{m['id']}.json"
+        if wp.exists():
+            wd = json.loads(wp.read_text(encoding="utf-8"))
+            for u in wd.get("units", []):
+                body = "".join(u.get("cn", [])) + "".join(u.get("ko", []))
+                if RE_PANBON.search(body):
+                    panbon_warn.append((m["id"], u["i"], u.get("m")))
+    if panbon_warn:
+        print()
+        print("⚠ 본문에 판본기호({底}{甲}…)가 남아 있습니다. "
+              "교감문을 본문으로 잘못 읽은 자리입니다.")
+        print("  번역 docx 쪽을 고쳐 주십시오(자동으로 잘라내지 않습니다):")
+        for wid, i, mk in panbon_warn:
+            print(f"   · {wid}  단위 {i}  ({mk})")
+        print()
+
     # 대장경 순서(T → X → L, 책 번호, 경 번호)로 정렬해 둔다
     CANON_ORDER = {"T": 0, "X": 1, "L": 2, "K": 3, "B": 4, "ZW": 5, "BJ": 6, "HB": 6}
     metas.sort(key=lambda m: (CANON_ORDER.get(m.get("canon_id", ""), 9),
