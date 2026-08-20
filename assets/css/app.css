@@ -19,7 +19,7 @@
   --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 
-  --rail:74px;
+  --rail:88px;
   --side:288px;
   --top:60px;
   --barh:0px;
@@ -192,7 +192,7 @@ button{background:none;border:0;cursor:pointer}
 
 .rail{
   grid-column:1;grid-row:1/-1;
-  text-align:right;padding-right:.9rem;
+  text-align:left;padding-right:.9rem;
   border-right:1px solid var(--mist);
   align-self:stretch;
 }
@@ -201,8 +201,9 @@ button{background:none;border:0;cursor:pointer}
 .rail button{
   font-family:var(--mono);font-size:.7rem;color:var(--ink-3);
   letter-spacing:.01em;line-height:1.9;
-  /* 표지가 여백보다 길면 본문 위로 넘치지 않고 접힌다 */
-  display:block;max-width:100%;
+  /* 표지는 왼쪽에 맞춘다. 여백보다 길면 본문 위로 넘치지 않고
+     띄어쓰기에서 접히며, 그래도 넘칠 때만 글자 사이에서 끊는다. */
+  display:block;max-width:100%;text-align:left;
   white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
 }
 .rail button:hover{color:var(--celadon-deep)}
@@ -371,7 +372,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .split .kobox{grid-row:2}
   .split .figs{grid-row:3}
   .split .notes{grid-row:4}
-  :root{--rail:58px;--cn-size:1.02rem}
+  :root{--rail:68px;--cn-size:1.02rem}
   .tabbar{
     display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;
     background:rgba(246,248,245,.96);backdrop-filter:blur(10px);
