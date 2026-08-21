@@ -218,7 +218,8 @@ button{background:none;border:0;cursor:pointer}
   letter-spacing:.02em;color:var(--ink);margin:0 0 .55rem;
   white-space:pre-wrap;overflow-wrap:anywhere}
 .ko{font-size:calc(var(--ko-size) * var(--fs));line-height:1.85;color:var(--ink-2);margin:0 0 .35rem;
-  overflow-wrap:break-word}
+  /* 게송 번역은 원문처럼 행마다 끊어 읽어야 하므로 줄바꿈을 살린다 */
+  white-space:pre-wrap;overflow-wrap:break-word}
 .ko+.ko{margin-top:.3rem}
 .mk{font-family:var(--mono);font-size:.74rem;color:#A9BBBF;margin-right:.3rem}
 .app{color:#B9C6C2;font-size:.85em}
