@@ -961,8 +961,8 @@
    "units": 836,
    "translated": 836,
    "coverage": 1.0,
-   "chars_cn": 410915,
-   "chars_ko": 1543541,
+   "chars_cn": 410339,
+   "chars_ko": 1546603,
    "range": [
     "0157a06",
     "0426a22"
@@ -1223,7 +1223,7 @@
    "translated": 832,
    "coverage": 0.9998,
    "chars_cn": 158075,
-   "chars_ko": 471353,
+   "chars_ko": 471921,
    "range": [
     "0297a04",
     "0409a11"
@@ -3359,6 +3359,6 @@
   "works": 86,
   "units": 54572,
   "translated": 51093,
-  "chars_cn": 10228715
+  "chars_cn": 10228139
  }
 }
