@@ -721,6 +721,8 @@ RE_PANBON = re.compile(r"\{[底甲乙丙丁戊己編校]\}")
 #   『기신본말오중』 起信本末五重(ABC, H0320 v12, p.850c01-853b25)
 # 본문도 번역도 아니므로 버린다.
 RE_ABC_TAIL = re.compile(r"\(\s*ABC\s*,\s*H\d{3,4}\s*v\d+")
+# 산문 뒤에 게송이 이어짐을 알리는 말머리
+RE_GATHA_CUE = re.compile(r"(?:頌|偈)(?:曰|云|言)")
 # 각주에서 화면에 늘 보일 줄(요지)과, 얹었을 때만 보일 줄(상세)을 가른다.
 NOTE_SUMMARY_KEYS = ("교감 내용 번역", "KABC 교감 내용 번역", "교감 내용 한국어 번역",
                      "번역", "교감문 번역", "교감 원문 번역", "한국어")
@@ -1361,7 +1363,24 @@ def merge(txt_units, dx):
     owners = set()
     for dxi, u in enumerate(dx_units):
         if u["cn"]:
-            targets = [t for t in (resolve(c) for c in u["cn"]) if t is not None]
+            # docx 의 원문 한 조각이 줄바꿈으로 여러 행을 담고 있을 때가 있다.
+            # (산문 뒤에 게송이 이어지는 대목이 그렇다.)
+            # 원문 TXT 는 그 게송을 따로 떼어 두므로, 행마다 대응을 찾아야
+            # 게송 원문이 '번역 대응 없음'으로 떨어져 나가지 않는다.
+            pieces = []
+            for c in u["cn"]:
+                pieces.append(c)
+                if "\n" in c:
+                    pieces.extend(x for x in c.split("\n") if len(x.strip()) >= 6)
+            targets = [t for t in (resolve(c) for c in pieces) if t is not None]
+            # 원문 TXT 는 산문과 게송을 나눠 두는데 docx 는 '頌曰' 뒤에
+            # 게송을 한 줄로 붙여 오는 일이 있다. 그 자리에서만 조각의
+            # 끝자락이 어느 단락에 놓이는지 더 본다.
+            for c in u["cn"]:
+                if RE_GATHA_CUE.search(c):
+                    t = locate(norm_search(c)[-24:])
+                    if t is not None:
+                        targets.append(t)
         else:
             # 원문 조각 없이 표지만 있는 번역 닻.
             # 원문 한 줄이 길면 그 줄 하나에 번역 문단이 여럿 달린다.
@@ -1380,7 +1399,7 @@ def merge(txt_units, dx):
         # 어느 한 조각이 엉뚱한 자리에 붙은 것이다. 그 이상치는 버린다.
         targets.sort()
         owner = targets[0]
-        span_max = len(u["cn"]) * 2 + 10
+        span_max = len(pieces) * 2 + 10 if u["cn"] else len(u["cn"]) * 2 + 10
         targets = [t for t in targets if t - owner <= span_max]
         last = targets[-1]
         taken.update(targets)
