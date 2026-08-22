@@ -1162,12 +1162,57 @@ def parse_docx(path: Path):
             appendix.extend(u["cn"] + u["ko"] + u["nt"])
     units = kept
 
+    # 원문 여러 문단을 몰아 놓고 번역 여러 문단을 몰아 놓은 docx 는
+    # 한 덩이가 통째로 한 단위가 되어 대조가 되지 않는다. 짝을 지어 나눈다.
+    units, remap0 = split_paired_blocks(units)
+    sections = [{**sec, "i": remap0.get(sec["i"], sec["i"])} for sec in sections]
+
     # 번역 표지대로 단위를 쪼개면 번호가 밀리므로, 절 표제의 위치도 함께 옮긴다
     units, remap = split_by_ko_markers(units)
     sections = [{**sec, "i": remap.get(sec["i"], sec["i"])} for sec in sections]
 
     return {"units": units, "tables": tables,
             "front": front, "appendix": appendix, "sections": sections}
+
+
+RE_NOTE_QUOTE = re.compile(r"[「『]([^」』]{4,60})[」』]")
+
+
+def split_paired_blocks(units):
+    """원문 문단 여럿과 번역 문단 여럿이 한 단위에 몰려 있으면 짝지어 나눈다.
+
+    길장 주석 계열 docx 처럼 원문 수십 문단을 먼저 늘어놓고 그 뒤에 번역
+    수십 문단을 같은 순서로 늘어놓는 문서가 있다. 그대로 두면 한 단위가
+    만 자를 넘어 대조가 되지 않는다. 원문 조각 수와 번역 조각 수가 꼭
+    같을 때만, 순서대로 하나씩 짝지어 별개 단위로 만든다.
+    각주는 인용한 구절이 들어 있는 조각에 붙인다.
+    쪼개기 전후의 번호 대응표를 함께 돌려준다."""
+    out, remap = [], {}
+    for old, u in enumerate(units):
+        remap[old] = len(out)
+        cn, ko = u["cn"], u["ko"]
+        if len(cn) < 2 or len(cn) != len(ko):
+            out.append(u)
+            continue
+
+        pieces = []
+        for i, (c, k) in enumerate(zip(cn, ko)):
+            mk = RE_MARKER.match(c)
+            pieces.append({"m": mk.group(1) if mk else (u["m"] if i == 0 else None),
+                           "cn": [c], "ko": [k], "nt": [], "h": u.get("h")})
+        keys = [norm_search(c) for c in cn]
+        for t in u["nt"]:
+            hit = 0
+            q = RE_NOTE_QUOTE.search(t)
+            if q:
+                needle = norm_search(q.group(1))
+                for i, key in enumerate(keys):
+                    if needle and needle in key:
+                        hit = i
+                        break
+            pieces[hit]["nt"].append(t)
+        out.extend(pieces)
+    return out, remap
 
 
 def split_by_ko_markers(units):
