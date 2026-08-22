@@ -1525,8 +1525,8 @@
    "id": "daeseung-hyeonnon",
    "title_cn": "大乘玄論",
    "title_ko": "대승현론",
-   "author_cn": "吉藏(전칭)",
-   "author_ko": "길장(전칭)",
+   "author_cn": "吉藏(?)",
+   "author_ko": "길장(?)",
    "dynasty": "隋",
    "canon": "T45 no.1853",
    "canon_id": "T",
@@ -1562,8 +1562,8 @@
    "has_translation": true,
    "chapters": 7,
    "canon_full": "T45 no.1853",
-   "author_line": "隋 胡吉藏 撰 (찬자에 이설 있음)",
-   "author_short": "隋 길장(전칭)"
+   "author_line": "隋 길장(?)",
+   "author_short": "隋 길장(?)"
   },
   {
    "id": "ije-ui",
