@@ -1419,20 +1419,32 @@ def merge(txt_units, dx):
             # (산문 뒤에 게송이 이어지는 대목이 그렇다.)
             # 원문 TXT 는 그 게송을 따로 떼어 두므로, 행마다 대응을 찾아야
             # 게송 원문이 '번역 대응 없음'으로 떨어져 나가지 않는다.
-            pieces = []
+            # 자리를 정하는 것은 원문 조각의 앞머리다.
+            targets = [t for t in (resolve(c) for c in u["cn"]) if t is not None]
+            pieces = list(u["cn"])
+            # 아래 둘은 '어디까지 걸치는가'만 넓힌다. 시작 자리는 바꾸지 않는다.
+            #  · docx 원문 조각이 줄바꿈으로 여러 행을 담고 있을 때
+            #    (산문 뒤에 게송이 이어지는 대목)
+            #  · '頌曰' 뒤에 게송을 한 줄로 붙여 왔을 때
+            tail = []
             for c in u["cn"]:
-                pieces.append(c)
                 if "\n" in c:
-                    pieces.extend(x for x in c.split("\n") if len(x.strip()) >= 6)
-            targets = [t for t in (resolve(c) for c in pieces) if t is not None]
-            # 원문 TXT 는 산문과 게송을 나눠 두는데 docx 는 '頌曰' 뒤에
-            # 게송을 한 줄로 붙여 오는 일이 있다. 그 자리에서만 조각의
-            # 끝자락이 어느 단락에 놓이는지 더 본다.
-            for c in u["cn"]:
+                    for x in c.split("\n"):
+                        if len(x.strip()) >= 6:
+                            pieces.append(x)
+                            t = resolve(x)
+                            if t is not None:
+                                tail.append(t)
                 if RE_GATHA_CUE.search(c):
                     t = locate(norm_search(c)[-24:])
                     if t is not None:
-                        targets.append(t)
+                        tail.append(t)
+            if targets:
+                # 앞머리가 정한 자리보다 앞으로 끌려가지 않게 막는다
+                floor = min(targets)
+                targets += [t for t in tail if t >= floor]
+            else:
+                targets = tail
         else:
             # 원문 조각 없이 표지만 있는 번역 닻.
             # 원문 한 줄이 길면 그 줄 하나에 번역 문단이 여럿 달린다.
