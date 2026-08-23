@@ -501,6 +501,9 @@ function markupCN(text) {
   return decorateCN(esc(text));
 }
 
+// 도판 설명(있으면). 문헌을 열 때 채워 둔다.
+let FIGCAP = {};
+
 function unitNode(u, wid) {
   const n = el('article', 'unit');
   n.id = 'u' + u.i;
@@ -542,7 +545,7 @@ function unitNode(u, wid) {
       img.src = `${BASE}assets/figures/${wid}/${name}`;
       img.alt = '저본 도판';
       img.loading = 'lazy';
-      fig.append(img, el('figcaption', null, '저본 도판'));
+      fig.append(img, el('figcaption', null, FIGCAP[name] || '저본 도판'));
       figs.append(fig);
     });
     n.append(figs);
@@ -716,6 +719,7 @@ async function viewWork(id, anchor, hit) {
   renderSide(id);
 
   const doc = await work(id);
+  FIGCAP = (doc.meta && doc.meta.figcap) || {};
   const w = doc.meta;
   main.innerHTML = '';
 
