@@ -971,6 +971,59 @@ def parse_kabc_docx(path: Path):
     return {"units": units, "front": front, "secs": secs}
 
 
+# 본문 문장 사이에 낀 도판. 화면에서 그 자리에 그대로 끼워 넣는다.
+FIG_TOKEN = "\u27e6fig:{}\u27e7"
+# 번역본을 만든 쪽이 앞머리에 붙인 제작 메모. 저본의 글이 아니다.
+RE_MAKER_NOTE = re.compile(
+    r"CBETA|첨부\s*TXT|전수\s*교열|대응\s*검증|전문\s*완역|전문\s*번역"
+    r"|최종\s*복원본|최종\s*완역본|재배열한|직역\s*대조본|대조\s*번역본"
+    r"|위치\s*표지를\s*기준|U\s*단위|전수\s*대응|전수\s*처리|전수\s*대조")
+RE_FIG_NAME = re.compile(r"\[\s*([A-Za-z]\d{2}p\d{4}_\d{2})\.(?:gif|git|jpg|png)\s*\]",
+                         re.I)
+
+
+def docx_image_names(doc, figdir: Path):
+    """docx 안에 박아 둔 그림을 원본 파일 이름으로 되돌린다.
+
+    docx 는 그림을 image1.gif 처럼 이름을 바꿔 담으므로, 바이트를 견주어
+    assets/figures/<문헌id>/ 의 원본 이름을 찾는다."""
+    import hashlib
+    if not figdir.is_dir():
+        return {}
+    want = {}
+    for f in sorted(figdir.iterdir()):
+        if f.is_file():
+            want[hashlib.md5(f.read_bytes()).hexdigest()] = f.name
+    out = {}
+    for rid, part in doc.part.related_parts.items():
+        try:
+            blob = part.blob
+        except Exception:
+            continue
+        name = want.get(hashlib.md5(blob).hexdigest())
+        if name:
+            out[rid] = name
+    return out
+
+
+def para_text_with_figs(p, imgmap):
+    """문단 글을 읽되, 중간에 낀 그림을 토큰으로 바꿔 자리를 지킨다."""
+    if not imgmap:
+        return p.text
+    from docx.oxml.ns import qn
+    buf, seen = [], False
+    for node in p._p.iter():
+        tag = node.tag.split("}")[-1]
+        if tag == "t":
+            buf.append(node.text or "")
+        elif tag == "blip":
+            name = imgmap.get(node.get(qn("r:embed")))
+            if name:
+                buf.append(FIG_TOKEN.format(name))
+                seen = True
+    return "".join(buf) if seen else p.text
+
+
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
@@ -986,11 +1039,29 @@ def parse_docx(path: Path):
 
     # 2) 본문 단락 스캔
     blocks, cur_head, cur_marker = [], None, None
+    imgmap = docx_image_names(d, ROOT / "assets" / "figures" / path.parent.name)
+    # 본문 앞머리에 붙은 '제작 메모'(누가 몇 단위를 교열했다는 따위)는
+    # 저본의 글이 아니므로 본문에 세우지 않고 해제로 돌린다.
+    body_style = any((q.style.name or "").strip() == "Source Text"
+                     for q in d.paragraphs)
+    body_open = not body_style
     for p in d.paragraphs:
-        txt = re.sub(r"[ \t]+", " ", p.text).strip()
+        style = (p.style.name or "").strip()
+        raw_p = (para_text_with_figs(p, imgmap)
+                 if style in ("Source Text", "Translation Text") else p.text)
+        txt = re.sub(r"[ \t]+", " ", raw_p).strip()
         if not txt:
             continue
-        style = (p.style.name or "").strip()
+        if not body_open:
+            if style == "Source Text":
+                body_open = True
+            elif RE_MAKER_NOTE.search(txt):
+                blocks.append({"kind": "front", "text": txt})
+                continue
+        # 도판을 실제로 띄우므로 '[X08p0116_01.gif]' 같은 파일명 표기는 지운다
+        txt = RE_FIG_NAME.sub("", txt).strip()
+        if not txt:
+            continue
 
         # '주' / '주석' / '각주' / '제1문 주' 는 스타일과 무관하게 각주 시작으로 본다
         if (len(txt) <= 8 and RE_NOTE_HEAD.search(txt)) or (
@@ -1099,6 +1170,9 @@ def parse_docx(path: Path):
         (appendix if body_started else front).append(text)
 
     for b in blocks:
+        if b["kind"] == "front":
+            front.append(b["text"])
+            continue
         if b["kind"] == "head":
             if b["hkind"] == "note":
                 note_mode = True
