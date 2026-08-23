@@ -1667,7 +1667,7 @@
     "의림장"
    ],
    "verify": false,
-   "note": "저자 기(基)는 규기(窺基) 또는 자은기(慈恩基)라고도 불린다. 전 7권.",
+   "note": "현장(玄奘)이 인도로 유학하여 돌아와 유식 교의를 중국에 전달하였고, 그의 사상을 계승한 기(基)가 교학적 주제들을 장(章)별로 나누어 체계적으로 정리한 유서(類書)이다. 저자 기(基)는 규기(窺基) 또는 자은기(慈恩基)라고도 불리나, 규기는 후대에 붙여진 이름이라는 설이 있다. 전 7권.",
    "units": 365,
    "translated": 316,
    "coverage": 0.9985,
@@ -3911,12 +3911,41 @@
    "canon_full": "韓佛全 12",
    "author_line": "朝鮮 撰者未詳",
    "author_short": "朝鮮 찬자 미상"
+  },
+  {
+   "id": "haengsacho-bi",
+   "title_cn": "haengsacho-bi",
+   "title_ko": "haengsacho-bi",
+   "author_cn": "",
+   "author_ko": "미상",
+   "dynasty": "",
+   "canon": "서지 미기재",
+   "canon_id": "Z",
+   "canon_vol": 999,
+   "canon_no": 999,
+   "canon_label": "미분류",
+   "canon_ko": "",
+   "collection": "미분류",
+   "tags": [],
+   "verify": true,
+   "units": 2626,
+   "translated": 2623,
+   "coverage": 0.9988,
+   "chars_cn": 636323,
+   "chars_ko": 1909344,
+   "range": [
+    "0604c24",
+    "1063c22"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 30
   }
  ],
  "totals": {
-  "works": 99,
-  "units": 64397,
-  "translated": 61005,
-  "chars_cn": 11554828
+  "works": 100,
+  "units": 67023,
+  "translated": 63628,
+  "chars_cn": 12191151
  }
 }
