@@ -1800,6 +1800,7 @@ def build_work(entry):
 
     # 저본에 실린 도판을 그 자리의 단위에 붙인다.
     # registry 의 figures = {"위치표지": "파일명"} 을 따르고,
+    # 한 자리에 도판이 여럿이면 {"위치표지": ["파일1", "파일2", …]} 로 적는다.
     # 파일은 assets/figures/<문헌id>/ 에 둔다.
     figs = entry.get("figures") or {}
     if figs:
@@ -1808,7 +1809,11 @@ def build_work(entry):
             first.setdefault(u.get("m"), u)
             last[u.get("m")] = u
         marks = sorted(m for m in first if m)
-        for marker, fname in sorted(figs.items()):
+        flat_figs = []
+        for marker, val in sorted(figs.items()):
+            names = val if isinstance(val, list) else [val]
+            flat_figs.extend((marker, n) for n in names)
+        for marker, fname in flat_figs:
             u = first.get(marker)
             if u is None:
                 # 저본에서 도판만 놓인 표지는 원문이 비어 단위가 서지 않는다.
