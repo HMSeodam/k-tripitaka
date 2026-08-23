@@ -2792,6 +2792,50 @@
    "author_short": "唐 지홍 찬술"
   },
   {
+   "id": "haengsacho-bi",
+   "title_cn": "四分律行事鈔批",
+   "title_ko": "사분율행사초비",
+   "author_cn": "大覺",
+   "author_ko": "대각",
+   "dynasty": "唐",
+   "canon": "X42 no.736",
+   "canon_id": "X",
+   "canon_vol": 42,
+   "canon_no": 736,
+   "canon_label": "卍續藏 42",
+   "canon_ko": "만신찬속장경 제42책",
+   "source": "CBETA",
+   "底本_publisher": "株式會社國書刊行會",
+   "collection": "율",
+   "tags": [
+    "율",
+    "남산율",
+    "사분율",
+    "행사초",
+    "도선",
+    "대각",
+    "초비",
+    "당대율학"
+   ],
+   "verify": false,
+   "note": "당의 강동 항주 화엄사 사문 대각(大覺)이 남산 도선의 『사분율산번보궐행사초』를 풀이한 주석. 14권으로, 각 권을 본(本)·말(末)로 나누어 실제로는 28권 분량이다. 권두에 「사분율초강전가행방편(四分律鈔講前加行方便)」을 두어 강의에 앞선 준비를 밝히고, 이어 목차를 세운 뒤 표종현덕편부터 니중별행편·제부별행편까지 『행사초』 30편을 차례로 좇는다. 권말 발문에 신룡(神龍) 3년(707) 여름 천축산 문하에서 시작하였다고 적혀 있어 저술 시기가 분명하다. 『행사초』 주석 가운데 가장 이른 시기에 속하며, 입(立)·제(濟) 등 앞선 율사들의 해석을 ‘立云’·‘濟云’ 하는 식으로 일일이 인용해 놓아, 지금은 흩어져 전하지 않는 당대 율학 여러 갈래의 학설을 여기서 되짚을 수 있다. 어휘 풀이와 서역·중국의 풍속 설명이 풍부한 것도 특징이다. 현존본은 일본에서 전사되어 남았으며, 권말에 보력(寶曆) 3년(1753) 하내주 교야군 성전읍 신궁산 애염율원 상주 비구 서룡 혜해(瑞龍慧海)의 지문이 붙어 있다. 이미 수록된 도선 『행사초』, 원조 『자지기』, 지홍 『수현록』과 나란히 읽으면 당대 초기부터 송대까지 『행사초』 해석의 흐름을 견줄 수 있다.",
+   "units": 2626,
+   "translated": 2623,
+   "coverage": 0.9988,
+   "chars_cn": 636323,
+   "chars_ko": 1909344,
+   "range": [
+    "0604c24",
+    "1063c22"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 30,
+   "canon_full": "X42 no.736",
+   "author_line": "唐 江東杭州華嚴寺沙門 大覺 撰",
+   "author_short": "唐 대각 찬"
+  },
+  {
    "id": "ilsim-imun-daeui",
    "title_cn": "起信論一心二門大意",
    "title_ko": "기신론 일심이문대의",
@@ -3911,35 +3955,6 @@
    "canon_full": "韓佛全 12",
    "author_line": "朝鮮 撰者未詳",
    "author_short": "朝鮮 찬자 미상"
-  },
-  {
-   "id": "haengsacho-bi",
-   "title_cn": "haengsacho-bi",
-   "title_ko": "haengsacho-bi",
-   "author_cn": "",
-   "author_ko": "미상",
-   "dynasty": "",
-   "canon": "서지 미기재",
-   "canon_id": "Z",
-   "canon_vol": 999,
-   "canon_no": 999,
-   "canon_label": "미분류",
-   "canon_ko": "",
-   "collection": "미분류",
-   "tags": [],
-   "verify": true,
-   "units": 2626,
-   "translated": 2623,
-   "coverage": 0.9988,
-   "chars_cn": 636323,
-   "chars_ko": 1909344,
-   "range": [
-    "0604c24",
-    "1063c22"
-   ],
-   "has_source": true,
-   "has_translation": true,
-   "chapters": 30
   }
  ],
  "totals": {
