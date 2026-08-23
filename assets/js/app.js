@@ -504,6 +504,21 @@ function markupCN(text) {
 // 도판 설명(있으면). 문헌을 열 때 채워 둔다.
 let FIGCAP = {};
 
+// 본문 문장 사이에 낀 도판. 저본처럼 그 자리에 그대로 끼워 넣는다.
+const RE_FIG_TOKEN = /\u27e6fig:([^\u27e7]+)\u27e7/g;
+function inlineFigs(html, wid) {
+  return html.replace(RE_FIG_TOKEN, (_, name) =>
+    `<img class="fig-in" src="${BASE}assets/figures/${wid}/${name}"` +
+    ` alt="저본 도판" title="${esc(FIGCAP[name] || '저본 도판')}" loading="lazy">`);
+}
+
+// 과문(科文) 목차 줄은 머리표로 층을 나타낸다. 저본 편집과 같게 들여쓴다.
+const OUTLINE_MARKS = '•○▪▫◆◇▸▹';
+function outlineLevel(t) {
+  const i = OUTLINE_MARKS.indexOf((t || '').trim().charAt(0));
+  return i < 0 ? 0 : i + 1;
+}
+
 function unitNode(u, wid) {
   const n = el('article', 'unit');
   n.id = 'u' + u.i;
@@ -521,14 +536,22 @@ function unitNode(u, wid) {
     if (u.cn.join('').length <= 80) n.classList.add('titleish');
   }
 
+  const cnjoined = u.cn.join('\n');
+  const lv = outlineLevel(cnjoined);
+  if (lv) n.classList.add('outline', 'lv' + lv);
+
   const cnbox = el('div', 'cnbox');
   const p = el('p', 'cn');
-  p.innerHTML = markupCN(u.cn.join('\n'));
+  p.innerHTML = inlineFigs(markupCN(cnjoined), wid);
   cnbox.append(p);
 
   const kobox = el('div', 'kobox');
   if (u.ko && u.ko.length) {
-    u.ko.forEach(t => kobox.append(el('p', 'ko', stripKoMarker(t))));
+    u.ko.forEach(t => {
+      const q = el('p', 'ko');
+      q.innerHTML = inlineFigs(esc(stripKoMarker(t)), wid);
+      kobox.append(q);
+    });
   } else {
     kobox.append(el('p', 'nokr', '번역 대응 없음'));
   }
