@@ -719,7 +719,7 @@ KABC_CONT = re.compile(r"^(?:원문|한국어\s*직역|번역)\s*[(（]\s*이어
 # 올라온다. 아래 두 가지 신호로 그런 대목을 붙잡아 앞 단위의 각주로 돌린다.
 #   1) 라벨이 그냥 '원문' 이 아니라 'KABC 교감 원문' 처럼 교감을 밝힐 때
 #   2) [문헌 층위: … 교감층] 처럼 층위 자체가 교감이라고 밝힐 때
-KABC_APPARATUS_LABEL = re.compile(r"교감\s*(?:원문|내용)|이문\s*원문")
+KABC_APPARATUS_LABEL = re.compile(r"(?:교감|편집)\s*(?:원문|내용)|이문\s*원문")
 KABC_APPARATUS_LAYER = re.compile(r"교감층|교감\s*주$|편집층")
 # 판본기호. 본문에는 결코 나오지 않고 교감문에만 나온다.
 RE_PANBON = re.compile(r"\{[底甲乙丙丁戊己編校]\}")
