@@ -1801,12 +1801,38 @@ def drop_maker(text: str) -> str:
 
 
 def strip_maker_notes(units):
-    """각주에서 번역본 제작 기록만 걷어낸다. 저본 주석은 건드리지 않는다."""
+    """각주에서 번역본 제작 기록만 걷어낸다. 저본 주석은 건드리지 않는다.
+
+    각주는 문헌에 따라 두 꼴로 담긴다.
+      · nt = ["요지"] + ntd = ["상세"]            (CBETA 갈래)
+      · nt = [{"t": 요지, "d": [상세…]}] 또는 ["한 줄"]  (한불전 갈래)
+    둘 다 꼴을 그대로 지키면서 손질한다."""
     for u in units:
         nt = u.get("nt")
         if not nt:
             continue
-        ntd = u.get("ntd") or [""] * len(nt)
+
+        if any(isinstance(x, dict) for x in nt):      # 한불전 갈래
+            out = []
+            for a in nt:
+                if isinstance(a, dict):
+                    t = drop_maker(a.get("t", ""))
+                    if not t:
+                        continue
+                    d = [x for x in (drop_maker(y) for y in a.get("d", [])) if x]
+                    out.append({"t": t, "d": d} if d else t)
+                else:
+                    t = drop_maker(a)
+                    if t:
+                        out.append(t)
+            u["nt"] = out
+            continue
+
+        ntd = u.get("ntd")
+        if ntd is None:                               # 상세 칸이 없는 꼴
+            u["nt"] = [x for x in (drop_maker(a) for a in nt) if x]
+            continue
+
         keep_t, keep_d = [], []
         for a, b in zip(nt, ntd):
             a2 = drop_maker(a)
