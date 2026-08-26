@@ -808,6 +808,8 @@ def norm_kabc_loc(raw: str) -> str:
 #   [교감] 2)干  KABC: 「干」作「于」{甲}  한국어: 甲본에서는 …  저본 독법: …
 # 그런 덩이는 항목 이름 앞에서 줄을 나눠 준다.
 RE_NOTE_ITEM = re.compile(r" {2,}(?=[가-힣A-Za-z][^:：\n]{0,14}[:：])")
+# 각주 한 덩이의 시작. '[교감] …' 뿐 아니라 '2) [KABC 편집] …' 꼴도 새 각주다.
+RE_NOTE_OPEN = re.compile(r"^\s*(?:\d{1,3}\s*[).）]\s*)?\[")
 
 
 def split_kabc_note(text: str):
@@ -822,12 +824,15 @@ def split_kabc_note(text: str):
         key, _, val = ln.partition(":")
         if not val:
             key, _, val = ln.partition("：")
+        # '• 교감 내용 번역: …' 처럼 글머리표를 앞세우는 문서가 있다
+        key = re.sub(r"^\s*[•·‣▪◦\-–—*]\s*", "", key)
         if val and key.strip() in NOTE_SUMMARY_KEYS and not summary:
             summary = val.strip()
         else:
             detail.append(ln)
     if summary:
-        tag = re.match(r"^\[[^\]]{1,16}\]", head)
+        # '[교감]' · '2) [KABC 편집]' 앞머리의 표지를 요지에 살려 둔다
+        tag = re.search(r"\[[^\]]{1,16}\]", head[:28])
         summary = f"{tag.group(0)} {summary}" if tag else summary
         detail.insert(0, head)
     else:
@@ -938,7 +943,7 @@ def parse_kabc_docx(path: Path):
             continue
         if is_note and units:
             # 대괄호 표지로 시작하면 새 각주, 아니면 앞 각주에 이어진다
-            if re.match(r"^\[", t) or not units[-1]["nt"]:
+            if RE_NOTE_OPEN.match(t) or not units[-1]["nt"]:
                 a, b = split_kabc_note(raw.strip())
                 units[-1]["nt"].append(a)
                 units[-1]["ntd"].append(b)
