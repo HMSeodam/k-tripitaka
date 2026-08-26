@@ -794,7 +794,11 @@ def norm_kabc_loc(raw: str) -> str:
         # '序 — 張 위치표지 이전' · '권두 서문·서례·범례' 처럼 설명이 붙은 것은
         # 첫 마디만 남긴다. 좌측 여백이 좁아 길면 본문 위로 넘친다.
         head = re.split(r"\s*[—–-]\s*", t)[0].strip()
-        return re.split(r"\s+", head)[0][:8]
+        head = re.split(r"\s+", head)[0][:8]
+        # '張 표지 이전' 처럼 앞머리에 남을 말이 없으면 '권두'로 적는다
+        if head in ("張", "장", "") and "표지" in t:
+            return "권두"
+        return head
     n = cjk_int(m.group(2))
     juan = norm_juan((m.group(1) or "").strip())
     return f"{juan} 第{n}張".strip() if n is not None else t
