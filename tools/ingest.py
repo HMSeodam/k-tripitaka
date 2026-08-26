@@ -1766,6 +1766,53 @@ def build_sections(sections, n_units):
     return secs, chapters
 
 
+# 번역본을 만든 쪽의 작업 기록. 저본에 대한 주석이 아니므로 각주에서 뺀다.
+#   '검증 판정: … 감사를 모두 통과하였다.'
+#   '[최종교열] 뒤로 한 단위 밀린 번역을 재배열하였다.'
+RE_MAKER_LINE = re.compile(
+    r"^\s*\[?\s*(?:검증\s*(?:판정|방법|결과)|최종\s*교열|전수\s*교열\s*완료"
+    r"|문단\s*매니페스트|작업\s*기록)")
+RE_MAKER_ANY = re.compile(
+    r"검증\s*(?:판정|방법)\s*[:：|]|감사를\s*모두\s*통과|JSONL|매니페스트"
+    r"|전수교열\s*완료|고정\s*U\s*분절|U\s*단위를\s*연속\s*범위")
+
+
+def maker_line(t: str) -> bool:
+    return bool(RE_MAKER_LINE.match(t) or RE_MAKER_ANY.search(t))
+
+
+def drop_maker(text: str) -> str:
+    """한 각주 안에서 작업 기록 토막만 덜어낸다.
+
+    '[구문 불확실] … | [최종교열] 뒤로 한 단위 밀린 번역을 재배열하였다.'
+    처럼 저본 주석 뒤에 붙어 오는 일이 많아, 줄과 세로줄로 토막을 갈라
+    작업 기록에 해당하는 토막만 뺀다."""
+    out = []
+    for line in str(text).split("\n"):
+        segs = [x for x in re.split(r"\s*\|\s*", line) if x.strip()]
+        segs = [x for x in segs if not maker_line(x)]
+        if segs:
+            out.append(" | ".join(segs))
+    return "\n".join(out).strip()
+
+
+def strip_maker_notes(units):
+    """각주에서 번역본 제작 기록만 걷어낸다. 저본 주석은 건드리지 않는다."""
+    for u in units:
+        nt = u.get("nt")
+        if not nt:
+            continue
+        ntd = u.get("ntd") or [""] * len(nt)
+        keep_t, keep_d = [], []
+        for a, b in zip(nt, ntd):
+            a2 = drop_maker(a)
+            if not a2:
+                continue                      # 요지가 통째로 작업 기록이었다
+            keep_t.append(a2)
+            keep_d.append(drop_maker(b))
+        u["nt"], u["ntd"] = keep_t, keep_d
+
+
 def build_work(entry):
     wid = entry["id"]
     wdir = SRC / wid
@@ -1901,6 +1948,8 @@ def build_work(entry):
             # 도판을 실제로 띄우므로, 그 자리를 말로 때운 번역 문단
             # ('문자 본문은 없으며, 이 위치에 …가 배치된다')은 군더더기가 된다.
             u["ko"] = [t for t in u["ko"] if not RE_FIG_CAPTION.search(t)]
+
+    strip_maker_notes(units)
 
     meta = dict(entry)
     units_marks = [u["m"] for u in units if u.get("m")]
