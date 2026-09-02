@@ -73,7 +73,7 @@
    "translated": 260,
    "coverage": 1.0,
    "chars_cn": 38597,
-   "chars_ko": 118193,
+   "chars_ko": 118036,
    "range": [
     "0212b17",
     "0167c01"
@@ -111,7 +111,7 @@
    "translated": 382,
    "coverage": 0.967,
    "chars_cn": 103698,
-   "chars_ko": 292929,
+   "chars_ko": 292870,
    "range": [
     "0591c28",
     "0668a02"
@@ -148,7 +148,7 @@
    "translated": 130,
    "coverage": 0.9746,
    "chars_cn": 29123,
-   "chars_ko": 80228,
+   "chars_ko": 80136,
    "range": [
     "0668c29",
     "0693b09"
@@ -456,7 +456,7 @@
    "translated": 4643,
    "coverage": 0.9981,
    "chars_cn": 970944,
-   "chars_ko": 3351787,
+   "chars_ko": 3351786,
    "range": [
     "0001a06",
     "0701a13"
@@ -1133,7 +1133,7 @@
    "translated": 530,
    "coverage": 0.9938,
    "chars_cn": 76335,
-   "chars_ko": 271834,
+   "chars_ko": 271822,
    "range": [
     "0602a26",
     "0655a27"
@@ -1174,7 +1174,7 @@
    "translated": 2443,
    "coverage": 1.0,
    "chars_cn": 243942,
-   "chars_ko": 779899,
+   "chars_ko": 779884,
    "range": [
     "0001a06",
     "0164b27"
@@ -1216,7 +1216,7 @@
    "translated": 214,
    "coverage": 0.9996,
    "chars_cn": 58965,
-   "chars_ko": 203026,
+   "chars_ko": 202988,
    "range": [
     "0171a05",
     "0212b07"
@@ -1483,7 +1483,7 @@
    "translated": 834,
    "coverage": 0.9998,
    "chars_cn": 158075,
-   "chars_ko": 471884,
+   "chars_ko": 471856,
    "range": [
     "0297a04",
     "0409a11"
@@ -1521,7 +1521,7 @@
    "translated": 36,
    "coverage": 0.9998,
    "chars_cn": 18548,
-   "chars_ko": 62049,
+   "chars_ko": 62048,
    "range": [
     "0409b29",
     "0422b11"
@@ -1883,7 +1883,7 @@
    "translated": 24,
    "coverage": 0.9959,
    "chars_cn": 6562,
-   "chars_ko": 21245,
+   "chars_ko": 21157,
    "range": [
     "0514a25",
     "0518c06"
@@ -1996,7 +1996,7 @@
    "translated": 11,
    "coverage": 0.9794,
    "chars_cn": 1750,
-   "chars_ko": 6426,
+   "chars_ko": 6417,
    "range": [
     "0597a06",
     "0598a24"
@@ -2341,7 +2341,7 @@
    "translated": 16,
    "coverage": 0.9962,
    "chars_cn": 8091,
-   "chars_ko": 23855,
+   "chars_ko": 23789,
    "range": [
     "0767c27",
     "0773b24"
@@ -2382,7 +2382,7 @@
    "translated": 6,
    "coverage": 0.9853,
    "chars_cn": 2114,
-   "chars_ko": 6547,
+   "chars_ko": 6490,
    "range": [
     "0773c23",
     "0775b24"
@@ -2690,7 +2690,7 @@
    "translated": 238,
    "coverage": 0.9988,
    "chars_cn": 21827,
-   "chars_ko": 46480,
+   "chars_ko": 46455,
    "range": [
     "1206c22",
     "1222c13"
@@ -2774,7 +2774,7 @@
    "translated": 3744,
    "coverage": 1.0,
    "chars_cn": 443478,
-   "chars_ko": 1227588,
+   "chars_ko": 1227393,
    "range": [
     "0090a06",
     "0413a22"
@@ -2887,7 +2887,7 @@
    "translated": 1417,
    "coverage": 0.9566,
    "chars_cn": 447027,
-   "chars_ko": 1464165,
+   "chars_ko": 1463907,
    "range": [
     "0459a11",
     "0757b10"
@@ -3005,7 +3005,7 @@
    "translated": 666,
    "coverage": 0.9985,
    "chars_cn": 37689,
-   "chars_ko": 121494,
+   "chars_ko": 121484,
    "range": [
     "0242a05",
     "0274a14"
@@ -3049,7 +3049,7 @@
    "translated": 2357,
    "coverage": 1.0,
    "chars_cn": 422354,
-   "chars_ko": 1570817,
+   "chars_ko": 1570804,
    "range": [
     "0523c02",
     "0831c17"
@@ -3220,7 +3220,7 @@
    "translated": 10,
    "coverage": 0.9939,
    "chars_cn": 1798,
-   "chars_ko": 5300,
+   "chars_ko": 5290,
    "range": [
     "0152a06",
     "0153b06"
@@ -3377,7 +3377,7 @@
    "translated": 565,
    "coverage": 0.9993,
    "chars_cn": 57393,
-   "chars_ko": 176540,
+   "chars_ko": 176315,
    "range": [
     "0782c08",
     "0829a16"
@@ -3504,7 +3504,7 @@
    "translated": 739,
    "coverage": 0.9951,
    "chars_cn": 72197,
-   "chars_ko": 215055,
+   "chars_ko": 215053,
    "range": [
     "0110a06",
     "0164b06"
@@ -3543,7 +3543,7 @@
    "translated": 1787,
    "coverage": 1.0,
    "chars_cn": 145361,
-   "chars_ko": 498236,
+   "chars_ko": 411701,
    "range": [
     "0556c05",
     "0658a12"
@@ -3951,7 +3951,7 @@
    "translated": 1991,
    "coverage": 1.0,
    "chars_cn": 47208,
-   "chars_ko": 161900,
+   "chars_ko": 161734,
    "range": [
     "0084b03",
     "0145a08"
@@ -4117,7 +4117,7 @@
    "translated": 46,
    "coverage": 1.0,
    "chars_cn": 6177,
-   "chars_ko": 19262,
+   "chars_ko": 19245,
    "range": [
     "1",
     "46"
@@ -4241,7 +4241,7 @@
    "translated": 127,
    "coverage": 1.0,
    "chars_cn": 5971,
-   "chars_ko": 19160,
+   "chars_ko": 19122,
    "range": [
     "第1張",
     "第11張"
@@ -4524,7 +4524,7 @@
    "translated": 712,
    "coverage": 1.0,
    "chars_cn": 45605,
-   "chars_ko": 143644,
+   "chars_ko": 143631,
    "range": [
     "권두",
     "第97張"
@@ -4610,7 +4610,7 @@
    "translated": 121,
    "coverage": 1.0,
    "chars_cn": 12878,
-   "chars_ko": 39928,
+   "chars_ko": 39906,
    "range": [
     "序",
     "卷下 第10張"
