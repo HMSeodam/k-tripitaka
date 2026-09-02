@@ -1834,6 +1834,41 @@ def drop_maker(text: str) -> str:
     return "\n".join(out).strip()
 
 
+# 번역문 안에 대괄호로 끼워 넣은 역주.
+#   '[판독·구문 불확실: 원문 何時導有心神…]'  → 설명이 딸린 것은 각주로
+#   '[구문 불확실]'                          → 자리만 가리키는 표는 본문에 둔다
+# 안쪽에 '[4]' 같은 교감 번호가 들어 있어도 잡히도록 한 겹까지 허용한다.
+RE_BRACKET = re.compile(r"\[(?:[^\[\]]|\[[^\[\]]*\])*\]")
+RE_MEMO_HEAD = re.compile(r"^\[\s*([^:：\[\]]{2,24})\s*[:：]\s*(.+)\]$", re.S)
+
+
+def move_reading_memos(units):
+    """번역문 끝이나 사이에 끼워 둔 역주를 각주로 옮긴다.
+
+    '[꼬리표: 설명]' 꼴만 옮기고, '[구문 불확실]' 처럼 설명 없이 자리만
+    가리키는 표는 그 자리에 그대로 둔다."""
+    for u in units:
+        moved = []
+
+        def take(mm):
+            g = mm.group(0)
+            m2 = RE_MEMO_HEAD.match(g)
+            if not m2 or len(g) < 12:
+                return g
+            label, body = m2.group(1).strip(), m2.group(2).strip()
+            moved.append(f"[{label}] {body}")
+            return ""
+
+        u["ko"] = [x for x in
+                   (re.sub(r"\s{2,}", " ", RE_BRACKET.sub(take, x)).strip()
+                    for x in u.get("ko", []))
+                   if x]
+        if moved:
+            u.setdefault("nt", []).extend(moved)
+            if "ntd" in u:
+                u["ntd"].extend([""] * len(moved))
+
+
 def strip_maker_notes(units):
     """각주에서 번역본 제작 기록만 걷어낸다. 저본 주석은 건드리지 않는다.
 
@@ -2033,6 +2068,7 @@ def build_work(entry):
             u["cn"] = [RE_FIG_NAME.sub(put, x) for x in u["cn"]]
             u["ko"] = [RE_FIG_NAME.sub(put, x) for x in u["ko"]]
 
+    move_reading_memos(units)
     strip_maker_notes(units)
 
     meta = dict(entry)
