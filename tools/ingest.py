@@ -263,10 +263,18 @@ VARIANTS = {
 }
 
 
+# CBETA 조자(組字) 표기 — '[狦-(狂-王)]' · '[匚@出]' · '[○@(內-入+人)]'
+RE_CBETA_GLYPH = re.compile(r"\[[^\[\]]{2,24}\]")
+
+
 def norm_search(s: str) -> str:
     s = unicodedata.normalize("NFKC", s)
     s = RE_MARKER.sub("", s)
     s = RE_APPARATUS.sub("", s)
+    # 같은 글자를 저본은 확장한자로, 번역본은 조자(組字) 표기 '[狦-(狂-王)]' 로
+    # 적는 일이 있다. 대조에 방해가 되므로 둘 다 지우고 견준다.
+    s = RE_CBETA_GLYPH.sub("", s)
+    s = "".join(c for c in s if ord(c) < 0x20000)
     s = "".join(VARIANTS.get(c, c) for c in s)
     s = re.sub(r"[\s。，、．・？！：；「」『』（）()〔〕【】\[\]“”‘’·…—　]", "", s)
     return s
@@ -1014,7 +1022,24 @@ def docx_image_names(doc, figdir: Path):
         name = want.get(hashlib.md5(blob).hexdigest())
         if name:
             out[rid] = name
-    return out
+    if out:
+        return out
+
+    # docx 를 만들 때 그림을 png 로 바꿔 담은 문서가 있다. 바이트가 달라
+    # 이름을 못 찾으므로, 본문에 나온 차례대로 원본 파일에 맞춘다.
+    # (저본의 도판 번호도 본문 차례를 따르므로 둘이 어긋나지 않는다)
+    from docx.oxml.ns import qn
+    order = []
+    for para in doc.paragraphs:
+        for node in para._p.iter():
+            if node.tag.split("}")[-1] == "blip":
+                rid = node.get(qn("r:embed"))
+                if rid and rid not in order:
+                    order.append(rid)
+    names = sorted(want.values())
+    if order and len(order) == len(names):
+        return dict(zip(order, names))
+    return {}
 
 
 def para_text_with_figs(p, imgmap):
@@ -1058,8 +1083,10 @@ def parse_docx(path: Path):
     body_open = not body_style
     for p in d.paragraphs:
         style = (p.style.name or "").strip()
+        # 본문 칸의 스타일 이름은 문서마다 조금씩 다르다
+        # (Source Text · Original Text · OriginalText · Translation Text …)
         raw_p = (para_text_with_figs(p, imgmap)
-                 if style in ("Source Text", "Translation Text") else p.text)
+                 if style.replace(" ", "").endswith("Text") else p.text)
         txt = re.sub(r"[ \t]+", " ", raw_p).strip()
         if not txt:
             continue
@@ -1985,6 +2012,26 @@ def build_work(entry):
             # 도판을 실제로 띄우므로, 그 자리를 말로 때운 번역 문단
             # ('문자 본문은 없으며, 이 위치에 …가 배치된다')은 군더더기가 된다.
             u["ko"] = [t for t in u["ko"] if not RE_FIG_CAPTION.search(t)]
+
+    # 원문 TXT 가 '[X45p0782_01.gif]' 로 적어 둔 자리에도 그림을 끼운다
+    figdir = ROOT / "assets" / "figures" / wid
+    if figdir.is_dir():
+        # registry 가 자리를 정해 준 도판은 단위 아래에 따로 놓이므로 제외한다
+        placed = set()
+        for v in (entry.get("figures") or {}).values():
+            placed.update(v if isinstance(v, list) else [v])
+        have = {f.name for f in figdir.iterdir()
+                if f.is_file() and f.name not in placed}
+
+        def put(mm):
+            for ext in (".gif", ".png", ".jpg"):
+                if mm.group(1) + ext in have:
+                    return FIG_TOKEN.format(mm.group(1) + ext)
+            return ""
+
+        for u in units:
+            u["cn"] = [RE_FIG_NAME.sub(put, x) for x in u["cn"]]
+            u["ko"] = [RE_FIG_NAME.sub(put, x) for x in u["ko"]]
 
     strip_maker_notes(units)
 
