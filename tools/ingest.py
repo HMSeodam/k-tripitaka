@@ -1832,7 +1832,8 @@ RE_MAKER_LINE = re.compile(
     r"|문단\s*매니페스트|작업\s*기록)")
 RE_MAKER_ANY = re.compile(
     r"검증\s*(?:판정|방법)\s*[:：|]|감사를\s*모두\s*통과|JSONL|매니페스트"
-    r"|전수교열\s*완료|고정\s*U\s*분절|U\s*단위를\s*연속\s*범위")
+    r"|전수교열\s*완료|고정\s*U\s*분절|U\s*단위를\s*연속\s*범위"
+    r"|내부\s*감사\s*데이터|작업용\s*U\s*번호를\s*노출")
 
 
 def maker_line(t: str) -> bool:
@@ -1852,7 +1853,7 @@ def drop_maker(text: str) -> str:
     처럼 저본 주석 뒤에 붙어 오는 일이 많아, 줄과 세로줄로 토막을 갈라
     작업 기록에 해당하는 토막만 뺀다."""
     out = []
-    for line in str(text).split("\n"):
+    for line in drop_u_jargon(text).split("\n"):
         line = RE_MAKER_TAG.sub("", line)
         segs = [x for x in re.split(r"\s*\|\s*", line) if x.strip()]
         segs = [x for x in segs if not maker_line(x)]
@@ -1894,6 +1895,20 @@ def move_reading_memos(units):
             u.setdefault("nt", []).extend(moved)
             if "ntd" in u:
                 u["ntd"].extend([""] * len(moved))
+
+
+# 각주에 남은 제작 쪽 약호 'U'. 화면에서는 '단위'로 부르므로 그렇게 고친다.
+#   'U단위' → '단위'  ·  'U 경계' → '단위 경계'  ·  '한 U 안에' → '한 단위 안에'
+RE_U_COMPOUND = re.compile(r"(?<![A-Za-z0-9])U\s*(단위|분절)")
+RE_U_ALONE = re.compile(r"(?<![A-Za-z0-9])U(?![A-Za-z0-9+])")
+
+
+def drop_u_jargon(text: str) -> str:
+    t = RE_U_COMPOUND.sub(r"\1", str(text))
+    t = RE_U_ALONE.sub("단위", t)
+    t = re.sub(r"단위\s*(단위|번호|경계|대응|분할|분절)", r"단위 \1", t)
+    t = re.sub(r"단위\s+단위", "단위", t)
+    return t
 
 
 def strip_maker_notes(units):
