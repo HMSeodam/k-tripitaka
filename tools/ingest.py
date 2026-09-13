@@ -1839,6 +1839,12 @@ def maker_line(t: str) -> bool:
     return bool(RE_MAKER_LINE.match(t) or RE_MAKER_ANY.search(t))
 
 
+# 각주 끝에 꼬리표로 붙는 작업 기록. '[최종 전수교열]' 따위.
+RE_MAKER_TAG = re.compile(
+    r"\s*\[\s*(?:최종\s*전수\s*교열|전수\s*교열|최종\s*교열|전수\s*대조"
+    r"|최종\s*검수|교열\s*완료)\s*\]")
+
+
 def drop_maker(text: str) -> str:
     """한 각주 안에서 작업 기록 토막만 덜어낸다.
 
@@ -1847,6 +1853,7 @@ def drop_maker(text: str) -> str:
     작업 기록에 해당하는 토막만 뺀다."""
     out = []
     for line in str(text).split("\n"):
+        line = RE_MAKER_TAG.sub("", line)
         segs = [x for x in re.split(r"\s*\|\s*", line) if x.strip()]
         segs = [x for x in segs if not maker_line(x)]
         if segs:
