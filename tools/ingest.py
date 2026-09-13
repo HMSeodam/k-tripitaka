@@ -818,6 +818,14 @@ def norm_kabc_loc(raw: str) -> str:
 #   [교감] 2)干  KABC: 「干」作「于」{甲}  한국어: 甲본에서는 …  저본 독법: …
 # 그런 덩이는 항목 이름 앞에서 줄을 나눠 준다.
 RE_NOTE_ITEM = re.compile(r" {2,}(?=[가-힣A-Za-z][^:：\n]{0,14}[:：])")
+# 항목을 한 칸 띄어쓰기만으로 잇는 docx 도 있다. 그때는 정해진 항목 이름
+# 앞에서만 줄을 나눈다. ('KABC:' 는 첫 줄에 남겨 둔다)
+RE_NOTE_ITEM1 = re.compile(
+    r"\s+(?=(?:저본|이문|교감|한국어|의미|차이|판정|보충)"
+    r"[^:：\n\[\]]{0,18}[:：])")
+# '[교감] KABC: 「感」底本傍註加「此」。 저본의 「感」 곁주에는…' 처럼 교감 원문
+# 뒤에 한국어 풀이가 바로 붙는 꼴. 한국어가 시작되는 자리를 찾는다.
+RE_KABC_GIST = re.compile(r"[。．.]\s*")
 # 각주 한 덩이의 시작. '[교감] …' 뿐 아니라 '2) [KABC 편집] …' 꼴도 새 각주다.
 RE_NOTE_OPEN = re.compile(r"^\s*(?:\d{1,3}\s*[).）]\s*)?\[")
 
@@ -826,6 +834,8 @@ def split_kabc_note(text: str):
     """각주 한 덩이를 (요지, 상세)로 가른다."""
     if "\n" not in text:
         text = RE_NOTE_ITEM.sub("\n", text)
+    if "\n" not in text:
+        text = RE_NOTE_ITEM1.sub("\n", text)
     lines = [x.strip() for x in text.split("\n") if x.strip()]
     if not lines:
         return "", ""
@@ -840,11 +850,21 @@ def split_kabc_note(text: str):
             summary = val.strip()
         else:
             detail.append(ln)
+    tag = re.search(r"\[[^\]]{1,16}\]", head[:28])
+    if not summary and "KABC" in head:
+        # 요지로 올릴 항목이 없을 때, 교감 원문 뒤에 바로 붙은 한국어 풀이를
+        # 요지로 세우고 한문 쪽은 상세로 내린다. 마침표마다 끊어 보며
+        # 뒤쪽이 한국어 문장이 되는 첫 자리를 고른다.
+        for m2 in RE_KABC_GIST.finditer(head):
+            tail = head[m2.end():].strip()
+            if len(tail) >= 6 and hangul_ratio(tail) > 0.35:
+                summary, head = tail, head[:m2.end()].strip()
+                break
     if summary:
         # '[교감]' · '2) [KABC 편집]' 앞머리의 표지를 요지에 살려 둔다
-        tag = re.search(r"\[[^\]]{1,16}\]", head[:28])
         summary = f"{tag.group(0)} {summary}" if tag else summary
-        detail.insert(0, head)
+        if head:
+            detail.insert(0, head)
     else:
         summary = head
     return summary, "\n".join(detail)
