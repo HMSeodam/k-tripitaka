@@ -1096,9 +1096,20 @@ def is_shtk_docx(d) -> bool:
     return any((p.style.name or "").startswith("SHTK ") for p in d.paragraphs)
 
 
-def parse_shtk_docx(d, tables):
-    units, front, appendix, sections, pending = [], [], [], [], []
-    phase, cur, marker, head, parent = "front", None, None, None, None
+def parse_shtk_docx(d, tables, path=None):
+    units, front, appendix, secs, pending = [], [], [], [], []
+    phase, cur, marker, cur_sec, parent = "front", None, None, None, None
+
+    # 원문 TXT 에 독립 단락으로 있는 한문 소제목(品題·章題)은 표제이면서 원문이다.
+    # 그런 소제목은 원문 단위로 세워야 TXT 와 제자리가 맞고, 바로 뒤의 교감주도
+    # 그 소제목에 붙는다. (편집자가 넣은 과단 표제는 TXT 에 없으므로 표제로만 둔다)
+    def skey(t):
+        return re.sub(r"[\s\u3000]", "", RE_MARKER.sub("", RE_APPARATUS.sub("", t)))
+    txt_keys = set()
+    if path is not None:
+        tp = path.parent / "원문.txt"
+        if tp.exists():
+            txt_keys = {skey("".join(u["cn"])) for u in parse_txt(tp)}
 
     def shtk_detail(t):
         t = RE_SHTK_ITEM.sub("", t, count=1)
@@ -1109,6 +1120,15 @@ def parse_shtk_docx(d, tables):
             if v.startswith(pre + ":"):
                 v = v[len(pre) + 1:].strip()
         return f"{k}: {v}" if sep else t
+
+    def open_unit(cn, ko=None):
+        nonlocal cur, pending
+        if cur:
+            units.append(cur)
+        for k in pending:
+            secs[k]["i"] = len(units)
+        pending = []
+        cur = {"m": marker, "cn": [cn], "ko": list(ko or []), "nt": [], "h": cur_sec}
 
     for p in d.paragraphs:
         style = (p.style.name or "").strip()
@@ -1128,21 +1148,26 @@ def parse_shtk_docx(d, tables):
             appendix.append(txt)
             continue
 
+        if style in ("SHTK Subheading", "SHTK Meta"):   # 소제목·권말 제목
+            pair = [x.strip() for x in re.split(r"\s*[|｜]\s*", txt)]
+            if pair[0] and skey(pair[0]) in txt_keys:
+                open_unit(pair[0], pair[1:2] if len(pair) == 2 else None)
+                cur["sealed"] = True
+                continue
+            if style == "SHTK Meta":
+                # 본문 칸 사이의 안내·검증 요약 따위는 원문도 교감도 아니다
+                appendix.append(re.sub(r"^[•·]\s*", "", txt))
+                continue
         hm = re.match(r"Heading ([2-4])$", style)
         if hm or style == "SHTK Subheading":
-            # 제2~4표제는 모두 화면을 나누는 권(층위 1)으로 삼는다. 이 서식은
-            # 위치표지가 몇 개뿐이라 쪽 번호로 잘게 나눌 수 없기 때문이다.
-            # 제4표제는 제3표제 아래 과단(序說·正說…)이므로 윗 표제를 앞에 붙여
-            # 「第一 明大意」와 「第一 序說」이 목록에서 헷갈리지 않게 한다.
-            lv, title = (1, txt) if hm else (2, txt)
-            if hm and hm.group(1) == "3":
-                parent = txt
-            elif hm and hm.group(1) == "4" and parent:
-                title = f"{parent} · {txt}"
-            elif hm and hm.group(1) == "2":
+            hl = int(hm.group(1)) if hm else 5
+            if hl == 2:
                 parent = None
-            pending.append({"lv": lv, "t": title})
-            head = title
+            elif hl == 3:
+                parent = txt
+            secs.append({"hl": hl, "raw": txt, "parent": parent if hl == 4 else None})
+            pending.append(len(secs) - 1)
+            cur_sec = len(secs) - 1
             if cur is not None:
                 cur["sealed"] = True
             continue
@@ -1159,13 +1184,8 @@ def parse_shtk_docx(d, tables):
                 marker = mk.group(1)
             if cur and not cur["ko"] and not cur["nt"] and not cur.get("sealed"):
                 cur["cn"].append(txt)
-                continue
-            if cur:
-                units.append(cur)
-            for sec in pending:
-                sections.append({**sec, "i": len(units)})
-            pending = []
-            cur = {"m": marker, "cn": [txt], "ko": [], "nt": [], "h": head}
+            else:
+                open_unit(txt)
             continue
         if cur is None:
             front.append(txt)
@@ -1183,8 +1203,26 @@ def parse_shtk_docx(d, tables):
             cur["nt"].append(shtk_detail(txt))
     if cur:
         units.append(cur)
+
+    # 권(목록) 층위 정하기
+    #  · 제2표제 권마다 150단위 이하이면: 제2표제=권, 제3·4표제·소제목은 권 안 제목
+    #  · 한 권이 너무 크면(위치표지가 적어 쪽으로도 못 나눌 때): 제2~4표제를
+    #    모두 권으로 펴고, 제4표제에는 윗 제3표제를 앞에 붙여 헷갈리지 않게 한다
+    placed = [s for s in secs if "i" in s]
+    top = [s["i"] for s in placed if s["hl"] == 2]
+    sizes = [b - a for a, b in zip(top, top[1:] + [len(units)])]
+    flat = len(top) < 2 or max(sizes) > 150
+    for s in secs:
+        if flat:
+            s["lv"] = 1 if s["hl"] <= 4 else 2
+            s["t"] = f"{s['parent']} · {s['raw']}" if s["hl"] == 4 and s["parent"] else s["raw"]
+        else:
+            s["lv"] = s["hl"] - 1
+            s["t"] = s["raw"]
     for u in units:
         u.pop("sealed", None)
+        u["h"] = secs[u["h"]]["t"] if u["h"] is not None else None
+    sections = [{"lv": s["lv"], "t": s["t"], "i": s["i"]} for s in placed]
     return {"units": units, "tables": tables, "front": front,
             "appendix": appendix, "sections": sections}
 
@@ -1207,7 +1245,7 @@ def parse_docx(path: Path):
 
     # 표준 DOCX(SHTK 스타일)는 스타일이 역할을 정해 주므로 따로 읽는다
     if is_shtk_docx(d):
-        return parse_shtk_docx(d, tables)
+        return parse_shtk_docx(d, tables, path)
 
     # 2) 본문 단락 스캔
     blocks, cur_head, cur_marker = [], None, None
