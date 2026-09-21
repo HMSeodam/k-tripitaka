@@ -1189,6 +1189,9 @@ def parse_shtk_docx(d, tables):
             "appendix": appendix, "sections": sections}
 
 
+RE_CBETA_NOTE_ID = re.compile(r"\[(?:CBETA\s*교감|대정장\s*원교감주)\s*\d{7}")
+
+
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
@@ -1214,8 +1217,33 @@ def parse_docx(path: Path):
     body_style = any((q.style.name or "").strip() == "Source Text"
                      for q in d.paragraphs)
     body_open = not body_style
-    for p in d.paragraphs:
+    # 교감표지가 박힌 한문 소제목(Small Meta) 바로 뒤에 그 교감주가 오는 문서가 있다.
+    #   第十地受[1]識章  →  교감·번역 메모 | [CBETA 교감 0575001] …
+    # 소제목을 표제로만 흘려보내면 교감주가 앞 단위 끝에 붙어 엉뚱한 자리에 뜬다.
+    # 원문 TXT 도 이 소제목을 한 단락으로 두므로, 원문 조각으로 세워 제자리에 맞춘다.
+    paras = list(d.paragraphs)
+    nxt_para = {}
+    for k, q in enumerate(paras):
+        for r in paras[k + 1:]:
+            if r.text.strip():
+                nxt_para[k] = r
+                break
+    for pi, p in enumerate(paras):
         style = (p.style.name or "").strip()
+        nq = nxt_para.get(pi)
+        # 뒤따르는 메모가 번호 붙은 CBETA/대정장 교감주일 때만 그렇게 한다
+        # (다른 문헌의 소제목 처리는 그대로 둔다)
+        if (style == "Small Meta" and RE_APPARATUS.search(p.text)
+                and is_source_line(p.text.strip()) and nq is not None
+                and "note" in (nq.style.name or "").lower()
+                and RE_CBETA_NOTE_ID.search(nq.text)):
+            style = "Source Text"
+        # 문서 표제(Document Title/Subtitle)는 책 이름일 뿐 원문 단락이 아니다.
+        # 원문으로 세우면 권두 권제(卷第一)와 대조가 엇갈린다.
+        if style in ("Document Title", "Document Subtitle"):
+            if p.text.strip():
+                blocks.append({"kind": "front", "text": p.text.strip()})
+            continue
         # 본문 칸의 스타일 이름은 문서마다 조금씩 다르다
         # (Source Text · Original Text · OriginalText · Translation Text …)
         raw_p = (para_text_with_figs(p, imgmap)
@@ -1268,7 +1296,7 @@ def parse_docx(path: Path):
         # 담은 문서가 있다. 표제로 흘려보내면 번역이 사라지므로
         # 원문·번역 두 조각으로 갈라 준다.
         pair = re.split(r"\s*[|｜]\s*", txt)
-        if (len(pair) == 2 and style in ("Small Meta", "Unit Label")
+        if (len(pair) == 2 and style in ("Small Meta", "Unit Label", "End Matter")
                 and pair[0] and pair[1]
                 and is_source_line(pair[0]) and not is_source_line(pair[1])):
             if mk:
