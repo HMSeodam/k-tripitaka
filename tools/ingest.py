@@ -1088,6 +1088,10 @@ def para_text_with_figs(p, imgmap):
 #   · Note Summary 한 줄 + Note Detail 여러 줄 → 교감 하나 {"t": 요지, "d": [상세…]}
 #   · Heading 2·3·4 와 SHTK Subheading 은 절 표제(층위 1~4)
 RE_SHTK_BODY = re.compile(r"본문\s*$")
+# DOCX 제작 단계의 처리 통계 블록(교감이 아님)
+RE_SHTK_LOG = re.compile(
+    r"공통으로 존재하는 교감\s*:|표시 단위\s*:\s*\d|미확보 이미지 수\s*:|번역 차이 없음\s*:\s*\d"
+    r"|교감 상호참조 표지\s*:\s*\d")
 RE_KO_FIG_TAIL = re.compile(r"\s*\[이미지\s*확인\]\s*(?:\u27e6fig:[^\u27e7]+\u27e7\s*)+$")
 RE_SHTK_SUMMARY = re.compile(r"^\s*교감\s*요약\s*[|｜]\s*")
 RE_SHTK_ITEM = re.compile(r"^\s*[•·\-–]\s*")
@@ -1184,7 +1188,7 @@ def shtk_tidy_note(n):
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
-    last_head = None
+    last_head, in_log = None, False
 
     # 원문 TXT 에 독립 단락으로 있는 한문 소제목(品題·章題)은 표제이면서 원문이다.
     # 그런 소제목은 원문 단위로 세워야 TXT 와 제자리가 맞고, 바로 뒤의 교감주도
@@ -1221,6 +1225,8 @@ def parse_shtk_docx(d, tables, path=None):
 
     for p in d.paragraphs:
         style = (p.style.name or "").strip()
+        if style != "SHTK Note Detail":
+            in_log = False
         raw_p = (para_text_with_figs(p, imgmap)
                  if style in ("SHTK Source Text", "SHTK Translation Text") else p.text)
         txt = re.sub(r"[ \t]+", " ", raw_p).strip()
@@ -1295,6 +1301,15 @@ def parse_shtk_docx(d, tables, path=None):
             # 번역 칸에서는 이 꼬리 묶음을 뺀다. (번역 문장 안의 토큰은 그대로 둔다)
             txt = RE_KO_FIG_TAIL.sub("", txt).rstrip()
             cur["ko"].append(txt)
+        elif style == "SHTK Note Summary" and RE_SHTK_LOG.search(txt):
+            # 교감이 아니라 DOCX 제작 단계의 처리 통계(몇 건 대조·몇 종 처리 따위)다.
+            # 본문 교감 목록에 섞지 않고 부록으로 보낸다. 뒤따르는 상세 줄도 함께.
+            appendix.append(RE_SHTK_SUMMARY.sub("", txt, count=1).strip())
+            in_log = True
+            continue
+        elif style == "SHTK Note Detail" and in_log:
+            appendix.append(shtk_detail(txt))
+            continue
         elif style == "SHTK Note Summary":
             t = RE_SHTK_SUMMARY.sub("", txt, count=1).strip()
             if not t.startswith("["):
@@ -2175,10 +2190,15 @@ def move_reading_memos(units):
             moved.append(f"[{label}] {body}")
             return ""
 
-        u["ko"] = [x for x in
-                   (re.sub(r"\s{2,}", " ", RE_BRACKET.sub(take, x)).strip()
-                    for x in u.get("ko", []))
-                   if x]
+        def strip_memos(x):
+            n0 = len(moved)
+            y = re.sub(r"\s{2,}", " ", RE_BRACKET.sub(take, x)).strip()
+            if len(moved) > n0:             # 메모를 뺀 자리에 남은 ' .' 따위를 붙인다
+                y = re.sub(r"\s+([.,;:!?。，、])", r"\1", y)
+                y = re.sub(r"([,，、;])\1+", r"\1", y)
+            return y
+
+        u["ko"] = [x for x in (strip_memos(x) for x in u.get("ko", [])) if x]
         if moved:
             u.setdefault("nt", []).extend(moved)
             if "ntd" in u:
