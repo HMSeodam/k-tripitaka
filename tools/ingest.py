@@ -1096,9 +1096,94 @@ def is_shtk_docx(d) -> bool:
     return any((p.style.name or "").startswith("SHTK ") for p in d.paragraphs)
 
 
+# ── 표준 DOCX 교감 메모를 앱 표기(「[CBETA 교감] 요지」 + 펼침 상세)로 맞추기 ──────
+# 문서마다 교감 요약 줄이 「[CBETA 교감 0538001]」「[대정장 원교감주 0544001 복원] 「…」」
+# 「[star reference] …」처럼 제각각이면 앱 목록이 들쭉날쭉하다. 번호·원교감 원문은
+# 상세로 내리고, 요지 줄은 저본·이문 독법으로 한 줄에 보이게 한다.
+RE_NT_CBETA = re.compile(
+    r"^\[(CBETA\s*교감|대정장\s*원교감주)\s+(\d{7})[^\]]*\]\s*(.*)$", re.S)
+RE_NT_ADD = re.compile(r"^\[CBETA\s*추가\s*교감\s+([^\]·]+?)\s*(?:·\s*([^\]]+))?\]\s*(.*)$", re.S)
+RE_NT_STAR = re.compile(r"^\[star reference\]\s*(.*)$", re.S | re.I)
+RE_NT_GAIJI = re.compile(r"^\[외자 복원\s*(CB\d+)\]\s*(.*)$", re.S)
+
+
+def _nt_sentences(t):
+    t = t.replace("`", "").strip()
+    return [x.strip() for x in re.split(r"(?<=[다」])\.\s+", t) if x.strip()]
+
+
+def _nt_gist(d):
+    kv = dict(x.split(": ", 1) for x in d if ": " in x)
+    a, b = kv.get("저본 독법"), kv.get("이문 독법")
+    if not (a and b):
+        return None
+    # 첫 문장만 쓰고, 뜻풀이 괄호(“…”)는 뺀다
+    drop = lambda v: re.sub(r"\s*\(“[^)]*”\)", "", re.split(r"\.\s", v)[0]).strip()
+    a, b = drop(a), drop(b)
+    m = re.match(r"^(.*?)\s*\(\[([^\]]+)\](?:,\s*(.*))?\)$", b)
+    if m:
+        return f"저본 {a} → {m.group(2)}본 {m.group(1)}" + (f" ({m.group(3)})" if m.group(3) else "")
+    return f"저본 {a} → 이문 {b}"
+
+
+def shtk_tidy_note(n):
+    if isinstance(n, dict) and not n["d"]:      # 상세 없는 요약 한 줄은 문자열로 다룬다
+        n = n["t"]
+    if isinstance(n, dict):
+        t, d = n["t"], list(n["d"])
+        m = RE_NT_CBETA.match(t)
+        if m:
+            rest = m.group(3).strip()
+            d = [("원교감 원문: " + x.split(": ", 1)[1]) if x.startswith("대정장 원교감주: ") else x
+                 for x in d]
+            orig = [x for x in d if x.startswith("원교감 원문: ")]
+            q = re.match(r"「(.*?)」\.?\s*(.*)$", rest, re.S)
+            if q:
+                orig = orig or ["원교감 원문: " + q.group(1)]
+                rest = q.group(2).strip()
+            body = [x for x in d if not x.startswith("원교감 원문: ")]
+            gist = _nt_gist(d)
+            d = orig + ["교감 번호: " + m.group(2)] + \
+                (["요지: " + rest] if rest and gist else []) + body
+            fall = orig[0].split(": ", 1)[1] if orig else "교감 " + m.group(2)
+            return {"t": "[CBETA 교감] " + (gist or rest or fall), "d": d}
+        m = RE_NT_ADD.match(t)
+        if m:
+            head = ["교감 번호: " + m.group(1).strip()]
+            if m.group(2):
+                head.append("비고: " + m.group(2).strip())
+            if m.group(3).strip():
+                head.insert(0, "요지: " + m.group(3).strip())
+            d = head + d
+            return {"t": "[CBETA 추가 교감] " + (_nt_gist(d) or m.group(3).strip()), "d": d}
+        return n
+    m = RE_NT_CBETA.match(n)
+    if m:                                   # 상세 없이 한 줄로 쓴 원교감주
+        rest = m.group(3).strip()
+        d = ["교감 번호: " + m.group(2)]
+        q = re.match(r"「(.*?)」\.?\s*(.*)$", rest, re.S)
+        if q:
+            d.insert(0, "원교감 원문: " + q.group(1))
+            rest = q.group(2)
+        ss = _nt_sentences(rest)
+        return {"t": "[CBETA 교감] " + (ss[0] if ss else "교감 " + m.group(2)),
+                "d": d + ss[1:]}
+    for rx, tag in ((RE_NT_STAR, "[상호참조]"), (RE_NT_GAIJI, "[외자]")):
+        m = rx.match(n)
+        if m:
+            body = m.group(m.lastindex)
+            ss = _nt_sentences(body)
+            d = ss[1:]
+            if tag == "[외자]":
+                d = ["CBETA 외자 번호: " + m.group(1)] + d
+            return {"t": f"{tag} " + (ss[0] if ss else body), "d": d} if d else f"{tag} {body}"
+    return n
+
+
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
+    last_head = None
 
     # 원문 TXT 에 독립 단락으로 있는 한문 소제목(品題·章題)은 표제이면서 원문이다.
     # 그런 소제목은 원문 단위로 세워야 TXT 와 제자리가 맞고, 바로 뒤의 교감주도
@@ -1151,8 +1236,14 @@ def parse_shtk_docx(d, tables, path=None):
         if style in ("SHTK Subheading", "SHTK Meta"):   # 소제목·권말 제목
             pair = [x.strip() for x in re.split(r"\s*[|｜]\s*", txt)]
             if pair[0] and skey(pair[0]) in txt_keys:
-                open_unit(pair[0], pair[1:2] if len(pair) == 2 else None)
+                ko = pair[1:2] if len(pair) == 2 else None
+                # 「제목 3: 한국어 장제 → 소제목: 한문 장제」 짝이면 바로 앞 제목이
+                # 이 장제의 번역이다. 비워 두면 앱에 '번역 대응 없음'이 뜬다.
+                if not ko and last_head:
+                    ko = [RE_APPARATUS.sub("", last_head).strip()]
+                open_unit(pair[0], ko)
                 cur["sealed"] = True
+                last_head = None
                 continue
             if style == "SHTK Meta":
                 # 본문 칸 사이의 안내·검증 요약 따위는 원문도 교감도 아니다
@@ -1166,6 +1257,7 @@ def parse_shtk_docx(d, tables, path=None):
             elif hl == 3:
                 parent = txt
             secs.append({"hl": hl, "raw": txt, "parent": parent if hl == 4 else None})
+            last_head = txt if hl in (2, 3) else None
             pending.append(len(secs) - 1)
             cur_sec = len(secs) - 1
             if cur is not None:
@@ -1173,6 +1265,7 @@ def parse_shtk_docx(d, tables, path=None):
             continue
         if style == "SHTK Block Label":
             continue
+        last_head = None
         if style == "SHTK Position Marker":
             pm = PURE_MARKER.match(txt)
             if pm:
@@ -1219,6 +1312,8 @@ def parse_shtk_docx(d, tables, path=None):
         else:
             s["lv"] = s["hl"] - 1
             s["t"] = s["raw"]
+    for u in units:
+        u["nt"] = [shtk_tidy_note(n) for n in u["nt"]]
     for u in units:
         u.pop("sealed", None)
         u["h"] = secs[u["h"]]["t"] if u["h"] is not None else None
