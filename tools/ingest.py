@@ -1088,6 +1088,7 @@ def para_text_with_figs(p, imgmap):
 #   · Note Summary 한 줄 + Note Detail 여러 줄 → 교감 하나 {"t": 요지, "d": [상세…]}
 #   · Heading 2·3·4 와 SHTK Subheading 은 절 표제(층위 1~4)
 RE_SHTK_BODY = re.compile(r"본문\s*$")
+RE_KO_FIG_TAIL = re.compile(r"\s*\[이미지\s*확인\]\s*(?:\u27e6fig:[^\u27e7]+\u27e7\s*)+$")
 RE_SHTK_SUMMARY = re.compile(r"^\s*교감\s*요약\s*[|｜]\s*")
 RE_SHTK_ITEM = re.compile(r"^\s*[•·\-–]\s*")
 
@@ -1289,6 +1290,10 @@ def parse_shtk_docx(d, tables, path=None):
             front.append(txt)
             continue
         if style == "SHTK Translation Text":
+            # 번역 끝에 「[이미지 확인] ⟦fig⟧⟦fig⟧…」로 원문 이미지를 한데 모아 둔 문서가 있다.
+            # 이미지 글자는 원문 칸 제자리에 이미 있고 교감 메모에도 하나씩 달려 있으므로,
+            # 번역 칸에서는 이 꼬리 묶음을 뺀다. (번역 문장 안의 토큰은 그대로 둔다)
+            txt = RE_KO_FIG_TAIL.sub("", txt).rstrip()
             cur["ko"].append(txt)
         elif style == "SHTK Note Summary":
             t = RE_SHTK_SUMMARY.sub("", txt, count=1).strip()

@@ -512,6 +512,16 @@ function inlineFigs(html, wid) {
     ` alt="저본 도판" title="${esc(FIGCAP[name] || '저본 도판')}" loading="lazy">`);
 }
 
+// 도판(그림)과 달리 글자 한 자를 찍은 작은 이미지(CBETA 인라인 문자, 40~60px)는
+// 본문 글자 크기에 맞춘다. 원본 크기를 알아야 하므로 그림이 뜬 뒤에 가린다.
+document.addEventListener('load', (ev) => {
+  const img = ev.target;
+  if (img && img.classList && img.classList.contains('fig-in') &&
+      img.naturalHeight && img.naturalHeight <= 80 && img.naturalWidth <= 120) {
+    img.classList.add('glyph');
+  }
+}, true);
+
 // 과문(科文) 목차 줄은 머리표로 층을 나타낸다. 저본 편집과 같게 들여쓴다.
 const OUTLINE_MARKS = '•○▪▫◆◇▸▹';
 function outlineLevel(t) {
