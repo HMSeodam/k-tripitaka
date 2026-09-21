@@ -1080,6 +1080,115 @@ def para_text_with_figs(p, imgmap):
     return "".join(buf) if seen else p.text
 
 
+# ── 신한글대장경 전문번역 표준 DOCX(SHTK 스타일) ─────────────────────────
+# 「SHTK Source Text / Translation Text / Note Summary / Note Detail /
+#  Position Marker / Block Label」처럼 문단 스타일이 곧 역할을 말해 주는 문서.
+# 글자 비율로 원문·번역을 추정하지 않고 스타일을 그대로 따른다.
+#   · 「9. 본문」 표제 앞은 해제(front), 본문 뒤의 제1표제(검증 정보 등)는 부록
+#   · Note Summary 한 줄 + Note Detail 여러 줄 → 교감 하나 {"t": 요지, "d": [상세…]}
+#   · Heading 2·3·4 와 SHTK Subheading 은 절 표제(층위 1~4)
+RE_SHTK_BODY = re.compile(r"본문\s*$")
+RE_SHTK_SUMMARY = re.compile(r"^\s*교감\s*요약\s*[|｜]\s*")
+RE_SHTK_ITEM = re.compile(r"^\s*[•·\-–]\s*")
+
+
+def is_shtk_docx(d) -> bool:
+    return any((p.style.name or "").startswith("SHTK ") for p in d.paragraphs)
+
+
+def parse_shtk_docx(d, tables):
+    units, front, appendix, sections, pending = [], [], [], [], []
+    phase, cur, marker, head, parent = "front", None, None, None, None
+
+    def shtk_detail(t):
+        t = RE_SHTK_ITEM.sub("", t, count=1)
+        k, sep, v = t.partition(" | ")
+        k, v = k.strip(), v.strip()
+        # '판본 정보 | 판본: …' 처럼 칸 이름이 값 앞에 한 번 더 붙은 꼴을 정리
+        for pre in {k, k.split()[0]}:
+            if v.startswith(pre + ":"):
+                v = v[len(pre) + 1:].strip()
+        return f"{k}: {v}" if sep else t
+
+    for p in d.paragraphs:
+        style = (p.style.name or "").strip()
+        txt = re.sub(r"[ \t]+", " ", p.text).strip()
+        if not txt:
+            continue
+        is_h1 = style == "Heading 1"
+        if phase == "front":
+            if is_h1 and RE_SHTK_BODY.search(txt):
+                phase = "body"
+            elif style != "SHTK TOC Title":
+                front.append(txt)
+            continue
+        if phase == "body" and is_h1:
+            phase = "back"
+        if phase == "back":
+            appendix.append(txt)
+            continue
+
+        hm = re.match(r"Heading ([2-4])$", style)
+        if hm or style == "SHTK Subheading":
+            # 제2~4표제는 모두 화면을 나누는 권(층위 1)으로 삼는다. 이 서식은
+            # 위치표지가 몇 개뿐이라 쪽 번호로 잘게 나눌 수 없기 때문이다.
+            # 제4표제는 제3표제 아래 과단(序說·正說…)이므로 윗 표제를 앞에 붙여
+            # 「第一 明大意」와 「第一 序說」이 목록에서 헷갈리지 않게 한다.
+            lv, title = (1, txt) if hm else (2, txt)
+            if hm and hm.group(1) == "3":
+                parent = txt
+            elif hm and hm.group(1) == "4" and parent:
+                title = f"{parent} · {txt}"
+            elif hm and hm.group(1) == "2":
+                parent = None
+            pending.append({"lv": lv, "t": title})
+            head = title
+            if cur is not None:
+                cur["sealed"] = True
+            continue
+        if style == "SHTK Block Label":
+            continue
+        if style == "SHTK Position Marker":
+            pm = PURE_MARKER.match(txt)
+            if pm:
+                marker = pm.group(1)
+            continue
+        if style == "SHTK Source Text":
+            mk = RE_MARKER.match(txt)
+            if mk:
+                marker = mk.group(1)
+            if cur and not cur["ko"] and not cur["nt"] and not cur.get("sealed"):
+                cur["cn"].append(txt)
+                continue
+            if cur:
+                units.append(cur)
+            for sec in pending:
+                sections.append({**sec, "i": len(units)})
+            pending = []
+            cur = {"m": marker, "cn": [txt], "ko": [], "nt": [], "h": head}
+            continue
+        if cur is None:
+            front.append(txt)
+            continue
+        if style == "SHTK Translation Text":
+            cur["ko"].append(txt)
+        elif style == "SHTK Note Summary":
+            t = RE_SHTK_SUMMARY.sub("", txt, count=1).strip()
+            if not t.startswith("["):
+                t = "[CBETA 교감] " + t
+            cur["nt"].append({"t": t, "d": []})
+        elif style == "SHTK Note Detail" and cur["nt"] and isinstance(cur["nt"][-1], dict):
+            cur["nt"][-1]["d"].append(shtk_detail(txt))
+        else:
+            cur["nt"].append(shtk_detail(txt))
+    if cur:
+        units.append(cur)
+    for u in units:
+        u.pop("sealed", None)
+    return {"units": units, "tables": tables, "front": front,
+            "appendix": appendix, "sections": sections}
+
+
 def parse_docx(path: Path):
     if docx is None:
         raise RuntimeError("python-docx 가 필요합니다: pip install python-docx")
@@ -1092,6 +1201,10 @@ def parse_docx(path: Path):
         rows = [r for r in rows if any(r)]
         if rows:
             tables.append(rows)
+
+    # 표준 DOCX(SHTK 스타일)는 스타일이 역할을 정해 주므로 따로 읽는다
+    if is_shtk_docx(d):
+        return parse_shtk_docx(d, tables)
 
     # 2) 본문 단락 스캔
     blocks, cur_head, cur_marker = [], None, None
@@ -1452,6 +1565,9 @@ def split_note_items(units):
             continue
         out = []
         for t in u["nt"]:
+            if isinstance(t, dict):           # 요지·상세로 이미 나뉜 교감
+                out.append(t)
+                continue
             body = RE_NOTE_LABEL.sub("", t, count=1).strip()
             if not body:                      # 칸 이름뿐인 줄은 버린다
                 continue
