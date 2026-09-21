@@ -1190,6 +1190,9 @@ def parse_shtk_docx(d, tables, path=None):
     # 그 소제목에 붙는다. (편집자가 넣은 과단 표제는 TXT 에 없으므로 표제로만 둔다)
     def skey(t):
         return re.sub(r"[\s\u3000]", "", RE_MARKER.sub("", RE_APPARATUS.sub("", t)))
+    # 원문·번역 칸에 박힌 인라인 문자 이미지는 ⟦fig:원본파일명⟧ 토큰으로 제자리에 둔다
+    imgmap = (docx_image_names(d, ROOT / "assets" / "figures" / path.parent.name)
+              if path is not None else {})
     txt_keys = set()
     if path is not None:
         tp = path.parent / "원문.txt"
@@ -1217,7 +1220,9 @@ def parse_shtk_docx(d, tables, path=None):
 
     for p in d.paragraphs:
         style = (p.style.name or "").strip()
-        txt = re.sub(r"[ \t]+", " ", p.text).strip()
+        raw_p = (para_text_with_figs(p, imgmap)
+                 if style in ("SHTK Source Text", "SHTK Translation Text") else p.text)
+        txt = re.sub(r"[ \t]+", " ", raw_p).strip()
         if not txt:
             continue
         is_h1 = style == "Heading 1"
@@ -1304,7 +1309,8 @@ def parse_shtk_docx(d, tables, path=None):
     placed = [s for s in secs if "i" in s]
     top = [s["i"] for s in placed if s["hl"] == 2]
     sizes = [b - a for a, b in zip(top, top[1:] + [len(units)])]
-    flat = len(top) < 2 or max(sizes) > 150
+    flat = ((len(top) < 2 or max(sizes) > 150)
+            and sum(1 for s in placed if s["hl"] <= 4) <= 120)   # 펴도 목록이 감당될 때만
     for s in secs:
         if flat:
             s["lv"] = 1 if s["hl"] <= 4 else 2
