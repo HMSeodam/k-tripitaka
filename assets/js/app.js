@@ -559,7 +559,9 @@ function unitNode(u, wid) {
   if (u.ko && u.ko.length) {
     u.ko.forEach(t => {
       const q = el('p', 'ko');
-      q.innerHTML = inlineFigs(esc(stripKoMarker(t)), wid);
+      // 번역문 속 교감표지([1]·[＊])도 원문 칸처럼 옅게 보인다
+      q.innerHTML = inlineFigs(
+        esc(stripKoMarker(t)).replace(APP_TAG, m => `<span class="app">${m}</span>`), wid);
       kobox.append(q);
     });
   } else {

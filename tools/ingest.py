@@ -1092,6 +1092,7 @@ RE_SHTK_BODY = re.compile(r"본문\s*$")
 RE_SHTK_LOG = re.compile(
     r"공통으로 존재하는 교감\s*:|표시 단위\s*:\s*\d|미확보 이미지 수\s*:|번역 차이 없음\s*:\s*\d"
     r"|교감 상호참조 표지\s*:\s*\d")
+RE_KO_APP_TAIL = re.compile(r"\s*(?:\[(?:\d{1,2}|＊)\]\s*)+$")
 RE_KO_FIG_TAIL = re.compile(r"\s*\[이미지\s*확인\]\s*(?:\u27e6fig:[^\u27e7]+\u27e7\s*)+$")
 RE_SHTK_SUMMARY = re.compile(r"^\s*교감\s*요약\s*[|｜]\s*")
 RE_SHTK_ITEM = re.compile(r"^\s*[•·\-–]\s*")
@@ -1110,6 +1111,10 @@ RE_NT_CBETA = re.compile(
 RE_NT_ADD = re.compile(r"^\[CBETA\s*추가\s*교감\s+([^\]·]+?)\s*(?:·\s*([^\]]+))?\]\s*(.*)$", re.S)
 RE_NT_STAR = re.compile(r"^\[star reference\]\s*(.*)$", re.S | re.I)
 RE_NT_GAIJI = re.compile(r"^\[외자 복원\s*(CB\d+)\]\s*(.*)$", re.S)
+
+
+RE_NT_LONG = re.compile(r"^(\[[^\]]*(?:교감|관주|외자|서지|주기|간기)[^\]]*\])\s*(.+)$", re.S)
+RE_NT_SENT = re.compile(r"(?<=[가-힣’”」)】\]\u3400-\u9fff\U00020000-\U0003ffff])\.\s+")
 
 
 def _nt_sentences(t):
@@ -1182,6 +1187,17 @@ def shtk_tidy_note(n):
             if tag == "[외자]":
                 d = ["CBETA 외자 번호: " + m.group(1)] + d
             return {"t": f"{tag} " + (ss[0] if ss else body), "d": d} if d else f"{tag} {body}"
+    m = RE_NT_LONG.match(n)
+    if m and len(n) > 90:                   # 상세 없이 긴 한 줄로 쓴 교감·주기 메모
+        tag, body = m.group(1), m.group(2)
+        d = []
+        k = re.match(r"(?:교감(?:/주기)?\s*번호|note)\s*(\d{7}\w*)\s*[.:：]\s*", body)
+        if k:
+            d.append("교감 번호: " + k.group(1))
+            body = body[k.end():]
+        ss = [x.strip() for x in RE_NT_SENT.split(body) if x.strip()]
+        if len(ss) > 1 or d:
+            return {"t": f"{tag} {ss[0] if ss else body}", "d": d + ss[1:]}
     return n
 
 
@@ -1300,6 +1316,9 @@ def parse_shtk_docx(d, tables, path=None):
             # 이미지 글자는 원문 칸 제자리에 이미 있고 교감 메모에도 하나씩 달려 있으므로,
             # 번역 칸에서는 이 꼬리 묶음을 뺀다. (번역 문장 안의 토큰은 그대로 둔다)
             txt = RE_KO_FIG_TAIL.sub("", txt).rstrip()
+            # 번역 끝에 원문 교감표지를 그대로 옮겨 붙인 「… 밝힌다. [1]」은 뺀다
+            # (표지는 원문 칸에 있고, 교감은 아래 메모에 달린다)
+            txt = RE_KO_APP_TAIL.sub("", txt).rstrip()
             cur["ko"].append(txt)
         elif style == "SHTK Note Summary" and RE_SHTK_LOG.search(txt):
             # 교감이 아니라 DOCX 제작 단계의 처리 통계(몇 건 대조·몇 종 처리 따위)다.
