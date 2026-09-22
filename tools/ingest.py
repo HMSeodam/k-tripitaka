@@ -1201,6 +1201,63 @@ def shtk_tidy_note(n):
     return n
 
 
+# ── CBETA XML 판본 용어 정리 ─────────────────────────────────────────────
+# DOCX 제작 때 CBETA 2018판 XML(xml-p5-2018, '구 XML')과 현행 XML(xml-p5,
+# '현재 XML')을 대조한 기록이 교감 상세에 남는다. 독자에게는
+#   · 두 판이 같다는 줄은 정보가 없으므로 뺀다
+#   · '구 XML/현재 XML'은 'CBETA 2018판/현행 CBETA'로 바꾼다
+#   · 두 판이 실제로 다를 때의 기록은 그대로 둔다
+#   · 출처(파일 경로) 줄은 상세 맨 끝에 둔다
+XML_TERMS = [
+    (r"구\s*XML과\s*현재\s*XML", "CBETA 2018판과 현행판"),
+    (r"현재\s*·\s*구\s*(?:CBETA\s*)?XML", "현행 CBETA와 2018판"),
+    (r"구\s*·\s*현재\s*(?:CBETA\s*)?XML", "CBETA 2018판과 현행판"),
+    (r"두 XML", "두 판"),
+    (r"현재\s*CBETA\s*XML|현행\s*공식\s*XML|현재\s*XML|현행\s*XML", "현행 CBETA"),
+    (r"구버전\s*XML|구판\s*XML|구\s*XML", "CBETA 2018판"),
+    (r"구판·현행", "2018판·현행"),
+    (r"현재판", "현행판"),
+]
+XML_TERMS = [(re.compile(a), b) for a, b in XML_TERMS]
+RE_XML_SAME = re.compile(
+    r"^(?:구버전 XML 대응:\s*있음|구\s*XML도 동일|XML 구조:\s*<figure>.*"
+    r"|판본 정보:\s*(?:구·현재 XML 모두 동일한 대립을 보인다|구 XML과 현재 XML에 공통으로 존재한다))\.?$")
+
+
+def _xml_src(v):
+    v = re.sub(r"cbeta-org/", "", v)
+    v = re.sub(r"xml-p5-2018", "2018판", v)
+    v = re.sub(r"xml-p5\b", "현행판", v)
+    v = re.sub(r"\b[TX]/[TX]\d+/([TX]\d+n\d+\w*)\.xml", r"\1", v)
+    return v
+
+
+def xml_terms(t):
+    for rx, rep in XML_TERMS:
+        t = rx.sub(rep, t)
+    return t
+
+
+def shtk_xml_tidy(n):
+    if isinstance(n, str):
+        return xml_terms(n)
+    d, src = [], []
+    for x in n["d"]:
+        if RE_XML_SAME.match(x.strip()):
+            continue
+        x = re.sub(r"\s*·\s*구판·현행 공통", "", x)
+        x = re.sub(r"^비고:\s*구판·현행 공통$", "", x)
+        if not x.strip():
+            continue
+        if x.startswith("출처:"):
+            src.append(_xml_src(xml_terms(x)))
+        else:
+            d.append(xml_terms(x))
+    d += src
+    t = xml_terms(n["t"])
+    return {"t": t, "d": d} if d else t
+
+
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
@@ -1358,7 +1415,7 @@ def parse_shtk_docx(d, tables, path=None):
             s["lv"] = s["hl"] - 1
             s["t"] = s["raw"]
     for u in units:
-        u["nt"] = [shtk_tidy_note(n) for n in u["nt"]]
+        u["nt"] = [shtk_xml_tidy(shtk_tidy_note(n)) for n in u["nt"]]
     for u in units:
         u.pop("sealed", None)
         u["h"] = secs[u["h"]]["t"] if u["h"] is not None else None
