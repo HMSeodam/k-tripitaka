@@ -1496,14 +1496,27 @@ def parse_shtk_docx(d, tables, path=None):
             mk = RE_MARKER.match(txt)
             if mk:
                 marker = mk.group(1)
+            # 원문 한 칸에 위치표지가 여럿 들어 있으면(게송·음석이 산문 뒤에 이어질 때)
+            # 표지마다 조각으로 나눈다. 조각이 제 표지 자리를 찾아가야 원문 순서가 맞는다.
+            parts = [x.strip() for x in re.split(r"(?=\[\d{3,4}[abc]\d{2}\])", txt) if x.strip()]
             if cur and not cur["ko"] and not cur["nt"] and not cur.get("sealed"):
-                cur["cn"].append(txt)
+                cur["cn"] += parts
             else:
-                open_unit(txt)
+                open_unit(parts[0])
+                cur["cn"] += parts[1:]
             continue
         if cur is None:
             front.append(txt)
             continue
+        if style in ("Quote", "Intense Quote"):      # 번역문 안에 인용한 게송 줄
+            if cur is not None:
+                cur["ko"].append(txt)
+                continue
+        if re.match(r"List (?:Number|Bullet|Paragraph)", style):
+            # 번역 뒤에 「주」 표제로 붙인 역자 주석 목록
+            if cur is not None:
+                cur["nt"].append("[역주] " + txt)
+                continue
         if style == "SHTK Translation Text":
             # 번역 끝에 「[이미지 확인] ⟦fig⟧⟦fig⟧…」로 원문 이미지를 한데 모아 둔 문서가 있다.
             # 이미지 글자는 원문 칸 제자리에 이미 있고 교감 메모에도 하나씩 달려 있으므로,
@@ -2071,6 +2084,9 @@ def merge(txt_units, dx):
             # 게송 원문이 '번역 대응 없음'으로 떨어져 나가지 않는다.
             # 자리를 정하는 것은 원문 조각의 앞머리다.
             targets = [t for t in (resolve(c) for c in u["cn"]) if t is not None]
+            # 시작 자리는 첫 원문 조각이 정한다. 뒤 조각이 우연히 앞쪽 글귀와
+            # 맞아떨어져 덩어리 전체가 앞으로 끌려가는 것을 막는다.
+            first = resolve(u["cn"][0])
             pieces = list(u["cn"])
             # 아래 둘은 '어디까지 걸치는가'만 넓힌다. 시작 자리는 바꾸지 않는다.
             #  · docx 원문 조각이 줄바꿈으로 여러 행을 담고 있을 때
@@ -2096,6 +2112,7 @@ def merge(txt_units, dx):
             else:
                 targets = tail
         else:
+            first = None
             # 원문 조각 없이 표지만 있는 번역 닻.
             # 원문 한 줄이 길면 그 줄 하나에 번역 문단이 여럿 달린다.
             # 그러므로 이미 다른 번역이 붙은 자리라도 이어 붙일 수 있어야 한다.
@@ -2112,7 +2129,8 @@ def merge(txt_units, dx):
         # docx 한 단위가 담은 원문 조각 수보다 훨씬 넓은 범위에 걸쳐 있다면
         # 어느 한 조각이 엉뚱한 자리에 붙은 것이다. 그 이상치는 버린다.
         targets.sort()
-        owner = targets[0]
+        owner = first if u["cn"] and first is not None and first in targets else targets[0]
+        targets = [t for t in targets if t >= owner] or [owner]
         span_max = len(pieces) * 2 + 10 if u["cn"] else len(u["cn"]) * 2 + 10
         targets = [t for t in targets if t - owner <= span_max]
         last = targets[-1]
