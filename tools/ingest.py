@@ -1136,6 +1136,115 @@ def _nt_gist(d):
     return f"저본 {a} → 이문 {b}"
 
 
+# ── 여러 표준 DOCX 교감 메모 변형을 「[태그] 요지 + 상세」로 맞추기 ─────────────
+# (화엄경탐현기처럼 「[CBETA 원교감] [2] · n=0107002 · 悕＝希【甲】 · 현행 …」로
+#  한 줄에 이어 쓴 것, 「[CBETA 교감 0116c07]」처럼 번호만 요지에 둔 것 등)
+RE_WIT = re.compile(r"【([^】]+)】")
+
+
+def _orig_gist(o):
+    """대정 원교감 표기(悕＝希【甲】, 〔X〕－【甲】, A＋（B）【甲】)를 한 줄 요지로."""
+    o = o.strip().rstrip("＊*").strip()
+    wits = "·".join(w for w in RE_WIT.findall(o) if w != "大")
+    body = RE_WIT.sub("", o).replace("＊", "").strip()
+    mark = ""
+    for k, v in (("ィ", " (일본)"), ("ヵ", " (의심)")):
+        if k in body:
+            body = body.replace(k, ""); mark = v
+    w = f"{wits}본" if wits else "이본"
+    m = re.fullmatch(r"(.+?)＝(.+)", body)
+    if m:
+        return f"저본 {m.group(1)} → {w} {m.group(2)}{mark}"
+    m = re.fullmatch(r"〔(.+?)〕－", body)
+    if m:
+        return f"{w}에는 {m.group(1)} 없음{mark}"
+    m = re.fullmatch(r"(.+?)＋（(.+?)）", body)
+    if m:
+        return f"{w}은 {m.group(1)} 뒤에 {m.group(2)}이 있음{mark}"
+    m = re.fullmatch(r"（(.+?)）＋(.+)", body)
+    if m:
+        return f"{w}은 {m.group(2)} 앞에 {m.group(1)}이 있음{mark}"
+    return None
+
+
+RE_NT_DOTS = re.compile(r"^\[(CBETA 원교감(?: · TXT 표지 없음)?)\]\s*(?:\[[\d＊]+\]\s*·\s*)?n=(\d{7})\s*·\s*(.*)$", re.S)
+RE_NT_ID = re.compile(
+    r"^\[(CBETA (?:교감|현행 추가주|외자(?: 갱신)?|XML 교감 · TXT 표지 없음|현행 star_removed 교감))"
+    r"(?:\s+(\d{4}[abc]\d{2}\d*))?\]\s*(?:(\d{4}[abc]\d{2}\d*)\s*·\s*)?(.*)$", re.S)
+NT_NOISE = re.compile(r"^(?:이미지 판독:\s*해당 없음.*|판독 확신도:\s*해당 없음\.?|교감 종류:.*)$")
+NT_DROP = re.compile(r"^\[CBETA 공식 교감·외자 복원\]$|^\[편집\]\s*(?:\[\d+\](?:,\s*)?)+[은는]?\s*원문의 교감·주기 앵커")
+
+
+def shtk_variant_note(n):
+    t = n if isinstance(n, str) else n["t"]
+    d = [] if isinstance(n, str) else list(n["d"])
+    if NT_DROP.search(t):
+        return None                                   # 출처 한 줄뿐인 빈 블록·앵커 안내
+    d = [re.sub(r"^상세:\s*", "", x) for x in d if not NT_NOISE.match(x.strip())]
+    m = RE_NT_DOTS.match(t)
+    if m:
+        parts = [x.strip() for x in m.group(3).split(" · ") if x.strip()]
+        dd, orig = [], None
+        for x in parts:
+            if x.startswith("XML 위치"):
+                dd.append("원문 위치: " + x[len("XML 위치"):].strip() + " (원문 TXT에는 표지 없음)")
+            elif x.startswith("현행 CBETA:"):
+                dd.append(x.replace("현행 CBETA:", "현행 CBETA:", 1))
+            elif orig is None:
+                orig = x
+            else:
+                dd.append(x)
+        gist = _orig_gist(orig) if orig else None
+        head = ["원교감 원문: " + orig] if orig else []
+        return {"t": "[CBETA 교감] " + (gist or orig or "교감 " + m.group(2)),
+                "d": head + ["교감 번호: " + m.group(2)] + dd + d}
+    m = RE_NT_ID.match(t)
+    if m:
+        kind, nid, rest = m.group(1), m.group(2) or m.group(3), m.group(4).strip()
+        rest = re.sub(r"\s*·\s*B단계 판정:\s*\S+", "", rest)
+        star = re.search(r"\s*·\s*원 별표 계열 n=(\d+)", rest)
+        if star:
+            rest = rest[:star.start()]
+            d.append("원 별표 계열: 교감 " + star.group(1))
+        if kind.startswith("CBETA 외자"):
+            kv = {}
+            for x in d:
+                k2, _, v2 = x.partition(" ")
+                kv.setdefault(k2, v2)
+            tx = re.search(r"TXT 표기 (\S+)", " ".join(d))
+            nf = re.search(r"normalized form (\S+)", " ".join(d))
+            # 요지 문장이 이미 있으면(「CB18658의 자형은 …이다」) 그대로 쓰고,
+            # 없을 때만 「TXT 표기 = 정규형」을 조립한다
+            g = (tx.group(1) + (f" = {nf.group(1)}" if nf and nf.group(1) != "—" else "")) if tx else ""
+            tag = "[외자 갱신]" if "갱신" in kind else "[외자]"
+            head = rest or g or (d[0] if d else "")
+            return {"t": f"{tag} {head}".strip(),
+                    "d": (["위치: " + nid] if nid else []) + d}
+        if not rest:
+            kv = dict(x.split(": ", 1) for x in d if ": " in x)
+            a, b = kv.get("저본 독법"), kv.get("이문/현행 독법") or kv.get("이문 독법")
+            if a and b:
+                rest = f"저본 {RE_WIT.sub('', a)} → 현행 CBETA {RE_WIT.sub('', b).replace('∅', '(없음)')}"
+            elif d and "→" in d[0]:
+                rest = RE_WIT.sub("", d[0]) + (" (표기 차이)" if any("표기/자형" in x for x in d) else "")
+            elif d:
+                rest = d[0]
+        tag = {"CBETA 현행 추가주": "[CBETA 추가 교감]", "CBETA 현행 star_removed 교감": "[CBETA 추가 교감]",
+               "CBETA XML 교감 · TXT 표지 없음": "[CBETA 교감]"}.get(kind, "[CBETA 교감]")
+        if kind == "CBETA XML 교감 · TXT 표지 없음":
+            rest += " (원문 TXT에는 표지 없음)"
+        d = [x for x in d if not x.startswith("교감번호:")]
+        return {"t": f"{tag} {rest}".strip(), "d": (["교감 번호: " + nid] if nid else []) + d}
+    m = re.match(r"^\[＊ 상호참조( 후보)?\]\s*(.*)$", t, re.S)
+    if m:
+        body = m.group(2).replace("→ n=", "교감 ").replace(" · ", " — ", 1)
+        return (f"[상호참조{' 후보' if m.group(1) else ''}] " + body) if not d else \
+            {"t": f"[상호참조{' 후보' if m.group(1) else ''}] " + body, "d": d}
+    if isinstance(n, dict):
+        return {"t": t, "d": d} if d else t
+    return n
+
+
 def shtk_tidy_note(n):
     if isinstance(n, dict) and not n["d"]:      # 상세 없는 요약 한 줄은 문자열로 다룬다
         n = n["t"]
@@ -1226,6 +1335,7 @@ RE_XML_SAME = re.compile(
 
 def _xml_src(v):
     v = re.sub(r"cbeta-org/", "", v)
+    v = re.sub(r"현행\s*xml-p5\b", "현행판", v)
     v = re.sub(r"xml-p5-2018", "2018판", v)
     v = re.sub(r"xml-p5\b", "현행판", v)
     v = re.sub(r"\b[TX]/[TX]\d+/([TX]\d+n\d+\w*)\.xml", r"\1", v)
@@ -1249,7 +1359,7 @@ def shtk_xml_tidy(n):
         x = re.sub(r"^비고:\s*구판·현행 공통$", "", x)
         if not x.strip():
             continue
-        if x.startswith("출처:"):
+        if re.match(r"^[^:]{0,12}출처:", x):
             src.append(_xml_src(xml_terms(x)))
         else:
             d.append(xml_terms(x))
@@ -1330,11 +1440,31 @@ def parse_shtk_docx(d, tables, path=None):
                 cur["sealed"] = True
                 last_head = None
                 continue
+            if style == "SHTK Meta" and cur is not None and cur.get("title") and not cur["ko"]:
+                cur["ko"].append(txt)               # 품제의 한국어 제목
+                continue
             if style == "SHTK Meta":
                 # 본문 칸 사이의 안내·검증 요약 따위는 원문도 교감도 아니다
                 appendix.append(re.sub(r"^[•·]\s*", "", txt))
                 continue
         hm = re.match(r"Heading ([2-4])$", style)
+        if hm and "|" in txt:
+            # 「名號品第三 | 명호품 제3」처럼 원문 TXT의 품제(品題)를 제목으로 쓴 경우:
+            # 목록 제목은 두 말을 함께 보이고, 품제는 원문 단위로도 세운다
+            pair = [x.strip() for x in re.split(r"\s*[|｜]\s*", txt)]
+            if len(pair) == 2 and skey(pair[0]) in txt_keys:
+                hl = int(hm.group(1))
+                if hl == 2:
+                    parent = None
+                elif hl == 3:
+                    parent = pair[0]
+                secs.append({"hl": hl, "raw": f"{pair[0]} ({pair[1]})", "parent": None})
+                pending.append(len(secs) - 1)
+                cur_sec = len(secs) - 1
+                open_unit(pair[0], [pair[1]])
+                cur["sealed"] = True
+                last_head = None
+                continue
         if hm or style == "SHTK Subheading":
             hl = int(hm.group(1)) if hm else 5
             if hl == 2:
@@ -1347,6 +1477,12 @@ def parse_shtk_docx(d, tables, path=None):
             cur_sec = len(secs) - 1
             if cur is not None:
                 cur["sealed"] = True
+            # 제목 자체가 원문 TXT의 품제(名號品第三 등)이면 목차이면서 원문 단위이다.
+            # 바로 뒤의 SHTK Meta(「명호품(名號品)」 제3)가 그 번역이 된다.
+            if hm and txt_keys and skey(txt) in txt_keys:
+                open_unit(txt)
+                cur["sealed"] = cur["title"] = True
+                last_head = None
             continue
         if style == "SHTK Block Label":
             continue
@@ -1392,7 +1528,8 @@ def parse_shtk_docx(d, tables, path=None):
                 t = "[CBETA 교감] " + t
             cur["nt"].append({"t": t, "d": []})
         elif style == "SHTK Note Detail" and cur["nt"] and isinstance(cur["nt"][-1], dict):
-            cur["nt"][-1]["d"].append(shtk_detail(txt))
+            # 상세 한 문단에 줄바꿈으로 「• 항목 | 내용」 여러 줄을 담은 문서가 있다
+            cur["nt"][-1]["d"] += [shtk_detail(x) for x in txt.split("\n") if x.strip()]
         else:
             cur["nt"].append(shtk_detail(txt))
     if cur:
@@ -1415,9 +1552,11 @@ def parse_shtk_docx(d, tables, path=None):
             s["lv"] = s["hl"] - 1
             s["t"] = s["raw"]
     for u in units:
-        u["nt"] = [shtk_xml_tidy(shtk_tidy_note(n)) for n in u["nt"]]
+        u["nt"] = [shtk_xml_tidy(shtk_tidy_note(v)) for v in
+                   (shtk_variant_note(n) for n in u["nt"]) if v is not None]
     for u in units:
         u.pop("sealed", None)
+        u.pop("title", None)
         u["h"] = secs[u["h"]]["t"] if u["h"] is not None else None
     sections = [{"lv": s["lv"], "t": s["t"], "i": s["i"]} for s in placed]
     return {"units": units, "tables": tables, "front": front,
