@@ -1092,6 +1092,7 @@ RE_SHTK_BODY = re.compile(r"본문\s*$")
 RE_SHTK_LOG = re.compile(
     r"공통으로 존재하는 교감\s*:|표시 단위\s*:\s*\d|미확보 이미지 수\s*:|번역 차이 없음\s*:\s*\d"
     r"|교감 상호참조 표지\s*:\s*\d")
+RE_KO_FOOTNUM = re.compile(r"(?<!No)([다.,’”」\)!?])\s?(\d{1,3})(?=[\s‘“「(]|$)")
 RE_KO_APP_TAIL = re.compile(r"\s*(?:\[(?:\d{1,2}|＊)\]\s*)+$")
 RE_KO_FIG_TAIL = re.compile(r"\s*\[이미지\s*확인\]\s*(?:\u27e6fig:[^\u27e7]+\u27e7\s*)+$")
 RE_SHTK_SUMMARY = re.compile(r"^\s*교감\s*요약\s*[|｜]\s*")
@@ -1534,6 +1535,10 @@ def parse_shtk_docx(d, tables, path=None):
             # 번역 끝에 원문 교감표지를 그대로 옮겨 붙인 「… 밝힌다. [1]」은 뺀다
             # (표지는 원문 칸에 있고, 교감은 아래 메모에 달린다)
             txt = RE_KO_APP_TAIL.sub("", txt).rstrip()
+            # 번역문에 각주 번호만 덩그러니 박아 둔 문서가 있다(「…뜻이다.60」).
+            # 숫자로만 두면 오자로 보이므로 「[주 60]」으로 드러낸다.
+            # 번호는 그 권의 교감·번역 메모에 달린 번호 항목을 가리킨다.
+            txt = RE_KO_FOOTNUM.sub(r"\1[주 \2]", txt)
             cur["ko"].append(txt)
         elif style == "SHTK Note Summary" and RE_SHTK_LOG.search(txt):
             # 교감이 아니라 DOCX 제작 단계의 처리 통계(몇 건 대조·몇 종 처리 따위)다.
