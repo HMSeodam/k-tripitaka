@@ -1369,6 +1369,23 @@ def shtk_xml_tidy(n):
     return {"t": t, "d": d} if d else t
 
 
+RE_NT_ITEM = re.compile(r"^(\d{1,3})\.\s+(.*)$", re.S)
+
+
+def shtk_split_notes(n):
+    """번호 목록을 한 메모에 몰아넣은 블록을 낱낱의 메모로 편다.
+
+    번역문의 「[주 12]」가 그 번호를 가리키므로, 묶여 있으면 찾아가기 어렵다.
+    목록 머리말(「… 메모를 보존한다」)은 안내 문장이라 버린다.
+    """
+    if not isinstance(n, dict):
+        return [n]
+    items = [RE_NT_ITEM.match(x) for x in n["d"]]
+    if len(n["d"]) < 3 or not all(items):
+        return [n]
+    return [f"[주 {m.group(1)}] {m.group(2).strip()}" for m in items]
+
+
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
@@ -1556,7 +1573,18 @@ def parse_shtk_docx(d, tables, path=None):
             cur["nt"].append({"t": t, "d": []})
         elif style == "SHTK Note Detail" and cur["nt"] and isinstance(cur["nt"][-1], dict):
             # 상세 한 문단에 줄바꿈으로 「• 항목 | 내용」 여러 줄을 담은 문서가 있다
-            cur["nt"][-1]["d"] += [shtk_detail(x) for x in txt.split("\n") if x.strip()]
+            # 줄바꿈으로 「• 항목 | 내용」을 여러 줄 담은 문단만 나눈다.
+            # 머리표 없는 줄은 앞 줄이 이어진 것이므로 도로 붙인다.
+            chunks = []
+            for x in txt.split("\n"):
+                x = x.strip()
+                if not x:
+                    continue
+                if chunks and not RE_SHTK_ITEM.match(x):
+                    chunks[-1] += " " + x
+                else:
+                    chunks.append(x)
+            cur["nt"][-1]["d"] += [shtk_detail(x) for x in chunks]
         else:
             cur["nt"].append(shtk_detail(txt))
     if cur:
@@ -1579,8 +1607,18 @@ def parse_shtk_docx(d, tables, path=None):
             s["lv"] = s["hl"] - 1
             s["t"] = s["raw"]
     for u in units:
-        u["nt"] = [shtk_xml_tidy(shtk_tidy_note(v)) for v in
-                   (shtk_variant_note(n) for n in u["nt"]) if v is not None]
+        out = []
+        for n in u["nt"]:
+            v = shtk_variant_note(n)
+            if v is None:
+                continue
+            for x in shtk_split_notes(shtk_xml_tidy(shtk_tidy_note(v))):
+                # 요지 끝에 상세 첫 줄을 되풀이한 꼬리(「… · [0175a13] 題 / 顯 …」)는 자른다
+                if isinstance(x, dict) and " · " in x["t"] and x["d"] \
+                        and x["t"].split(" · ", 1)[1][:12] in x["d"][0]:
+                    x = {"t": x["t"].split(" · ", 1)[0].rstrip(), "d": x["d"]}
+                out.append(x)
+        u["nt"] = out
     for u in units:
         u.pop("sealed", None)
         u.pop("title", None)
@@ -1994,6 +2032,9 @@ def split_note_items(units):
             continue
         out = []
         for t in u["nt"]:
+            if isinstance(t, str) and t.startswith("[주 "):
+                out.append(t)                 # 번호 붙은 역자 주는 그대로 한 줄
+                continue
             if isinstance(t, dict):           # 요지·상세로 이미 나뉜 교감
                 out.append(t)
                 continue
