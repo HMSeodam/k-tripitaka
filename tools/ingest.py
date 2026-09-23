@@ -1371,7 +1371,7 @@ def shtk_xml_tidy(n):
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
-    last_head, in_log = None, False
+    last_head, in_log, note_list = None, False, False
 
     # 원문 TXT 에 독립 단락으로 있는 한문 소제목(品題·章題)은 표제이면서 원문이다.
     # 그런 소제목은 원문 단위로 세워야 TXT 와 제자리가 맞고, 바로 뒤의 교감주도
@@ -1428,6 +1428,11 @@ def parse_shtk_docx(d, tables, path=None):
             appendix.append(txt)
             continue
 
+        if style == "SHTK Subheading" or style.startswith("Heading"):
+            # 「주」·「제1문 주」 같은 표제 아래의 목록만 역자 주석이다
+            note_list = bool(re.fullmatch(r"(?:.{0,12}\s)?(?:주|주석|역주)", txt))
+        elif style in ("SHTK Source Text", "SHTK Position Marker"):
+            note_list = False
         if style in ("SHTK Subheading", "SHTK Meta"):   # 소제목·권말 제목
             pair = [x.strip() for x in re.split(r"\s*[|｜]\s*", txt)]
             if pair[0] and skey(pair[0]) in txt_keys:
@@ -1513,9 +1518,13 @@ def parse_shtk_docx(d, tables, path=None):
                 cur["ko"].append(txt)
                 continue
         if re.match(r"List (?:Number|Bullet|Paragraph)", style):
-            # 번역 뒤에 「주」 표제로 붙인 역자 주석 목록
+            # 번호 목록은 대개 번역 본문의 열거(장문 아홉 따위)다.
+            # 「주」 표제 아래의 목록만 역자 주석으로 돌린다.
             if cur is not None:
-                cur["nt"].append("[역주] " + txt)
+                if note_list:
+                    cur["nt"].append("[역주] " + txt)
+                else:
+                    cur["ko"].append(txt)
                 continue
         if style == "SHTK Translation Text":
             # 번역 끝에 「[이미지 확인] ⟦fig⟧⟦fig⟧…」로 원문 이미지를 한데 모아 둔 문서가 있다.
