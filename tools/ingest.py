@@ -2647,6 +2647,7 @@ PLAIN_RULES = [
     (r"도판\s*/\s*도판", "도판"),
     (r"\(\s*[,;]\s*", "("),
     (r"\s*,\s*\)", ")"),
+    (r"저본를", "저본을"), (r"저본는", "저본은"), (r"저본가", "저본이"), (r"저본와(?=\s|$)", "저본과"),
     (r"\s+([,.;)])", r"\1"),
     (r"^([^()]*)\)", r"\1"),                    # 짝 잃은 닫는 괄호
     (r"\(([^()]*)$", r"\1"),                    # 짝 잃은 여는 괄호
@@ -2667,14 +2668,51 @@ def plain_words(t):
 RE_MIN_ADD = re.compile(r"^\[최소 보충\]\s*(.{1,25})$")
 
 
+RE_HANGUL = re.compile(r"[가-힣]")
+RE_SENT_END = re.compile(r"(?<=[다요]\.)\s+|(?<=[.!?])\s+(?=[가-힣])")
+
+
+def _ko_gist(d):
+    """상세의 저본·이문 독법으로 한 줄 요지를 만든다."""
+    kv = {}
+    for x in d:
+        k, sep, v = x.partition(": ")
+        if sep and k not in kv:
+            kv[k] = v.strip()
+    a = kv.get("저본 독법")
+    b = kv.get("이문 독법") or kv.get("교감 제안 독법")
+    if not a or not b or "해당 없음" in b:
+        return None
+    cut = lambda v: (v if len(v) <= 24 else v[:24] + "…")
+    m = re.match(r"^(.*?)\s*[（(\[]?\s*【([^】]{1,6})】\s*[)）\]]?$", b)
+    wit = m.group(2) if m else None
+    b2 = m.group(1) if wit else b
+    return f"저본 {cut(a)} → {wit + '본 ' if wit else '이본 '}{cut(b2)}"
+
+
 def plain_note(n):
     if isinstance(n, str):
         t = plain_words(n)
+        if len(t) > 90:      # 긴 한 줄 메모는 요지 + 펼침으로 나눈다
+            tag, sep, body = t.partition("] ")
+            parts = [x.strip() for x in RE_SENT_END.split(body) if x.strip()]
+            if sep and len(parts) > 1:
+                head = parts[0] if len(parts[0]) <= 90 else parts[0][:88] + "…"
+                return {"t": f"{tag}] {head}", "d": parts[1:] if head == parts[0] else parts}
         m = RE_MIN_ADD.match(t)
         # 「[최소 보충] 대상을」처럼 보충한 말만 떠 있으면 문장으로 적는다
         return f"[최소 보충] 번역에서 보충한 말: {m.group(1)}" if m else t
     d = [x for x in (plain_words(x) for x in n["d"]) if x]
     t = plain_words(n["t"])
+    # 요지가 한문만 적혀 있으면(「[CBETA 원교감] 一無品字」) 우리말 한 줄로 바꾸고
+    # 한문 교감문은 상세로 내린다
+    tag, sep, body = t.partition("] ")
+    if sep and not RE_HANGUL.search(body):
+        g = _ko_gist(d)
+        if g:
+            if not any(body in x for x in d):
+                d = [f"원교감 원문: {body}"] + d
+            t = f"{tag}] {g}"
     return {"t": t, "d": d} if d else t
 
 
