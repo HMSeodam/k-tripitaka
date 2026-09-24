@@ -1432,6 +1432,11 @@ def parse_shtk_docx(d, tables, path=None):
                  if style in ("SHTK Source Text", "SHTK Translation Text") else p.text)
         txt = re.sub(r"[ \t]+", " ", raw_p).strip()
         if not txt:
+            # 글 없이 도판만 담은 문단(저본에서 빠진 글자 그림 등)은
+            # 그 자리에 도판 토큰으로 세운다
+            fig = para_text_with_figs(p, imgmap).strip()
+            if fig and cur is not None and phase == "body":
+                cur["cn"].append(fig)
             continue
         is_h1 = style == "Heading 1"
         if phase == "front":
@@ -1462,6 +1467,12 @@ def parse_shtk_docx(d, tables, path=None):
                 open_unit(pair[0], ko)
                 cur["sealed"] = True
                 last_head = None
+                continue
+            if style == "SHTK Verification":
+                appendix.append(txt)            # 제작 단계의 검증 판정
+                continue
+            if style in ("SHTK Gaiji Meta", "SHTK Figure") and cur is not None:
+                cur["nt"].append("[외자] " + re.sub(r"^외자[^|]*\|\s*", "", txt).strip())
                 continue
             if style == "SHTK Meta" and cur is not None and cur.get("title") and not cur["ko"]:
                 cur["ko"].append(txt)               # 품제의 한국어 제목
@@ -2046,6 +2057,9 @@ def split_note_items(units):
     return units
 
 
+FIG_MARK = "\u27e6fig:"
+
+
 def merge(txt_units, dx):
     """원문 TXT 를 정본으로 두고, 번역 docx 단위를 위치표지·본문 대조로 붙인다.
 
@@ -2240,6 +2254,7 @@ def merge(txt_units, dx):
         final.append(rec)
     dxmap = {k: remap.get(v, remap.get(absorbed.get(v, v), 0))
              for k, v in dxmap.items()}
+
     return final, dxmap
 
 
