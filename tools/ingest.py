@@ -1426,6 +1426,24 @@ def shtk_readable_note(n):
     return {"t": t, "d": d} if d else t
 
 
+RE_HAN = re.compile(r"[\u3400-\u9fff\U00020000-\U0003ffff]")
+RE_HANGUL = re.compile(r"[가-힣]")
+RE_SHTK_SEP = re.compile(r"\s*[|｜·・]\s*")
+
+
+def shtk_title_pair(txt, txt_keys, skey):
+    """「漢文 제목 | 한국어 제목」이나 「漢文 · 한국어」를 나눈다.
+
+    가운뎃점은 한국어 안에서도 쓰이므로, 왼쪽이 원문 TXT 의 제목과
+    맞아떨어지는 자리에서만 나눈다.
+    """
+    for m in RE_SHTK_SEP.finditer(txt):
+        left, right = txt[:m.start()].strip(), txt[m.end():].strip()
+        if left and right and skey(left) in txt_keys:
+            return left, right
+    return None, None
+
+
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
@@ -1443,7 +1461,16 @@ def parse_shtk_docx(d, tables, path=None):
     if path is not None:
         tp = path.parent / "원문.txt"
         if tp.exists():
-            txt_keys = {skey("".join(u["cn"])) for u in parse_txt(tp)}
+            # 문단 전체뿐 아니라 그 안의 각 줄도 제목이 될 수 있다
+            # (편목처럼 여러 항목이 한 문단에 줄바꿈으로 이어진 저본이 있다)
+            txt_keys = set()
+            for u in parse_txt(tp):
+                whole = "".join(u["cn"])
+                txt_keys.add(skey(whole))
+                for line in whole.split("\n"):
+                    line = RE_MARKER.sub("", line).strip()
+                    if 0 < len(line) <= 20:
+                        txt_keys.add(skey(line))
 
     def shtk_detail(t):
         t = RE_SHTK_ITEM.sub("", t, count=1)
@@ -1497,9 +1524,21 @@ def parse_shtk_docx(d, tables, path=None):
         elif style in ("SHTK Source Text", "SHTK Position Marker"):
             note_list = False
         if style in ("SHTK Subheading", "SHTK Meta"):   # 소제목·권말 제목
-            pair = [x.strip() for x in re.split(r"\s*[|｜]\s*", txt)]
+            cn_t, ko_t = shtk_title_pair(txt, txt_keys, skey)
+            if cn_t is None and style == "SHTK Subheading":
+                # 저본 본문의 첫 구절을 소제목으로 올려 쓴 문서가 있다.
+                # 「漢文 · 한국어」 꼴이면 그 한문도 원문 단위로 세운다.
+                m2 = re.search(r"\s[·・]\s", txt)
+                if m2:
+                    l, r = txt[:m2.start()].strip(), txt[m2.end():].strip()
+                    if l and r and RE_HAN.search(l) and not RE_HANGUL.search(l):
+                        open_unit(l, [r])
+                        cur["sealed"] = True
+                        last_head = None
+                        continue
+            pair = [cn_t] if cn_t else [txt.strip()]
             if pair[0] and skey(pair[0]) in txt_keys:
-                ko = pair[1:2] if len(pair) == 2 else None
+                ko = [ko_t] if ko_t else None
                 # 「제목 3: 한국어 장제 → 소제목: 한문 장제」 짝이면 바로 앞 제목이
                 # 이 장제의 번역이다. 비워 두면 앱에 '번역 대응 없음'이 뜬다.
                 if not ko and last_head:
@@ -1522,11 +1561,12 @@ def parse_shtk_docx(d, tables, path=None):
                 appendix.append(re.sub(r"^[•·]\s*", "", txt))
                 continue
         hm = re.match(r"Heading ([2-4])$", style)
-        if hm and "|" in txt:
+        if hm and RE_SHTK_SEP.search(txt):
             # 「名號品第三 | 명호품 제3」처럼 원문 TXT의 품제(品題)를 제목으로 쓴 경우:
             # 목록 제목은 두 말을 함께 보이고, 품제는 원문 단위로도 세운다
-            pair = [x.strip() for x in re.split(r"\s*[|｜]\s*", txt)]
-            if len(pair) == 2 and skey(pair[0]) in txt_keys:
+            cn_t, ko_t = shtk_title_pair(txt, txt_keys, skey)
+            pair = [cn_t, ko_t]
+            if cn_t and skey(pair[0]) in txt_keys:
                 hl = int(hm.group(1))
                 if hl == 2:
                     parent = None
@@ -2609,6 +2649,10 @@ def strip_maker_notes(units):
 # 교감·외자 메모에는 XML 태그 이름, 파일 경로, 내부 식별자 같은 기계용 말이
 # 섞여 들어오기 쉽다. 뜻은 그대로 두고 말만 우리말로 바꾼다.
 PLAIN_RULES = [
+    # 내부 앵커 이름(nkr_note_orig_0440003 따위)은 읽는 사람에게 쓸모가 없다
+    (r"[,，]?\s*(?:본문\s*)?앵커\s*nkr_[\w가-힣]+", ""),
+    (r"\s*[/,]?\s*nkr_[\w가-힣]+", ""),
+    (r"\s*/\s*앵커(?=\s*[:：])", ""),
     (r'<g ref="#(CB\d+)"[^>]*>', r"\1"),
     (r"</?(?:charDecl|figure|graphic|app|note|lem|rdg|anchor|ref)\b[^>]*>", ""),
     (r'[^.;]*resp\s*=\s*"?#?resp\d[^.;]*[.;]?', ""),
@@ -2708,6 +2752,10 @@ def plain_note(n):
     # 한문 교감문은 상세로 내린다
     tag, sep, body = t.partition("] ")
     if sep and not RE_HANGUL.search(body):
+        if re.fullmatch(r"CB\d{4,6}", body):   # 외자 번호만 있는 요지
+            src = next((x.split(": ", 1)[1] for x in d if x.startswith("저본 표기: ")), "")
+            head = f"{tag}] 저본의 외자 {src}".rstrip() if src else f"{tag}] 저본의 외자 {body}"
+            return {"t": head, "d": d} if d else head
         g = _ko_gist(d)
         if g:
             if not any(body in x for x in d):
