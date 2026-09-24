@@ -1386,6 +1386,46 @@ def shtk_split_notes(n):
     return [f"[주 {m.group(1)}] {m.group(2).strip()}" for m in items]
 
 
+# ── 메모 글을 읽을 수 있게 다듬기 ────────────────────────────────────────
+# DOCX 제작 단계의 마크다운 백틱, XML 태그, 편집 책임자(resp) 표기가 그대로
+# 남아 화면에 나오는 문서가 있다. 뜻을 바꾸지 않는 선에서 걷어 낸다.
+RE_NT_XMLTAG = re.compile(r'<g ref="#(CB\d+)"[^>]*>|</?(charDecl|figure|graphic|app|note|lem|rdg)\b[^>]*>')
+RE_NT_RESP = re.compile(r"\s*[^.]*#resp[^.]*\.\s*")
+RE_NT_TYPE = re.compile(r'type="(\w+)"\s*')
+RE_NT_MEMO = re.compile(r"^\[[^\]]*\]\s*(서지|구문|구두|판독|외자|의미|최소 보충|교감)\s*메모\s*[|｜]\s*")
+RE_NT_GAIJI_LINE = re.compile(r"^외자[·\s]")
+
+
+def _nt_clean(t):
+    t = t.replace("`", "")
+    t = RE_NT_XMLTAG.sub(lambda m: m.group(1) or m.group(2), t)
+    t = RE_NT_RESP.sub(" ", t)
+    t = RE_NT_TYPE.sub(r"\1 ", t)
+    return re.sub(r"\s{2,}", " ", t).strip()
+
+
+def shtk_readable_note(n):
+    """백틱·XML 태그를 걷어 내고, 「… 메모 |」 꼴을 제 꼬리표로 바꾼다."""
+    if isinstance(n, str):
+        t, d = n, []
+    else:
+        t, d = n["t"], list(n["d"])
+    t = _nt_clean(t)
+    m = RE_NT_MEMO.match(t)
+    if m:                                   # 「[CBETA 교감] 외자 메모 | …」 → 「[외자] …」
+        t = f"[{m.group(1)}] " + t[m.end():].strip()
+    elif RE_NT_GAIJI_LINE.match(t):
+        t = "[외자] " + re.sub(r"^외자[·\s]문자 원형\s*:\s*", "", t)
+    body = t.split("] ", 1)[-1]
+    if body.startswith("최소 보충") is False and t.startswith("[최소 보충]") and len(body) < 20:
+        t = "[최소 보충] 보충한 말: " + body
+    head = body.rstrip("… .")
+    d = [x for x in (_nt_clean(x) for x in d)
+         if x and x != body and x != t
+         and not (head and len(head) > 20 and x.split(": ", 1)[-1].startswith(head))]
+    return {"t": t, "d": d} if d else t
+
+
 def parse_shtk_docx(d, tables, path=None):
     units, front, appendix, secs, pending = [], [], [], [], []
     phase, cur, marker, cur_sec, parent = "front", None, None, None, None
@@ -1623,7 +1663,7 @@ def parse_shtk_docx(d, tables, path=None):
             v = shtk_variant_note(n)
             if v is None:
                 continue
-            for x in shtk_split_notes(shtk_xml_tidy(shtk_tidy_note(v))):
+            for x in shtk_split_notes(shtk_readable_note(shtk_xml_tidy(shtk_tidy_note(v)))):
                 # 요지 끝에 상세 첫 줄을 되풀이한 꼬리(「… · [0175a13] 題 / 顯 …」)는 자른다
                 if isinstance(x, dict) and " · " in x["t"] and x["d"] \
                         and x["t"].split(" · ", 1)[1][:12] in x["d"][0]:
@@ -2565,6 +2605,61 @@ def strip_maker_notes(units):
         u["nt"], u["ntd"] = keep_t, keep_d
 
 
+# ── 읽는 사람에게 보일 말로 ─────────────────────────────────────────────
+# 교감·외자 메모에는 XML 태그 이름, 파일 경로, 내부 식별자 같은 기계용 말이
+# 섞여 들어오기 쉽다. 뜻은 그대로 두고 말만 우리말로 바꾼다.
+PLAIN_RULES = [
+    (r'<g ref="#(CB\d+)"[^>]*>', r"\1"),
+    (r"</?(?:charDecl|figure|graphic|app|note|lem|rdg|anchor|ref)\b[^>]*>", ""),
+    (r'[^.;]*resp\s*=\s*"?#?resp\d[^.;]*[.;]?', ""),
+    (r"(?:[TXAJ]/)?([TXAJ]\d+n\d+\w*)\s*(?:\(\d+\))?\s*\.xml", r"\1"),
+    (r"[\w/]*\.xml", ""),
+    (r"(?i)note(?:\s*(?:및|and)\s*app)?\s*n\s*=\s*([0-9A-Za-z]{4,})", r"교감 번호 \1"),
+    (r"\bn\s*=\s*([0-9A-Za-z]{4,})", r"교감 번호 \1"),
+    (r"(?i)note_star\s*anchor|fx\s*anchor|note\s*target|corresp", "상호참조 표지"),
+    (r"(?i)\bfx[TX]?\w*", "상호참조 표지"),
+    (r"(?i)charDecl", "CBETA 외자표"),
+    (r"(?i)normalized\s*form", "정규형"),
+    (r"(?i)PUA[^.;,)]*", ""),
+    (r"(?i)unicode", "유니코드"),
+    (r"(?i)(?<![A-Za-z])(?:lemma)(?![A-Za-z])", "채택 독법"),
+    (r"(?i)(?<![A-Za-z])(?:witness)(?![A-Za-z])", "판본"),
+    (r"(?i)(?<![A-Za-z])(?:anchor)(?![A-Za-z])", "표지"),
+    (r"(?i)(?<![A-Za-z])(?:app)(?![A-Za-z])", "교감"),
+    (r"(?i)(?<![A-Za-z])(?:note)(?![A-Za-z])", "교감주"),
+    (r"(?i)(?<![A-Za-z])(?:figure|graphic)(?![A-Za-z])", "도판"),
+    (r"사용자(?:\s*제공)?\s*(?:구버전\s*)?TXT|현행\s*TXT|현\s*TXT|구버전\s*TXT|저본\s*TXT", "저본"),
+    (r"(?<![A-Za-z])TXT(?![A-Za-z])", "저본"),
+    (r"공식\s*XML|현행\s*XML|CBETA\s*XML|XML\s*헤더", "CBETA 자료"),
+    (r"(?<![A-Za-z])XML(?![A-Za-z])", "CBETA 자료"),
+    (r"(?<![A-Za-z])(?:JSON|DOCX|ZIP)(?![A-Za-z])", ""),
+    (r"(?i)\btype\s*=\s*\"?(\w+)\"?", r"\1"),
+    (r"<[^<>\n]{1,60}>", ""),
+    (r"CBETA\s+CBETA", "CBETA"),
+    (r"CBETA 자료\s+CBETA 자료", "CBETA 자료"),
+    (r"저본\s+저본", "저본"),
+    (r"\s+([,.;)])", r"\1"),
+]
+PLAIN_RULES = [(re.compile(a), b) for a, b in PLAIN_RULES]
+
+
+def plain_words(t):
+    t = t.replace("`", "")
+    for rx, rep in PLAIN_RULES:
+        t = rx.sub(rep, t)
+    t = re.sub(r"\s{2,}", " ", t)
+    t = re.sub(r"\(\s*\)|\[\s*\]|,\s*(?=[.;,])", "", t)
+    return t.strip(" ;,")
+
+
+def plain_note(n):
+    if isinstance(n, str):
+        return plain_words(n)
+    d = [x for x in (plain_words(x) for x in n["d"]) if x]
+    t = plain_words(n["t"])
+    return {"t": t, "d": d} if d else t
+
+
 def build_work(entry):
     wid = entry["id"]
     wdir = SRC / wid
@@ -2748,10 +2843,15 @@ def build_work(entry):
     else:
         gl = []
 
+    # 화면에 나가는 글에서 기계용 말(태그 이름·파일 경로·내부 식별자)을 걷어 낸다
+    for u in units:
+        u["nt"] = [x for x in (plain_note(n) for n in u["nt"]) if x]
+
     doc = {
         "meta": meta,
         "glossary": gl,
-        "front": (dx["front"] + dx["appendix"]) if dx else [],
+        "front": [x for x in ((plain_words(f) if isinstance(f, str) else f)
+                              for f in ((dx["front"] + dx["appendix"]) if dx else [])) if x],
         "chapters": [{"t": c["t"], "i": c["i"]} for c in chapters],
         "sections": [{"lv": s["lv"], "t": s["t"], "i": s["i"]} for s in sections],
         "units": units,
