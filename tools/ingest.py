@@ -2638,7 +2638,19 @@ PLAIN_RULES = [
     (r"CBETA\s+CBETA", "CBETA"),
     (r"CBETA 자료\s+CBETA 자료", "CBETA 자료"),
     (r"저본\s+저본", "저본"),
+    (r"(?i)(?<![A-Za-z])orig(?![A-Za-z])", "원교감"),
+    (r"(?i)(?<![A-Za-z])add(?![A-Za-z])", "추가 교감"),
+    (r"(?i)(?<![A-Za-z])mod(?![A-Za-z])", "수정 교감"),
+    (r"원교감\s+원교감", "원교감"),
+    (r"[;,]?\s*유니코드[^.;,()]*", ""),
+    (r"\s*U\+[0-9A-Fa-f]{4,}", ""),
+    (r"도판\s*/\s*도판", "도판"),
+    (r"\(\s*[,;]\s*", "("),
+    (r"\s*,\s*\)", ")"),
     (r"\s+([,.;)])", r"\1"),
+    (r"^([^()]*)\)", r"\1"),                    # 짝 잃은 닫는 괄호
+    (r"\(([^()]*)$", r"\1"),                    # 짝 잃은 여는 괄호
+    (r"\s{2,}", " "),
 ]
 PLAIN_RULES = [(re.compile(a), b) for a, b in PLAIN_RULES]
 
@@ -2652,9 +2664,15 @@ def plain_words(t):
     return t.strip(" ;,")
 
 
+RE_MIN_ADD = re.compile(r"^\[최소 보충\]\s*(.{1,25})$")
+
+
 def plain_note(n):
     if isinstance(n, str):
-        return plain_words(n)
+        t = plain_words(n)
+        m = RE_MIN_ADD.match(t)
+        # 「[최소 보충] 대상을」처럼 보충한 말만 떠 있으면 문장으로 적는다
+        return f"[최소 보충] 번역에서 보충한 말: {m.group(1)}" if m else t
     d = [x for x in (plain_words(x) for x in n["d"]) if x]
     t = plain_words(n["t"])
     return {"t": t, "d": d} if d else t
