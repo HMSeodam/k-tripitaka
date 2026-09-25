@@ -353,6 +353,21 @@
             text-decoration: none;
         }
         footer a:hover { text-decoration: underline; }
+        /* 하단: 의미 덩어리(.nb)는 중간에서 끊지 않고 통째로 줄을 넘긴다 */
+        .foot { text-align:center; line-height:1.75; }
+        .foot p { margin:0 0 .3rem; }
+        .foot .nb { display:inline-block; white-space:nowrap; }
+        .foot .sep { display:inline-block; margin:0 .45em; opacity:.5; }
+        .foot .title { font-weight:700; }
+        .foot .badge-img { height:18px; vertical-align:-4px; }
+        .foot .cite { font-size:.92em; opacity:.85; margin-bottom:0; }
+        .foot .url { font-size:.92em; }
+        .foot .url a { word-break:break-all; }
+        @media (max-width:600px) {
+          .foot .sep { display:none; }
+          .foot .nb { margin:0 .22em; }
+        }
+        }
 
         /* ===== Mobile ===== */
         @media (max-width: 640px) {
@@ -460,10 +475,14 @@
         </div>
 
         <footer>
-            <p>
-                © 2026 <a href="https://github.com/HMSeodam">HMSeodam</a> ·
-                <a href="https://github.com/HMSeodam/Chinese-Text-Comparison">GitHub</a>
-            </p>
+    <div class="foot">
+      <p><span class="nb title">한문 텍스트 교감기 (Classical Chinese Text Collator)</span></p>
+      <p><span class="nb">Copyright &copy; 2026</span><span class="sep">·</span><span class="nb"><strong>서담 한민수 (Han Minsu)</strong></span><span class="sep">·</span><span class="nb"><strong>동명대학교 (Tongmyong University)</strong></span></p>
+      <p><span class="nb"><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko" target="_blank" rel="noopener" title="CC BY-NC-ND 4.0 라이선스"><img class="badge-img" src="https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg" alt="License CC BY-NC-ND 4.0"></a></span><span class="sep">·</span><span class="nb">비영리·저작자 표시 조건으로 사용 가능</span><span class="sep">·</span><span class="nb">상업적 이용·변경 배포 시 저작자 허가 필요</span></p>
+      <p><span class="nb">교감 결과 모음:</span> <span class="nb"><a href="https://hmseodam.github.io/Chinese-Text-Comparison/%EA%B5%90%EA%B0%90%EA%B2%B0%EA%B3%BC.html" target="_blank" rel="noopener">한문 텍스트 교감 결과</a></span><span class="sep">|</span><span class="nb"><a href="https://hmseodam.github.io/Chinese-Text-Comparison/%EA%B5%90%EA%B0%90%EA%B2%B0%EA%B3%BC.html" target="_blank" rel="noopener">Classical Chinese Text Collation Results ↗</a></span></p>
+      <p class="cite"><span class="nb">인용: 한민수 (2026).</span> <span class="nb">한문 텍스트 교감기</span> <span class="nb">(Classical Chinese Text Collator). GitHub.</span></p>
+      <p class="url"><a href="https://github.com/HMSeodam/Chinese-Text-Comparison" target="_blank" rel="noopener">https://github.com/HMSeodam/Chinese-Text-Comparison</a></p>
+    </div>
         </footer>
     </div>
 

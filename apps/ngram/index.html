@@ -51,6 +51,22 @@
     footer.app-footer { margin-top:2rem; padding:1.5rem 0; border-top:1px solid var(--border); font-size:.82rem; color:var(--text-muted); text-align:center; }
     footer.app-footer a { color:var(--text-muted); text-decoration:underline dotted; }
     footer.app-footer a:hover { color:var(--text); }
+    /* 하단: 의미 덩어리(.nb)는 중간에서 끊지 않고 통째로 줄을 넘긴다 */
+    .foot { text-align:center; line-height:1.75; }
+    .foot p { margin:0 0 .3rem; }
+    .foot .nb { display:inline-block; white-space:nowrap; }
+    .foot .sep { display:inline-block; margin:0 .45em; opacity:.5; }
+    .foot .title { font-weight:700; }
+    .foot .badge-img { height:18px; vertical-align:-4px; }
+    .foot .cite { font-size:.92em; opacity:.85; margin-bottom:0; }
+    .foot .url { font-size:.92em; }
+    .foot .url a { word-break:break-all; }
+    @media (max-width:600px) {
+      .foot .sep { display:none; }
+      .foot .nb { margin:0 .22em; }
+    }
+    }
+
     /* 분석 대상 고르기 */
     .src-pick { display:flex; gap:.5rem; align-items:stretch; }
     .src-pick .form-control { flex:1 1 auto; min-width:0; }
@@ -217,25 +233,13 @@
 
 <!-- ── Footer ── -->
 <footer class="app-footer">
-  <div class="container">
-    <p class="mb-1">
-      <strong>N-gram Chinese Text Analyzer</strong> &nbsp;·&nbsp;
-      Copyright &copy; 2025 <strong>서담 한민수 (Han Minsu), 동명대학교 (Tongmyong University)</strong>
-    </p>
-    <p class="mb-1">
-      <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">
-        <img src="https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg" alt="CC BY-NC-ND 4.0" style="vertical-align:middle;">
-      </a>
-      &nbsp;
-      이 도구는 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko" target="_blank">CC BY-NC-ND 4.0</a> 라이선스를 따릅니다.
-      비영리 목적에 한해 저작자 표시 조건으로 사용 가능합니다.
-      상업적 이용·변경 배포 시 저작자 허가 필요.
-    </p>
-    <p class="mb-0 text-muted" style="font-size:0.77rem;">
-      인용 방법: 한민수 (2025). N-gram Chinese Text Analyzer. GitHub.
-      <a href="https://github.com/HMSeodam/ngram-chinese-analyzer" target="_blank">https://github.com/HMSeodam/ngram-chinese-analyzer</a>
-    </p>
-  </div>
+    <div class="foot">
+      <p><span class="nb title">N-gram Chinese Text Analyzer</span></p>
+      <p><span class="nb">Copyright &copy; 2025</span><span class="sep">·</span><span class="nb"><strong>서담 한민수 (Han Minsu)</strong></span><span class="sep">·</span><span class="nb"><strong>동명대학교 (Tongmyong University)</strong></span></p>
+      <p><span class="nb"><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko" target="_blank" rel="noopener" title="CC BY-NC-ND 4.0 라이선스"><img class="badge-img" src="https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg" alt="License CC BY-NC-ND 4.0"></a></span><span class="sep">·</span><span class="nb">비영리·저작자 표시 조건으로 사용 가능</span><span class="sep">·</span><span class="nb">상업적 이용·변경 배포 시 저작자 허가 필요</span></p>
+      <p class="cite"><span class="nb">인용: 한민수 (2025).</span> <span class="nb">N-gram Chinese Text Analyzer. GitHub.</span></p>
+      <p class="url"><a href="https://github.com/HMSeodam/ngram-chinese-analyzer" target="_blank" rel="noopener">https://github.com/HMSeodam/ngram-chinese-analyzer</a></p>
+    </div>
 </footer>
 
 <!-- ── Loading Overlay (Bootstrap 독립, 순수 CSS) ── -->
