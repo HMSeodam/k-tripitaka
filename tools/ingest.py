@@ -1518,6 +1518,14 @@ def parse_shtk_docx(d, tables, path=None):
                 next_src[k] = skey(r.text)
             break
 
+    def repeats_next(pi, key):
+        """제목의 한문이 바로 뒤 원문 칸과 같거나 그 앞머리이면 참(원문이 두 번 서는 것을 막는다)."""
+        nx = next_src.get(pi)
+        if not nx or not key:
+            return False
+        k2 = re.sub(r"[()（）]", "", key)
+        return nx == key or nx.startswith(key) or nx.startswith(k2)
+
     for pi, p in enumerate(paras):
         style = (p.style.name or "").strip()
         if style != "SHTK Note Detail":
@@ -1565,7 +1573,7 @@ def parse_shtk_docx(d, tables, path=None):
                         continue
             pair = [cn_t] if cn_t else [txt.strip()]
             if (pair[0] and skey(pair[0]) in txt_keys
-                    and next_src.get(pi) != skey(pair[0])):
+                    and not repeats_next(pi, skey(pair[0]))):
                 ko = [ko_t] if ko_t else None
                 # 「제목 3: 한국어 장제 → 소제목: 한문 장제」 짝이면 바로 앞 제목이
                 # 이 장제의 번역이다. 비워 두면 앱에 '번역 대응 없음'이 뜬다.
@@ -1595,7 +1603,7 @@ def parse_shtk_docx(d, tables, path=None):
             cn_t, ko_t = shtk_title_pair(txt, txt_keys, skey)
             pair = [cn_t, ko_t]
             if (cn_t and skey(pair[0]) in txt_keys
-                    and next_src.get(pi) != skey(pair[0])):
+                    and not repeats_next(pi, skey(pair[0]))):
                 hl = int(hm.group(1))
                 if hl == 2:
                     parent = None
@@ -1622,7 +1630,8 @@ def parse_shtk_docx(d, tables, path=None):
                 cur["sealed"] = True
             # 제목 자체가 원문 TXT의 품제(名號品第三 등)이면 목차이면서 원문 단위이다.
             # 바로 뒤의 SHTK Meta(「명호품(名號品)」 제3)가 그 번역이 된다.
-            if hm and txt_keys and skey(txt) in txt_keys:
+            if (hm and txt_keys and skey(txt) in txt_keys
+                    and not repeats_next(pi, skey(txt))):
                 open_unit(txt)
                 cur["sealed"] = cur["title"] = True
                 last_head = None

@@ -2269,6 +2269,93 @@
    "author_short": "唐 대승기 찬"
   },
   {
+   "id": "gusaron-gi-bogwang",
+   "title_cn": "俱舍論記",
+   "title_ko": "구사론기",
+   "author_cn": "普光",
+   "author_ko": "보광",
+   "dynasty": "唐",
+   "canon": "T41 no.1821",
+   "canon_id": "T",
+   "canon_vol": 41,
+   "canon_no": 1821,
+   "canon_label": "大正藏 41",
+   "canon_ko": "대정신수대장경 제41책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "구사",
+   "tags": [
+    "구사",
+    "아비달마",
+    "보광",
+    "대승광",
+    "현장역",
+    "세친",
+    "광기",
+    "구사삼대소"
+   ],
+   "verify": false,
+   "note": "현장(玄奘) 문하에서 역장의 필수(筆受)를 맡았던 보광(普光, 大乘光)이 스승이 옮긴 세친의 『아비달마구사론』을 풀이한 주석. 30권. 흔히 광기(光記)라 부르며, 법보의 『구사론소』, 신태의 『구사론소』와 함께 구사 삼대소로 꼽힌다. 권두에서 논이 생겨난 연유·논의 제목·본문 해석의 세 문으로 나누어 들어가며, 세친이 『대비바사론』의 가르침을 탐구해 이 논을 지었고 설일체유부의 뜻을 서술하면서도 때로 경량부로 바로잡았다고 평한다. 진제가 앞서 영표(嶺表)에서 이 논을 옮겼으나 말이 다듬어지지 않아 어긋난 곳이 있었으므로 현장이 조칙을 받들어 다시 번역한 경위도 적는다. 권말 곳곳에 일본 사원에서 베끼고 가점(加點)·교정한 간기가 남아 있다.",
+   "units": 19848,
+   "translated": 19834,
+   "coverage": 1.0,
+   "chars_cn": 620561,
+   "chars_ko": 2040166,
+   "range": [
+    "0001a07",
+    "0452a25"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 179,
+   "canon_full": "T41 no.1821",
+   "author_line": "唐 沙門 普光 述",
+   "author_short": "唐 보광 술"
+  },
+  {
+   "id": "gusaron-so-beopbo",
+   "title_cn": "俱舍論疏",
+   "title_ko": "구사론소",
+   "author_cn": "法寶",
+   "author_ko": "법보",
+   "dynasty": "唐",
+   "canon": "T41 no.1822",
+   "canon_id": "T",
+   "canon_vol": 41,
+   "canon_no": 1822,
+   "canon_label": "大正藏 41",
+   "canon_ko": "대정신수대장경 제41책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "구사",
+   "tags": [
+    "구사",
+    "아비달마",
+    "법보",
+    "현장역",
+    "세친",
+    "보소",
+    "구사삼대소"
+   ],
+   "verify": false,
+   "note": "현장(玄奘) 문하의 법보(法寶)가 세친의 『아비달마구사론』을 풀이한 소. 30권. 흔히 보소(寶疏)라 부르며, 보광의 『구사론기』, 신태의 『구사론소』와 함께 구사 삼대소로 꼽힌다. 권두에서 처음 법륜을 굴린 때의 회통·배우고 행하는 차례·가르침이 일어난 인연·부파가 갈라진 선후·본문 해석의 다섯 문으로 나누어 들어가며, 성도일과 전법륜일에 관한 여러 경론의 설을 대조하는 것으로 시작한다. 여러 권말에 보연(保延) 3년(1137) 무렵 동남원(東南院) 등에서 가점(加點)·교정한 일본 승려 각수(覺樹) 등의 기록이 남아 있다.",
+   "units": 19735,
+   "translated": 19722,
+   "coverage": 1.0,
+   "chars_cn": 487371,
+   "chars_ko": 1653721,
+   "range": [
+    "0453a06",
+    "0812c15"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 191,
+   "canon_full": "T41 no.1822",
+   "author_line": "唐 沙門 法寶 撰",
+   "author_short": "唐 법보 찬"
+  },
+  {
    "id": "gusaron-songso-nonbon",
    "title_cn": "俱舍論頌疏論本",
    "title_ko": "구사론송소논본",
@@ -3884,6 +3971,50 @@
    "has_translation": true,
    "chapters": 14,
    "canon_full": "T51 no.2073"
+  },
+  {
+   "id": "hongmyeongjip",
+   "title_cn": "弘明集",
+   "title_ko": "홍명집",
+   "author_cn": "僧祐",
+   "author_ko": "승우",
+   "dynasty": "梁",
+   "canon": "T52 no.2102",
+   "canon_id": "T",
+   "canon_vol": 52,
+   "canon_no": 2102,
+   "canon_label": "大正藏 52",
+   "canon_ko": "대정신수대장경 제52책",
+   "source": "CBETA",
+   "底本_publisher": "大藏出版株式會社",
+   "collection": "사전",
+   "tags": [
+    "호법",
+    "홍명집",
+    "승우",
+    "건초사",
+    "신불멸",
+    "이하론",
+    "사문불경왕자",
+    "신멸론"
+   ],
+   "verify": false,
+   "note": "양(梁) 양도 건초사의 승우(僧祐)가 불법이 동쪽으로 전해진 뒤 불교를 옹호한 승속의 논변·서신·표문을 모아 엮은 호법 문집. 14권. 권두 서문에서 승우는 그릇된 논의가 늘어나 정법을 흐리는 것을 개탄하여 고금의 좋은 글과 승속의 바른 논의를 모아 부류대로 나누어 열네 권으로 엮고, 도를 넓히고 가르침을 밝힌다는 뜻에서 『홍명집』이라 이름했다고 밝힌다. 첫머리의 「모자이혹론」·「정무론」에서 시작하여 종병의 「명불론」, 혜원의 「사문불경왕자론」, 고도사(顧道士)의 「이하론」을 둘러싼 논박, 범중서(范中書)의 「신멸론」에 대한 반론과 양 무제의 칙답 등을 싣는다. 신불멸·인과응보·이하(夷夏)의 구별·사문의 예경 문제를 둘러싼 논쟁을 한데 모았고, 권말에는 승우 자신이 지은 「홍명론 후서」를 붙였다.",
+   "units": 919,
+   "translated": 855,
+   "coverage": 0.9952,
+   "chars_cn": 129349,
+   "chars_ko": 470789,
+   "range": [
+    "0001a06",
+    "0095a09"
+   ],
+   "has_source": true,
+   "has_translation": true,
+   "chapters": 15,
+   "canon_full": "T52 no.2102",
+   "author_line": "梁 楊都建初寺 釋僧祐 撰",
+   "author_short": "梁 승우 찬"
   },
   {
    "id": "seoksiyoram",
@@ -7420,9 +7551,9 @@
   }
  ],
  "totals": {
-  "works": 180,
-  "units": 135037,
-  "translated": 130987,
-  "chars_cn": 18770961
+  "works": 183,
+  "units": 175539,
+  "translated": 171398,
+  "chars_cn": 20008242
  }
 }
