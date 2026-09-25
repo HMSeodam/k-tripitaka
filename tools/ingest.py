@@ -1115,6 +1115,7 @@ RE_NT_GAIJI = re.compile(r"^\[외자 복원\s*(CB\d+)\]\s*(.*)$", re.S)
 
 
 RE_NT_LONG = re.compile(r"^(\[[^\]]*(?:교감|관주|외자|서지|주기|간기)[^\]]*\])\s*(.+)$", re.S)
+RE_NT_TAILTAG = re.compile(r"\s*\[[^\]\[]*/[^\]\[]*\]\s*$")
 RE_NT_SENT = re.compile(r"(?<=[가-힣’”」)】\]\u3400-\u9fff\U00020000-\U0003ffff])\.\s+")
 
 
@@ -1416,9 +1417,18 @@ def shtk_readable_note(n):
         t = f"[{m.group(1)}] " + t[m.end():].strip()
     elif RE_NT_GAIJI_LINE.match(t):
         t = "[외자] " + re.sub(r"^외자[·\s]문자 원형\s*:\s*", "", t)
+    else:
+        tag0, sep0, body0 = t.partition("] ")
+        if sep0:
+            # 「[CBETA 교감] *외자: …」·「… *별표 상호참조: …」는 교감이 아니다
+            m2 = re.match(r"[*＊]?\s*(외자|별표\s*상호참조)\s*[:：]\s*", body0)
+            if m2:
+                name = "외자" if m2.group(1).startswith("외자") else "상호참조"
+                t = f"[{name}] " + body0[m2.end():].strip()
     body = t.split("] ", 1)[-1]
     if body.startswith("최소 보충") is False and t.startswith("[최소 보충]") and len(body) < 20:
         t = "[최소 보충] 보충한 말: " + body
+    d = [x for x in d if not re.match(r"^(?:상세 해설|상세)\s*[:：]\s*위 요약과 동일", x)]
     head = body.rstrip("… .")
     d = [x for x in (_nt_clean(x) for x in d)
          if x and x != body and x != t
@@ -2084,7 +2094,8 @@ RE_NOTE_LABEL = re.compile(
     r"^\s*(?:[^\[\]\n]{0,24}?(?:메모|주기|비고))\s*[|｜:：]\s*")
 QUOTE_PAIRS = {"\u2018": "\u2019", "\u201c": "\u201d",
                "\u300c": "\u300d", "\u300e": "\u300f",
-               "(": ")", "\uff08": "\uff09"}
+               "(": ")", "\uff08": "\uff09",
+               "[": "]", "\uff3b": "\uff3d"}
 QUOTE_CLOSE = set(QUOTE_PAIRS.values())
 
 
@@ -2727,7 +2738,12 @@ def _ko_gist(d):
     b = kv.get("이문 독법") or kv.get("교감 제안 독법")
     if not a or not b or "해당 없음" in b:
         return None
-    cut = lambda v: (v if len(v) <= 24 else v[:24] + "…")
+    def cut(v):
+        v = v.split(" / ")[0]                            # 한 칸에 여러 항목을 이어 쓴 꼴
+        v = re.sub(r"[（(][^）)]*[）)]", "", v)          # 괄호 설명은 뺀다
+        v = re.sub(r"^(?:저본|현행 CBETA|대정장|사용자)\S*\s*의\s*", "", v).strip()
+        v = re.sub(r"\s{2,}", " ", v).strip(" .·")
+        return v if len(v) <= 24 else v[:24] + "…"
     m = re.match(r"^(.*?)\s*[（(\[]?\s*【([^】]{1,6})】\s*[)）\]]?$", b)
     wit = m.group(2) if m else None
     b2 = m.group(1) if wit else b
