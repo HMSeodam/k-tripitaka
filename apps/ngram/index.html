@@ -65,12 +65,12 @@
       .foot .sep { display:none; }
       .foot .nb { margin:0 .22em; }
     }
-    }
 
     /* 분석 대상 고르기 */
-    .src-pick { display:flex; gap:.5rem; align-items:stretch; }
+    .src-pick { display:flex; gap:.9rem; align-items:center; }
     .src-pick .form-control { flex:1 1 auto; min-width:0; }
-    .canon-btn { white-space:nowrap; }
+    /* 파일 선택 칸보다 살짝 작게, 사이를 띄워 따로 보이게 */
+    .canon-btn { white-space:nowrap; font-size:.88rem; padding:.3rem .8rem; line-height:1.4; flex:0 0 auto; }
     .src-badge { display:inline-flex; align-items:center; gap:.35rem; margin:0 .3rem .35rem 0;
       padding:.3rem .35rem .3rem .6rem; border-radius:999px; font-size:.84rem;
       background:#eef2f8; color:var(--brand); border:1px solid #d5deeb; }
@@ -89,7 +89,8 @@
     .canon-juan button { font-size:.84rem; padding:.3rem .6rem; }
     .canon-juan button.added, #canonWhole.added { opacity:.6; }
     @media (max-width:768px) {
-      .src-pick { flex-direction:column; }
+      .src-pick { flex-direction:column; align-items:stretch; gap:.7rem; }
+      .src-pick .canon-btn { margin-bottom:0; }
       #canonWhole, .canon-item { width:100%; }
       .canon-juan button { width:calc(50% - .2rem); margin-bottom:0; }
     }
