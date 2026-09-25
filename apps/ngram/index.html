@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>N-gram Chinese Text Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ══ 디자인 토큰 ══ */
+    :root {
+      --brand:#1e3a5f; --brand-light:#2563eb; --accent:#dc2626;
+      --bg:#f7f6f1; --surface:#ffffff; --border:#e5e3db;
+      --text:#1a1a1a; --text-muted:#888;
+      --font-body:'Noto Serif KR','Malgun Gothic','Apple SD Gothic Neo',serif;
+      --radius:.5rem; --shadow-sm:0 1px 4px rgba(0,0,0,.07); --shadow-md:0 2px 10px rgba(0,0,0,.11);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background:var(--bg); font-family:var(--font-body); color:var(--text); font-size:15px; }
+    .navbar { background:var(--brand) !important; }
+    .navbar-brand { font-weight:700; font-size:1.15rem; letter-spacing:.02em; }
+    .card { border:1px solid var(--border); box-shadow:var(--shadow-sm); border-radius:var(--radius); background:var(--surface); }
+    .card-header { background:var(--surface); border-bottom:1px solid var(--border); font-weight:700; font-family:var(--font-body); }
+    .btn { border-radius:var(--radius); font-weight:600; transition:all .15s; }
+    .btn:hover { transform:translateY(-1px); box-shadow:var(--shadow-md); }
+    .btn:disabled { transform:none; box-shadow:none; opacity:.55; }
+    .btn-primary { background:var(--brand-light); border-color:var(--brand-light); }
+    .btn-primary:hover { background:var(--brand); border-color:var(--brand); }
+    .form-control, .form-select { border-radius:var(--radius); border:1px solid var(--border); font-family:var(--font-body); transition:border-color .15s,box-shadow .15s; }
+    .form-control:focus, .form-select:focus { border-color:var(--brand-light); box-shadow:0 0 0 .2rem rgba(37,99,235,.18); }
+    .table { border-radius:var(--radius); overflow:hidden; }
+    .table th { background:var(--brand); color:#fff; border-bottom:none; font-weight:700; font-family:var(--font-body); }
+    .table td { vertical-align:middle; }
+    .badge { font-size:.85rem; padding:.45rem .7rem; background:var(--brand) !important; }
+    .ngram-row:hover td { background:#f0f5ff; }
+    .ngram-text { font-family:var(--font-body); font-size:1.05rem; font-weight:700; color:var(--brand); }
+    .frequency-cell { text-align:center; font-weight:600; color:#444; }
+    .file-checkbox { margin-right:1rem; margin-bottom:.5rem; }
+    .spinner-border { width:3rem; height:3rem; }
+    .modal-content { border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md); }
+    .modal-header, .modal-footer { background:var(--bg); border-color:var(--border); }
+    .alert { border:none; border-radius:var(--radius); font-weight:500; }
+    .table-responsive { border-radius:var(--radius); overflow:hidden; }
+    .fa-3x { font-size:3rem; opacity:.4; }
+    ::-webkit-scrollbar { width:7px; }
+    ::-webkit-scrollbar-track { background:#ece9e0; border-radius:4px; }
+    ::-webkit-scrollbar-thumb { background:#b5b0a5; border-radius:4px; }
+    ::-webkit-scrollbar-thumb:hover { background:#8a857a; }
+    #wcCanvas { max-width:100%; border-radius:var(--radius); background:#fffdf7; }
+    footer.app-footer { margin-top:2rem; padding:1.5rem 0; border-top:1px solid var(--border); font-size:.82rem; color:var(--text-muted); text-align:center; }
+    footer.app-footer a { color:var(--text-muted); text-decoration:underline dotted; }
+    footer.app-footer a:hover { color:var(--text); }
+    /* 분석 대상 고르기 */
+    .src-pick { display:flex; gap:.5rem; align-items:stretch; }
+    .src-pick .form-control { flex:1 1 auto; min-width:0; }
+    .canon-btn { white-space:nowrap; }
+    .src-badge { display:inline-flex; align-items:center; gap:.35rem; margin:0 .3rem .35rem 0;
+      padding:.3rem .35rem .3rem .6rem; border-radius:999px; font-size:.84rem;
+      background:#eef2f8; color:var(--brand); border:1px solid #d5deeb; }
+    .src-badge.canon { background:#eaf3ee; color:#2a5c4f; border-color:#cfe2d8; }
+    .src-badge .src-x { border:0; background:none; color:inherit; opacity:.6; padding:0 .25rem; line-height:1; font-size:1rem; }
+    .src-badge .src-x:hover { opacity:1; }
+    .canon-list { border:1px solid var(--border); border-radius:var(--radius); max-height:55vh; overflow-y:auto; }
+    .canon-item { display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--border);
+      background:var(--surface); padding:.55rem .8rem; }
+    .canon-item:last-child { border-bottom:0; }
+    .canon-item:hover { background:#f0f5ff; }
+    .canon-item .cn { font-size:1.02rem; font-weight:700; color:var(--text); }
+    .canon-item .ko { font-size:.85rem; color:#555; margin-left:.4rem; }
+    .canon-item .meta { display:block; font-size:.76rem; color:var(--text-muted); margin-top:.1rem; }
+    .canon-juan { display:flex; flex-wrap:wrap; gap:.35rem; }
+    .canon-juan button { font-size:.84rem; padding:.3rem .6rem; }
+    .canon-juan button.added, #canonWhole.added { opacity:.6; }
+    @media (max-width:768px) {
+      .src-pick { flex-direction:column; }
+      #canonWhole, .canon-item { width:100%; }
+      .canon-juan button { width:calc(50% - .2rem); margin-bottom:0; }
+    }
+    @media (max-width:768px) {
+      .container-fluid { padding-left:1rem; padding-right:1rem; }
+      .btn { margin-bottom:.5rem; width:100%; }
+      .card-body { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-chart-bar me-2"></i>N-gram Chinese Text Analyzer
+    </a>
+    <div class="dropdown ms-auto">
+      <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <i class="fas fa-globe me-1"></i><span id="currentLangLabel">한국어</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item lang-btn" href="#" data-lang="ko">한국어</a></li>
+        <li><a class="dropdown-item lang-btn" href="#" data-lang="en">English</a></li>
+        <li><a class="dropdown-item lang-btn" href="#" data-lang="zh">中文</a></li>
+        <li><a class="dropdown-item lang-btn" href="#" data-lang="ja">日本語</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid py-4">
+
+  <!-- ── File Upload ── -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-upload me-2"></i><span data-i18n="fileUpload">파일 업로드</span></h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="src-pick">
+            <input id="fileInput" type="file" multiple class="form-control"
+                   accept=".txt,.text,.md,.csv,.html,.htm,.docx,.hwpx,.pdf,.hwp">
+            <button id="canonBtn" type="button" class="btn btn-outline-primary canon-btn">
+              <i class="fas fa-book-open me-1"></i><span data-i18n="loadCanon">신한글대장경에서 불러오기</span>
+            </button>
+          </div>
+          <small class="text-muted d-block mt-1" data-i18n="fileTypesHint">txt · docx · hwpx · pdf · html 파일을 읽습니다. 2개 이상을 모아 분석합니다.</small>
+          <div id="selectedFilesInfo" class="mt-2" style="display:none;">
+            <small class="text-muted" data-i18n="selectedFilesCount">선택된 파일:</small>
+            <div id="selectedFilesList" class="mt-1"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row">
+            <div class="col-6">
+              <label class="form-label" data-i18n="minNgram">N-gram 최소 값</label>
+              <input id="minN" type="number" class="form-control" value="2" min="1" max="10">
+            </div>
+            <div class="col-6">
+              <label class="form-label" data-i18n="maxNgram">N-gram 최대 값</label>
+              <input id="maxN" type="number" class="form-control" value="4" min="1" max="10">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button id="analyzeBtn" class="btn btn-primary me-2">
+          <i class="fas fa-play me-1"></i><span data-i18n="analyze">분석 시작</span>
+        </button>
+        <button id="wordcloudBtn" class="btn btn-success me-2" disabled>
+          <i class="fas fa-cloud me-1"></i><span data-i18n="wordcloud">워드클라우드</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-outline-secondary me-2" disabled>
+          <i class="fas fa-download me-1"></i><span data-i18n="download">다운로드</span>
+        </button>
+        <button id="applyBtn" class="btn btn-warning me-2" disabled>
+          <i class="fas fa-highlighter me-1"></i><span data-i18n="applyHighlight">하이라이트 적용</span>
+        </button>
+        <button id="resetBtn" class="btn btn-outline-danger">
+          <i class="fas fa-rotate-left me-1"></i><span data-i18n="reset">초기화</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Analysis Controls ── -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="fas fa-filter me-2"></i><span data-i18n="analysisControls">분석 제어</span></h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <label class="form-label" data-i18n="mode">모드</label>
+          <select id="modeSelect" class="form-select">
+            <option value="all" data-i18n="all">전체 분석</option>
+            <option value="common" data-i18n="common">공통 부분</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" data-i18n="sort">정렬 기준</label>
+          <select id="sortSelect" class="form-select">
+            <option value="asc" data-i18n="freqAsc">빈도수 오름차순</option>
+            <option value="desc" data-i18n="freqDesc">빈도수 내림차순</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <div id="commonControls" style="display:none;">
+            <label class="form-label" data-i18n="selectCommon">공통 부분 선택</label>
+            <div id="fileCheckboxes" class="mb-2"></div>
+            <div class="form-check">
+              <input id="includeAll" class="form-check-input" type="checkbox">
+              <label class="form-check-label" for="includeAll" data-i18n="includeAll">모든 교집합 포함</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Results ── -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-list me-2"></i><span data-i18n="results">분석 결과</span></h5>
+      <span id="dataCount" class="badge bg-secondary">0</span>
+    </div>
+    <div class="card-body">
+      <div id="resultsArea" class="table-responsive">
+        <div class="text-center text-muted py-5">
+          <i class="fas fa-file-alt fa-3x mb-3"></i>
+          <p data-i18n="noData">먼저 분석을 수행하세요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container-fluid -->
+
+<!-- ── Footer ── -->
+<footer class="app-footer">
+  <div class="container">
+    <p class="mb-1">
+      <strong>N-gram Chinese Text Analyzer</strong> &nbsp;·&nbsp;
+      Copyright &copy; 2025 <strong>서담 한민수 (Han Minsu), 동명대학교 (Tongmyong University)</strong>
+    </p>
+    <p class="mb-1">
+      <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">
+        <img src="https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg" alt="CC BY-NC-ND 4.0" style="vertical-align:middle;">
+      </a>
+      &nbsp;
+      이 도구는 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko" target="_blank">CC BY-NC-ND 4.0</a> 라이선스를 따릅니다.
+      비영리 목적에 한해 저작자 표시 조건으로 사용 가능합니다.
+      상업적 이용·변경 배포 시 저작자 허가 필요.
+    </p>
+    <p class="mb-0 text-muted" style="font-size:0.77rem;">
+      인용 방법: 한민수 (2025). N-gram Chinese Text Analyzer. GitHub.
+      <a href="https://github.com/HMSeodam/ngram-chinese-analyzer" target="_blank">https://github.com/HMSeodam/ngram-chinese-analyzer</a>
+    </p>
+  </div>
+</footer>
+
+<!-- ── Loading Overlay (Bootstrap 독립, 순수 CSS) ── -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:.5rem;padding:2rem 2.5rem;text-align:center;min-width:260px;box-shadow:0 4px 24px rgba(0,0,0,.2);">
+    <div style="width:48px;height:48px;border:5px solid #e5e3db;border-top-color:#2563eb;border-radius:50%;animation:ldSpin .8s linear infinite;margin:0 auto 1rem;"></div>
+    <h5 id="loadingMessage" style="margin:0 0 .75rem;font-size:1rem;"></h5>
+    <div id="loadingProgressWrap" style="display:none;background:#e5e3db;border-radius:4px;height:8px;margin-bottom:.5rem;">
+      <div id="loadingProgress" style="height:100%;background:#2563eb;border-radius:4px;width:0%;transition:width .3s;"></div>
+    </div>
+    <p style="margin:0;color:#888;font-size:.85rem;">잠시만 기다려 주세요.</p>
+  </div>
+</div>
+<style>@keyframes ldSpin{to{transform:rotate(360deg);}}</style>
+
+<!-- ── File Selection Modal (Highlight) ── -->
+<!-- ── 신한글대장경 문헌 불러오기 ── -->
+<div class="modal fade" id="canonModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-book-open me-2"></i><span data-i18n="canonTitle">신한글대장경 문헌 불러오기</span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="canonListView">
+          <input id="canonSearch" type="search" class="form-control mb-2" data-i18n-ph="canonSearch"
+                 placeholder="제목·찬자·대장경 번호로 찾기 (예: 起信, 원효, T44)">
+          <div id="canonCount" class="small text-muted mb-2"></div>
+          <div id="canonList" class="canon-list"></div>
+        </div>
+        <div id="canonWorkView" style="display:none;">
+          <button type="button" id="canonBack" class="btn btn-sm btn-link px-0 mb-2">
+            <i class="fas fa-arrow-left me-1"></i><span data-i18n="back">목록으로</span>
+          </button>
+          <div id="canonWorkHead" class="mb-2"></div>
+          <button type="button" id="canonWhole" class="btn btn-primary btn-sm mb-3">
+            <i class="fas fa-plus me-1"></i><span data-i18n="loadWhole">문헌 전체 불러오기</span>
+          </button>
+          <div id="canonJuanWrap">
+            <div class="small text-muted mb-1" data-i18n="byJuan">권·장별로 불러오기</div>
+            <div id="canonJuan" class="canon-juan"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span id="canonPicked" class="small text-muted me-auto"></span>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="done">완료</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="fileSelectionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" data-i18n="selectFileForHighlight">하이라이트 적용할 파일 선택</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="fileSelectionList"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="cancel">취소</button>
+        <button type="button" class="btn btn-primary" id="applyHighlightBtn" data-i18n="apply">적용</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Download Modal ── -->
+<div class="modal fade" id="downloadModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" data-i18n="downloadOptions">다운로드 옵션</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="downloadFormat" id="formatXlsx" value="xlsx" checked>
+          <label class="form-check-label" for="formatXlsx">엑셀 파일 (.xlsx)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="downloadFormat" id="formatHtml" value="html">
+          <label class="form-check-label" for="formatHtml" data-i18n="downloadHtml">HTML 파일 (.html)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="downloadFormat" id="formatTxt" value="txt">
+          <label class="form-check-label" for="formatTxt" data-i18n="downloadTxt">텍스트 파일 (.txt)</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="cancel">취소</button>
+        <button type="button" class="btn btn-primary" id="confirmDownloadBtn" data-i18n="download">다운로드</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Wordcloud Modal ── -->
+<div class="modal fade" id="wcModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" data-i18n="wordcloud">워드클라우드</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <canvas id="wcCanvas" width="800" height="500"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" id="wcDownloadBtn">
+          <i class="fas fa-download me-1"></i>PNG 저장
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="cancel">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+//  다국어 로케일
+// ═══════════════════════════════════════════════════════════
+const LOCALES = {
+  ko: {
+    loadCanon:"신한글대장경에서 불러오기", canonTitle:"신한글대장경 문헌 불러오기",
+    canonSearch:"제목·찬자·대장경 번호로 찾기 (예: 起信, 원효, T44)", canonCount:"{count}종",
+    back:"목록으로", loadWhole:"문헌 전체 불러오기", byJuan:"권·장별로 불러오기", done:"완료",
+    canonAdded:"분석 대상에 넣었습니다: {name}", canonPicked:"분석 대상 {count}개",
+    canonLoading:"문헌을 불러오는 중...", canonLoadError:"신한글대장경 자료를 불러오지 못했습니다.",
+    fileTypesHint:"txt · docx · hwpx · pdf · html 파일을 읽습니다. 신한글대장경 문헌과 섞어 2개 이상을 모아 분석합니다.",
+    hwpUnsupported:"한글(.hwp) 파일은 브라우저에서 읽을 수 없습니다. 한글에서 .hwpx 또는 .txt로 저장한 뒤 올려 주세요: {name}",
+    pdfEmpty:"PDF에서 글자를 찾지 못했습니다(스캔 이미지 PDF일 수 있습니다): {name}",
+    removeItem:"빼기",
+    fileUpload:"파일 업로드", minNgram:"N-gram 최소 값(2부터)", maxNgram:"N-gram 최대 값(예: 4)",
+    analyze:"분석 시작", wordcloud:"워드클라우드", download:"다운로드", applyHighlight:"하이라이트 적용",
+    mode:"모드", all:"전체 분석", common:"공통 부분", selectCommon:"공통 부분 선택",
+    includeAll:"모든 교집합 포함", sort:"정렬 기준", freqAsc:"빈도수 오름차순", freqDesc:"빈도수 내림차순",
+    dataCount:"데이터 항목 수: {count}개", needTwo:"최소 2개 이상의 파일을 선택해야 합니다.",
+    noData:"먼저 분석을 수행하세요.", analysisControls:"분석 제어", results:"분석 결과",
+    processing:"처리 중...", pleaseWait:"잠시만 기다려 주세요.", selectFileForHighlight:"하이라이트 적용할 파일 선택",
+    cancel:"취소", apply:"적용", downloadOptions:"다운로드 옵션", downloadTxt:"텍스트 파일 (.txt)",
+    downloadHtml:"HTML 파일 (.html)", error:"오류", success:"성공", fileReadError:"파일 읽기 오류",
+    analysisError:"분석 중 오류가 발생했습니다.", highlightError:"하이라이트 적용 중 오류가 발생했습니다.",
+    downloadError:"다운로드 중 오류가 발생했습니다.", noValidData:"유효한 데이터가 없습니다.",
+    selectFiles:"파일을 선택하세요", analyzing:"분석 중...", applyingHighlight:"하이라이트 적용 중...",
+    downloading:"다운로드 중...", ngramRangeError:"N-gram 범위가 올바르지 않습니다.",
+    analysisComplete:"분석이 완료되었습니다.", analyzeFirst:"먼저 파일을 분석해주세요.",
+    selectFile:"파일을 선택해주세요.", selectedFilesCount:"선택된 파일:",
+    reset:"초기화", resetComplete:"초기화되었습니다."
+  },
+  en: {
+    loadCanon:"Load from Sinhangeul Tripitaka", canonTitle:"Load texts from Sinhangeul Tripitaka",
+    canonSearch:"Search by title, author or canon number (e.g. 起信, T44)", canonCount:"{count} texts",
+    back:"Back to list", loadWhole:"Load whole text", byJuan:"Load by fascicle / chapter", done:"Done",
+    canonAdded:"Added to analysis: {name}", canonPicked:"{count} items selected",
+    canonLoading:"Loading text...", canonLoadError:"Could not load Sinhangeul Tripitaka data.",
+    fileTypesHint:"Reads txt · docx · hwpx · pdf · html. Combine two or more files or canon texts.",
+    hwpUnsupported:"Hangul (.hwp) files cannot be read in the browser. Save as .hwpx or .txt and upload again: {name}",
+    pdfEmpty:"No text found in the PDF (it may be a scanned image): {name}",
+    removeItem:"Remove",
+    fileUpload:"Upload Files", minNgram:"Min N-gram (from 2)", maxNgram:"Max N-gram (e.g., 4)",
+    analyze:"Start Analysis", wordcloud:"Word Cloud", download:"Download", applyHighlight:"Apply Highlight",
+    mode:"Mode", all:"All Analysis", common:"Common Parts", selectCommon:"Select Common Parts",
+    includeAll:"Include All Intersections", sort:"Sort By", freqAsc:"Frequency Ascending", freqDesc:"Frequency Descending",
+    dataCount:"Data Items: {count}", needTwo:"You must select at least two files.",
+    noData:"Please run the analysis first.", analysisControls:"Analysis Controls", results:"Analysis Results",
+    processing:"Processing...", pleaseWait:"Please wait...", selectFileForHighlight:"Select File for Highlight",
+    cancel:"Cancel", apply:"Apply", downloadOptions:"Download Options", downloadTxt:"Text File (.txt)",
+    downloadHtml:"HTML File (.html)", error:"Error", success:"Success", fileReadError:"File read error",
+    analysisError:"Analysis error occurred.", highlightError:"Highlight application error.",
+    downloadError:"Download error occurred.", noValidData:"No valid data.",
+    selectFiles:"Select files", analyzing:"Analyzing...", applyingHighlight:"Applying highlight...",
+    downloading:"Downloading...", ngramRangeError:"N-gram range is invalid.",
+    analysisComplete:"Analysis completed.", analyzeFirst:"Please analyze files first.",
+    selectFile:"Please select a file.", selectedFilesCount:"Selected files:",
+    reset:"Reset", resetComplete:"Reset completed."
+  },
+  zh: {
+    loadCanon:"从新韩文大藏经载入", canonTitle:"载入新韩文大藏经文献",
+    canonSearch:"按题名、撰者、藏经编号检索（例：起信、T44）", canonCount:"{count}种",
+    back:"返回列表", loadWhole:"载入全文", byJuan:"按卷、章载入", done:"完成",
+    canonAdded:"已加入分析：{name}", canonPicked:"已选 {count} 项",
+    canonLoading:"正在载入文献...", canonLoadError:"无法载入新韩文大藏经数据。",
+    fileTypesHint:"可读取 txt · docx · hwpx · pdf · html，可与大藏经文献合并，至少两项进行分析。",
+    hwpUnsupported:"浏览器无法读取韩文（.hwp）文件，请另存为 .hwpx 或 .txt 后上传：{name}",
+    pdfEmpty:"PDF 中未找到文字（可能是扫描图像）：{name}",
+    removeItem:"移除",
+    fileUpload:"上传文件", minNgram:"最小N-gram（从2开始）", maxNgram:"最大N-gram（例如：4）",
+    analyze:"开始分析", wordcloud:"词云", download:"下载", applyHighlight:"应用高亮",
+    mode:"模式", all:"全部分析", common:"公共部分", selectCommon:"选择公共部分",
+    includeAll:"包含所有交集", sort:"排序方式", freqAsc:"频率升序", freqDesc:"频率降序",
+    dataCount:"数据项数：{count}", needTwo:"必须选择至少两个文件。",
+    noData:"请先运行分析。", analysisControls:"分析控制", results:"分析结果",
+    processing:"处理中...", pleaseWait:"请稍候...", selectFileForHighlight:"选择要高亮的文件",
+    cancel:"取消", apply:"应用", downloadOptions:"下载选项", downloadTxt:"文本文件 (.txt)",
+    downloadHtml:"HTML文件 (.html)", error:"错误", success:"成功", fileReadError:"文件读取错误",
+    analysisError:"分析过程中发生错误。", highlightError:"高亮应用过程中发生错误。",
+    downloadError:"下载过程中发生错误。", noValidData:"没有有效数据。",
+    selectFiles:"选择文件", analyzing:"分析中...", applyingHighlight:"应用高亮中...",
+    downloading:"下载中...", ngramRangeError:"N-gram范围无效。",
+    analysisComplete:"分析完成。", analyzeFirst:"请先分析文件。",
+    selectFile:"请选择文件。", selectedFilesCount:"已选择文件:",
+    reset:"重置", resetComplete:"已重置。"
+  },
+  ja: {
+    loadCanon:"新ハングル大蔵経から読み込む", canonTitle:"新ハングル大蔵経の文献を読み込む",
+    canonSearch:"題名・撰者・大蔵経番号で検索（例：起信、T44）", canonCount:"{count}種",
+    back:"一覧に戻る", loadWhole:"文献全体を読み込む", byJuan:"巻・章ごとに読み込む", done:"完了",
+    canonAdded:"分析対象に追加しました：{name}", canonPicked:"分析対象 {count}件",
+    canonLoading:"文献を読み込み中...", canonLoadError:"新ハングル大蔵経のデータを読み込めませんでした。",
+    fileTypesHint:"txt · docx · hwpx · pdf · html を読み込みます。大蔵経文献と合わせて2件以上で分析します。",
+    hwpUnsupported:"ハングル（.hwp）ファイルはブラウザで読めません。.hwpx または .txt で保存してアップロードしてください：{name}",
+    pdfEmpty:"PDF から文字が見つかりません（スキャン画像の可能性があります）：{name}",
+    removeItem:"削除",
+    fileUpload:"ファイルをアップロード", minNgram:"最小 N-gram（2から）", maxNgram:"最大 N-gram（例：4）",
+    analyze:"分析開始", wordcloud:"ワードクラウド", download:"ダウンロード", applyHighlight:"ハイライト適用",
+    mode:"モード", all:"全体分析", common:"共通部分", selectCommon:"共通部分を選択",
+    includeAll:"すべての共通項を含む", sort:"ソート基準", freqAsc:"頻度昇順", freqDesc:"頻度降順",
+    dataCount:"データ項目数：{count}", needTwo:"ファイルを最低2つ選択してください。",
+    noData:"まず分析を実行してください。", analysisControls:"分析制御", results:"分析結果",
+    processing:"処理中...", pleaseWait:"お待ちください...", selectFileForHighlight:"ハイライト適用するファイルを選択",
+    cancel:"キャンセル", apply:"適用", downloadOptions:"ダウンロードオプション", downloadTxt:"テキストファイル (.txt)",
+    downloadHtml:"HTMLファイル (.html)", error:"エラー", success:"成功", fileReadError:"ファイル読み込みエラー",
+    analysisError:"分析中にエラーが発生しました。", highlightError:"ハイライト適用中にエラーが発生しました。",
+    downloadError:"ダウンロード中にエラーが発生しました。", noValidData:"有効なデータがありません。",
+    selectFiles:"ファイルを選択", analyzing:"分析中...", applyingHighlight:"ハイライト適用中...",
+    downloading:"ダウンロード中...", ngramRangeError:"N-gram範囲が無効です。",
+    analysisComplete:"分析が完了しました。", analyzeFirst:"まずファイルを分析してください。",
+    selectFile:"ファイルを選択してください。", selectedFilesCount:"選択されたファイル:",
+    reset:"リセット", resetComplete:"リセットしました。"
+  }
+};
+
+const LANG_LABELS = { ko:"한국어", en:"English", zh:"中文", ja:"日本語" };
+
+// ═══════════════════════════════════════════════════════════
+//  한자 패턴
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  한자 유니코드 패턴 (한국·일본·대만·중국 전범위)
+//  ┌ CJK Unified Ideographs          U+4E00–U+9FFF  (기본 한자)
+//  ├ CJK Extension A                 U+3400–U+4DBF
+//  ├ CJK Extension B                 U+20000–U+2A6DF
+//  ├ CJK Extension C                 U+2A700–U+2B73F
+//  ├ CJK Extension D                 U+2B740–U+2B81F
+//  ├ CJK Extension E                 U+2B820–U+2CEAF
+//  ├ CJK Extension F                 U+2CEB0–U+2EBEF
+//  ├ CJK Extension G                 U+30000–U+3134F
+//  ├ CJK Extension H                 U+31350–U+323AF
+//  ├ CJK Compatibility Ideographs    U+F900–U+FAFF
+//  ├ CJK Compatibility Supplement    U+2F800–U+2FA1F
+//  ├ Kangxi Radicals                 U+2F00–U+2FDF
+//  ├ CJK Radicals Supplement         U+2E80–U+2EFF
+//  ├ 〇 Zero (CBETA 전적 빈번 사용)  U+3007
+//  ├ Kanbun (한문 훈독 부호)         U+3190–U+319F
+//  ├ CJK Strokes                     U+31C0–U+31EF
+//  ├ Enclosed CJK (괄호·원형 한자)  U+3200–U+32FF
+//  └ CJK Compatibility Forms         U+FE30–U+FE4F
+// ═══════════════════════════════════════════════════════════
+const HANJA_RE = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u2e80-\u2eff\u2f00-\u2fdf\u3007\u3190-\u319f\u31c0-\u31ef\u3200-\u32ff\ufe30-\ufe4f\u{20000}-\u{2a6df}\u{2a700}-\u{2b73f}\u{2b740}-\u{2b81f}\u{2b820}-\u{2ceaf}\u{2ceb0}-\u{2ebef}\u{2f800}-\u{2fa1f}\u{30000}-\u{3134f}\u{31350}-\u{323af}]/u;
+
+// ═══════════════════════════════════════════════════════════
+//  NgramAnalyzer 클래스 (순수 JS, 서버 불필요)
+// ═══════════════════════════════════════════════════════════
+class NgramAnalyzer {
+  constructor() {
+    this.filesData       = {};   // filename -> hanja-only string
+    this.indexMap        = {};   // filename -> original indices of hanja chars
+    this.originalTexts   = {};   // filename -> full original text
+    this.ngramResults    = {};   // filename -> Map<ngram, count>
+    this.allNgrams       = new Set();
+    this.filenames       = [];
+    this.currentResults  = [];
+    this.currentLang     = this._getLang();
+    this.sources         = [];   // 분석 대상: {name, kind:'file'|'canon', file?, text?}
+    this.canon           = { manifest: null, docs: new Map(), current: null };
+
+    this._applyLocale();
+    this._initEvents();
+  }
+
+  // ── 언어 ──────────────────────────────────────────────
+  _getLang() {
+    return localStorage.getItem('ngram_lang') || 'ko';
+  }
+  _t(key) {
+    return (LOCALES[this.currentLang] || LOCALES.ko)[key] || key;
+  }
+  _applyLocale() {
+    document.documentElement.lang = this.currentLang;
+    document.getElementById('currentLangLabel').textContent = LANG_LABELS[this.currentLang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const txt = this._t(key);
+      if (txt) el.textContent = txt;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      el.placeholder = this._t(el.getAttribute('data-i18n-ph'));
+    });
+    if (this.sources) this._renderSources();
+    // select options
+    document.querySelector('#modeSelect option[value="all"]').textContent = this._t('all');
+    document.querySelector('#modeSelect option[value="common"]').textContent = this._t('common');
+    document.querySelector('#sortSelect option[value="asc"]').textContent = this._t('freqAsc');
+    document.querySelector('#sortSelect option[value="desc"]').textContent = this._t('freqDesc');
+  }
+
+  // ── 이벤트 ────────────────────────────────────────────
+  _initEvents() {
+    document.getElementById('fileInput').addEventListener('change', e => this._onFileChange(e));
+    document.getElementById('canonBtn').addEventListener('click', () => this._openCanon());
+    document.getElementById('canonSearch').addEventListener('input', () => this._renderCanonList());
+    document.getElementById('canonBack').addEventListener('click', () => this._canonShowList());
+    document.getElementById('canonWhole').addEventListener('click', () => this._canonAdd(null));
+    document.getElementById('selectedFilesList').addEventListener('click', e => {
+      const b = e.target.closest('.src-x'); if (!b) return;
+      this.sources.splice(Number(b.dataset.i), 1);
+      this._renderSources();
+    });
+    document.getElementById('analyzeBtn').addEventListener('click', () => this._analyze());
+    document.getElementById('wordcloudBtn').addEventListener('click', () => this._showWordcloud());
+    document.getElementById('downloadBtn').addEventListener('click', () => this._showDownloadModal());
+    document.getElementById('applyBtn').addEventListener('click', () => this._showHighlightModal());
+    document.getElementById('resetBtn').addEventListener('click', () => this._reset());
+    document.getElementById('modeSelect').addEventListener('change', e => this._onModeChange(e.target.value));
+    document.getElementById('sortSelect').addEventListener('change', () => this._applyFilter());
+    document.getElementById('includeAll').addEventListener('change', () => this._applyFilter());
+    document.getElementById('confirmDownloadBtn').addEventListener('click', () => this._download());
+    document.getElementById('applyHighlightBtn').addEventListener('click', () => this._applyHighlight());
+    document.getElementById('wcDownloadBtn').addEventListener('click', () => this._downloadWC());
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        this.currentLang = btn.getAttribute('data-lang');
+        localStorage.setItem('ngram_lang', this.currentLang);
+        this._applyLocale();
+      });
+    });
+  }
+
+  // ── 분석 대상 모으기 (내 파일 + 신한글대장경 문헌) ──────────
+  _uniqName(base) {
+    let name = base || 'text', k = 2;
+    const taken = new Set(this.sources.map(x => x.name));
+    while (taken.has(name)) name = `${base} (${k++})`;
+    return name;
+  }
+  _onFileChange(e) {
+    Array.from(e.target.files).forEach(f => {
+      this.sources.push({ name: this._uniqName(f.name.replace(/\.[^/.]+$/, '')), kind: 'file', file: f });
+    });
+    e.target.value = '';          // 같은 파일을 다시 골라도 반응하도록
+    this._renderSources();
+  }
+  _renderSources() {
+    const info = document.getElementById('selectedFilesInfo');
+    const list = document.getElementById('selectedFilesList');
+    if (!this.sources.length) { info.style.display = 'none'; list.innerHTML = ''; }
+    else {
+      const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+      list.innerHTML = this.sources.map((x, i) =>
+        `<span class="src-badge ${x.kind === 'canon' ? 'canon' : ''}">` +
+        `<i class="fas ${x.kind === 'canon' ? 'fa-book' : 'fa-file-lines'}"></i>${esc(x.name)}` +
+        `<button type="button" class="src-x" data-i=${i} title="${esc(this._t('removeItem'))}" aria-label="${esc(this._t('removeItem'))}">×</button></span>`
+      ).join('');
+      info.style.display = 'block';
+    }
+    const picked = document.getElementById('canonPicked');
+    if (picked) picked.textContent = this.sources.length
+      ? this._t('canonPicked').replace('{count}', this.sources.length) : '';
+  }
+
+  // ── 분석 (Web Worker 사용) ────────────────────────────
+  async _analyze() {
+    const minN  = parseInt(document.getElementById('minN').value);
+    const maxN  = parseInt(document.getElementById('maxN').value);
+    if (this.sources.length < 2) { this._alert(this._t('needTwo'), 'danger'); return; }
+    if (minN < 1 || maxN < minN) { this._alert(this._t('ngramRangeError'), 'danger'); return; }
+
+    this._showLoading(this._t('analyzing'), 0);
+
+    try {
+      // 1단계: 읽기 (지금 목록에 있는 것만 새로 담는다)
+      this.filesData = {}; this.indexMap = {}; this.originalTexts = {};
+      for (const src of this.sources) {
+        const text = src.kind === 'canon' ? src.text : await this._extractText(src.file);
+        this._ingestText(src.name, text);
+      }
+      this._showLoading(this._t('analyzing'), 10);
+
+      // 2단계: Web Worker로 N-gram 연산
+      await this._buildNgramsWorker(minN, maxN);
+
+      // 3단계: 필터/정렬/렌더
+      this._applyFilter();
+      this._setupCheckboxes();
+      this._enableBtns();
+      this._alert(this._t('analysisComplete'), 'success');
+    } catch(err) {
+      this._alert(err.message, 'danger');
+    } finally {
+      this._hideLoading();
+    }
+  }
+
+  _ingestText(name, content) {
+    this.originalTexts[name] = content;
+    let hanjaArr = [], indices = [];
+    let pos = 0;
+    for (const ch of content) {
+      if (HANJA_RE.test(ch)) { hanjaArr.push(ch); indices.push(pos); }
+      pos += ch.length; // 서로게이트 페어는 length=2, 일반 한자는 length=1
+    }
+    // 배열로 저장 → N-gram 슬라이스·indexOf 모두 코드포인트 단위로 정확히 처리
+    this.filesData[name] = hanjaArr;
+    this.indexMap[name]  = indices;
+  }
+
+  // ── 파일 종류별 글 뽑기 ────────────────────────────────
+  _loadScript(url, globalName) {
+    if (window[globalName]) return Promise.resolve(window[globalName]);
+    return new Promise((resolve, reject) => {
+      const sc = document.createElement('script');
+      sc.src = url;
+      sc.onload = () => resolve(window[globalName]);
+      sc.onerror = () => reject(new Error(this._t('fileReadError') + ': ' + url));
+      document.head.appendChild(sc);
+    });
+  }
+  _decodeText(buf) {
+    const b = new Uint8Array(buf);
+    if (b[0] === 0xFF && b[1] === 0xFE) return new TextDecoder('utf-16le').decode(buf);
+    if (b[0] === 0xFE && b[1] === 0xFF) return new TextDecoder('utf-16be').decode(buf);
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+    catch { return new TextDecoder('euc-kr').decode(buf); }   // 한국어 윈도 메모장(CP949)
+  }
+  _xmlParagraphs(xml, pTag, tTag) {
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+    return Array.from(doc.getElementsByTagNameNS('*', pTag)).map(p =>
+      Array.from(p.getElementsByTagNameNS('*', tTag)).map(t => t.textContent).join('')
+    ).join('\n');
+  }
+  async _extractText(file) {
+    const ext = (file.name.match(/\.([^.]+)$/) || [, ''])[1].toLowerCase();
+    const fail = () => new Error(this._t('fileReadError') + ': ' + file.name);
+    if (ext === 'hwp') throw new Error(this._t('hwpUnsupported').replace('{name}', file.name));
+    const buf = await file.arrayBuffer();
+    if (ext === 'docx' || ext === 'hwpx') {
+      const JSZip = await this._loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js', 'JSZip');
+      let zip;
+      try { zip = await JSZip.loadAsync(buf); } catch { throw fail(); }
+      if (ext === 'docx') {
+        const f = zip.file('word/document.xml');
+        if (!f) throw fail();
+        return this._xmlParagraphs(await f.async('string'), 'p', 't');
+      }
+      const secs = Object.keys(zip.files)
+        .filter(n => /^Contents\/section\d+\.xml$/i.test(n))
+        .sort((x, y) => parseInt(x.match(/\d+/)[0]) - parseInt(y.match(/\d+/)[0]));
+      if (!secs.length) throw fail();
+      const parts = [];
+      for (const n of secs) parts.push(this._xmlParagraphs(await zip.file(n).async('string'), 'p', 't'));
+      return parts.join('\n');
+    }
+    if (ext === 'pdf') {
+      const lib = await this._loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js', 'pdfjsLib');
+      lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      const pdf = await lib.getDocument({ data: new Uint8Array(buf) }).promise;
+      const out = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const tc = await (await pdf.getPage(i)).getTextContent();
+        out.push(tc.items.map(it => it.str + (it.hasEOL ? '\n' : '')).join(''));
+      }
+      const text = out.join('\n');
+      if (!HANJA_RE.test(text) && !text.trim())
+        throw new Error(this._t('pdfEmpty').replace('{name}', file.name));
+      return text;
+    }
+    const text = this._decodeText(buf);
+    if (ext === 'html' || ext === 'htm') {
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      return doc.body ? doc.body.innerText || doc.body.textContent : text;
+    }
+    return text;
+  }
+
+  // ── 신한글대장경 문헌 불러오기 ─────────────────────────
+  //  같은 hmseodam.github.io 안이므로 목록(manifest)과 문헌 JSON을 바로 읽는다.
+  // 신한글대장경 안(apps/ngram/)에서 돌 때는 같은 저장소의 자료를, 따로 돌 때는 사이트 주소를 쓴다
+  get KT_BASE() {
+    return /\/apps\/ngram\/(?:index\.html)?$/.test(location.pathname)
+      ? new URL('../../', location.href).href
+      : 'https://hmseodam.github.io/k-tripitaka/';
+  }
+  async _openCanon() {
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('canonModal'));
+    modal.show();
+    this._canonShowList();
+    this._renderSources();
+    if (this.canon.manifest) return;
+    document.getElementById('canonList').innerHTML =
+      `<div class="text-center text-muted py-4">${this._t('canonLoading')}</div>`;
+    try {
+      const r = await fetch(this.KT_BASE + 'data/manifest.json');
+      if (!r.ok) throw new Error();
+      this.canon.manifest = await r.json();
+      this._renderCanonList();
+    } catch {
+      document.getElementById('canonList').innerHTML =
+        `<div class="text-center text-danger py-4">${this._t('canonLoadError')}</div>`;
+    }
+  }
+  _canonShowList() {
+    document.getElementById('canonListView').style.display = '';
+    document.getElementById('canonWorkView').style.display = 'none';
+  }
+  _renderCanonList() {
+    const m = this.canon.manifest; if (!m) return;
+    const q = document.getElementById('canonSearch').value.trim().toLowerCase();
+    const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const hits = m.works.filter(w => !q || [w.title_cn, w.title_ko, w.author_cn, w.author_ko, w.author_line,
+      w.canon, w.canon_full, w.collection, w.id, ...(w.tags || [])].join(' ').toLowerCase().includes(q));
+    document.getElementById('canonCount').textContent = this._t('canonCount').replace('{count}', hits.length);
+    const list = document.getElementById('canonList');
+    list.innerHTML = hits.map(w =>
+      `<button type="button" class="canon-item" data-id="${esc(w.id)}">` +
+      `<span class="cn">${esc(w.title_cn)}</span><span class="ko">${esc(w.title_ko)}</span>` +
+      `<span class="meta">${esc(w.canon_label || w.canon)} · ${esc(w.author_short || w.author_line || '')}` +
+      ` · ${esc(w.collection || '')} · ${(w.units || 0).toLocaleString()}</span></button>`
+    ).join('');
+    list.querySelectorAll('.canon-item').forEach(b => b.onclick = () => this._canonOpenWork(b.dataset.id));
+  }
+  async _canonOpenWork(id) {
+    const w = this.canon.manifest.works.find(x => x.id === id);
+    const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    document.getElementById('canonListView').style.display = 'none';
+    document.getElementById('canonWorkView').style.display = '';
+    document.getElementById('canonWorkHead').innerHTML =
+      `<div class="fs-5 fw-bold">${esc(w.title_cn)} <small class="text-muted fw-normal">${esc(w.title_ko)}</small></div>` +
+      `<div class="small text-muted">${esc(w.canon_label || w.canon)} · ${esc(w.author_short || '')}</div>`;
+    const juan = document.getElementById('canonJuan');
+    const whole = document.getElementById('canonWhole');
+    whole.disabled = true; whole.classList.remove('added');
+    juan.innerHTML = `<div class="text-muted small py-2">${this._t('canonLoading')}</div>`;
+    try {
+      let doc = this.canon.docs.get(id);
+      if (!doc) {
+        const r = await fetch(this.KT_BASE + 'data/works/' + encodeURIComponent(id) + '.json');
+        if (!r.ok) throw new Error();
+        doc = await r.json();
+        this.canon.docs.set(id, doc);
+      }
+      this.canon.current = { w, doc };
+      whole.disabled = false;
+      // 앱은 긴 권을 쪽으로 나눈다(「권 제1 (2) 0003a24–0003c17」). 같은 권의 쪽은 하나로 묶는다.
+      const groups = [];
+      (doc.chapters || []).forEach(c => {
+        const base = String(c.t).replace(/\s*\(\d+\)\s*\S*[–-]\S*\s*$/, '').trim();
+        const last = groups[groups.length - 1];
+        if (last && last.t === base) return;
+        groups.push({ t: base, i: c.i });
+      });
+      groups.forEach((g, k) => { g.end = k + 1 < groups.length ? groups[k + 1].i : doc.units.length; });
+      this.canon.current.groups = groups;
+      document.getElementById('canonJuanWrap').style.display = groups.length > 1 ? '' : 'none';
+      juan.innerHTML = groups.map((g, k) =>
+        `<button type="button" class="btn btn-outline-secondary" data-k="${k}">${esc(g.t.replace(/『[^』]*』\s*/g, ''))} ` +
+        `<small class="text-muted">(${g.end - g.i})</small></button>`
+      ).join('');
+      juan.querySelectorAll('button').forEach(b => b.onclick = () => { this._canonAdd(Number(b.dataset.k)); b.classList.add('added'); });
+    } catch {
+      juan.innerHTML = `<div class="text-danger small py-2">${this._t('canonLoadError')}</div>`;
+    }
+  }
+  _canonText(units) {
+    return units.map(u => (u.cn || []).join('')
+      .replace(/\[\d{3,4}[abc]\d{2}\]/g, '')          // 위치표지
+      .replace(/\[(?:\d{1,3}|＊|\*)\]/g, '')          // 교감표지
+      .replace(/⟦fig:[^⟧]*⟧/g, '')      // 도판 표지
+    ).filter(Boolean).join('\n');
+  }
+  _canonAdd(k) {
+    const cur = this.canon.current; if (!cur) return;
+    const { w, doc } = cur;
+    let units = doc.units, label = w.title_cn;
+    if (k != null) {
+      const g = cur.groups[k];
+      units = doc.units.slice(g.i, g.end);
+      // 『구사론기』 같은 한글 서명은 빼고 권 이름만 붙인다
+      label = `${w.title_cn} ${g.t.replace(/『[^』]*』\s*/g, '').trim()}`;
+    } else {
+      document.getElementById('canonWhole').classList.add('added');
+    }
+    const name = this._uniqName(label);
+    this.sources.push({ name, kind: 'canon', text: this._canonText(units) });
+    this._renderSources();
+    this._alert(this._t('canonAdded').replace('{name}', name), 'success');
+  }
+
+  // Web Worker로 N-gram 연산 분리
+  _buildNgramsWorker(minN, maxN) {
+    return new Promise((resolve, reject) => {
+      const workerCode = `
+        self.onmessage = function(e) {
+          const { filesData, filenames, minN, maxN } = e.data;
+          const ngramResults = {};
+          const allNgramsObj = {};
+          const total = filenames.length;
+
+          filenames.forEach((name, idx) => {
+            const text = filesData[name]; // 코드포인트 배열
+            const len  = text.length;
+            const map  = {};
+            for (let n = minN; n <= maxN; n++) {
+              for (let i = 0; i <= len - n; i++) {
+                const ng = text.slice(i, i + n).join('');
+                map[ng] = (map[ng] || 0) + 1;
+              }
+            }
+            ngramResults[name] = map;
+            for (const k of Object.keys(map)) allNgramsObj[k] = true;
+            self.postMessage({ type: 'progress', pct: Math.round(10 + (idx+1)/total*80) });
+          });
+
+          self.postMessage({ type: 'done', ngramResults, allNgrams: Object.keys(allNgramsObj) });
+        };
+      `;
+
+      const blob   = new Blob([workerCode], { type: 'application/javascript' });
+      const worker = new Worker(URL.createObjectURL(blob));
+
+      // filesData(배열)를 plain object로 변환하여 Worker에 전달
+      const filesDataPlain = {};
+      for (const k of Object.keys(this.filesData)) filesDataPlain[k] = this.filesData[k];
+
+      worker.postMessage({ filesData: filesDataPlain, filenames: Object.keys(filesDataPlain), minN, maxN });
+
+      worker.onmessage = (e) => {
+        if (e.data.type === 'progress') {
+          this._showLoading(this._t('analyzing'), e.data.pct);
+        } else if (e.data.type === 'done') {
+          // plain object → Map으로 복원
+          this.ngramResults = {};
+          for (const name of Object.keys(e.data.ngramResults)) {
+            this.ngramResults[name] = new Map(Object.entries(e.data.ngramResults[name]));
+          }
+          this.allNgrams = new Set(e.data.allNgrams);
+          this.filenames = Object.keys(this.filesData);
+          worker.terminate();
+          this._showLoading(this._t('analyzing'), 95);
+          resolve();
+        }
+      };
+      worker.onerror = (err) => { worker.terminate(); reject(err); };
+    });
+  }
+
+  // ── 필터 / 정렬 ───────────────────────────────────────
+  _applyFilter() {
+    if (!this.filenames.length) return;
+    const mode    = document.getElementById('modeSelect').value;
+    const sortDir = document.getElementById('sortSelect').value;
+    const incAll  = document.getElementById('includeAll').checked;
+
+    let ngrams = [...this.allNgrams];
+
+    if (mode === 'common') {
+      const selected = Array.from(
+        document.querySelectorAll('#fileCheckboxes input:checked')
+      ).map(cb => cb.value).filter(v => this.filenames.includes(v));
+
+      if (selected.length > 0) {
+        ngrams = ngrams.filter(ng => {
+          if (incAll) {
+            return selected.every(f => (this.ngramResults[f]?.get(ng) || 0) > 0);
+          } else {
+            const appearsIn = new Set(this.filenames.filter(f => (this.ngramResults[f]?.get(ng)||0) > 0));
+            const selSet    = new Set(selected);
+            return appearsIn.size === selSet.size && [...selSet].every(f => appearsIn.has(f));
+          }
+        });
+      }
+    }
+
+    // 정렬
+    ngrams.sort((a, b) => {
+      const ta = this.filenames.reduce((s, f) => s + (this.ngramResults[f]?.get(a)||0), 0);
+      const tb = this.filenames.reduce((s, f) => s + (this.ngramResults[f]?.get(b)||0), 0);
+      return sortDir === 'asc' ? ta - tb : tb - ta;
+    });
+
+    // 결과를 객체 배열로 보관 (문자열 파싱 오버헤드 제거)
+    this.currentResultsData = ngrams.map(ng => ({
+      ng,
+      freqs: this.filenames.map(f => this.ngramResults[f]?.get(ng) || 0)
+    }));
+    // 다운로드·하이라이트용 문자열도 유지
+    this.currentResults = this.currentResultsData.map(d =>
+      `${d.ng}: ${this.filenames.map((f,i) => `${f}: ${d.freqs[i]}`).join(', ')}`
+    );
+
+    this._renderResults(this.currentResultsData);
+    document.getElementById('dataCount').textContent =
+      this._t('dataCount').replace('{count}', this.currentResultsData.length);
+  }
+
+  // ── 가상 스크롤 렌더링 ────────────────────────────────
+  _renderResults(data) {
+    const area = document.getElementById('resultsArea');
+    if (!data || !data.length) {
+      area.innerHTML = `<div class="text-center text-muted py-5">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+        <p>${this._t('noValidData')}</p></div>`;
+      return;
+    }
+
+    const ROW_H    = 36;   // 행 높이(px)
+    const BUFFER   = 20;   // 렌더 버퍼(위아래 여분 행 수)
+    const totalH   = data.length * ROW_H;
+
+    // 외부 컨테이너: 실제 스크롤 높이 확보
+    area.innerHTML = `
+      <div id="vsHeader" style="position:sticky;top:0;z-index:2;background:#f8f9fa;">
+        <table class="table table-striped table-hover mb-0" style="table-layout:fixed;">
+          <thead><tr>
+            <th style="width:40%">N-gram</th>
+            ${this.filenames.map(n=>`<th class="text-center">${n}</th>`).join('')}
+          </tr></thead>
+        </table>
+      </div>
+      <div id="vsScroll" style="overflow-y:auto;max-height:55vh;position:relative;">
+        <div id="vsSpacer" style="height:${totalH}px;position:relative;">
+          <table class="table table-striped table-hover mb-0" id="vsTable"
+                 style="table-layout:fixed;position:absolute;top:0;left:0;width:100%;">
+            <colgroup>
+              <col style="width:40%">
+              ${this.filenames.map(()=>'<col>').join('')}
+            </colgroup>
+            <tbody id="vsTbody"></tbody>
+          </table>
+        </div>
+      </div>`;
+
+    const scroll  = document.getElementById('vsScroll');
+    const tbody   = document.getElementById('vsTbody');
+    const table   = document.getElementById('vsTable');
+
+    let lastStart = -1;
+
+    const render = () => {
+      const scrollTop = scroll.scrollTop;
+      const visH      = scroll.clientHeight;
+      const startIdx  = Math.max(0, Math.floor(scrollTop / ROW_H) - BUFFER);
+      const endIdx    = Math.min(data.length, Math.ceil((scrollTop + visH) / ROW_H) + BUFFER);
+
+      if (startIdx === lastStart) return;
+      lastStart = startIdx;
+
+      table.style.top = `${startIdx * ROW_H}px`;
+
+      const frag = document.createDocumentFragment();
+      for (let i = startIdx; i < endIdx; i++) {
+        const d  = data[i];
+        const tr = document.createElement('tr');
+        tr.style.height = ROW_H + 'px';
+        tr.innerHTML = `<td class="ngram-text">${d.ng}</td>` +
+          d.freqs.map(v => `<td class="frequency-cell">${v}</td>`).join('');
+        frag.appendChild(tr);
+      }
+      tbody.innerHTML = '';
+      tbody.appendChild(frag);
+    };
+
+    scroll.addEventListener('scroll', render, { passive: true });
+    render();
+  }
+
+  // ── 체크박스 셋업 ─────────────────────────────────────
+  _setupCheckboxes() {
+    const box = document.getElementById('fileCheckboxes');
+    box.innerHTML = '';
+    this.filenames.forEach(name => {
+      const d = document.createElement('div');
+      d.className = 'form-check file-checkbox';
+      d.innerHTML = `<input class="form-check-input" type="checkbox" id="fcb_${name}" value="${name}" checked>
+        <label class="form-check-label" for="fcb_${name}">${name}</label>`;
+      box.appendChild(d);
+    });
+    box.querySelectorAll('input').forEach(cb => cb.addEventListener('change', () => this._applyFilter()));
+  }
+
+  _onModeChange(mode) {
+    document.getElementById('commonControls').style.display = mode === 'common' ? 'block' : 'none';
+    this._applyFilter();
+  }
+
+  _enableBtns() {
+    ['wordcloudBtn','downloadBtn','applyBtn'].forEach(id => {
+      document.getElementById(id).disabled = false;
+    });
+  }
+
+  _reset() {
+    // 데이터 초기화
+    this.filesData      = {};
+    this.indexMap       = {};
+    this.originalTexts  = {};
+    this.ngramResults   = {};
+    this.allNgrams      = new Set();
+    this.filenames      = [];
+    this.currentResults = [];
+    this.currentResultsData = [];
+
+    // UI 초기화
+    this.sources        = [];
+    document.getElementById('fileInput').value = '';
+    document.getElementById('selectedFilesInfo').style.display = 'none';
+    document.getElementById('selectedFilesList').innerHTML = '';
+    document.getElementById('fileCheckboxes').innerHTML = '';
+    document.getElementById('commonControls').style.display = 'none';
+    document.getElementById('modeSelect').value = 'all';
+    document.getElementById('sortSelect').value = 'asc';
+    document.getElementById('includeAll').checked = false;
+    document.getElementById('dataCount').textContent = '0';
+    document.getElementById('resultsArea').innerHTML = `
+      <div class="text-center text-muted py-5">
+        <i class="fas fa-file-alt fa-3x mb-3"></i>
+        <p data-i18n="noData">${this._t('noData')}</p>
+      </div>`;
+    ['wordcloudBtn','downloadBtn','applyBtn'].forEach(id => {
+      document.getElementById(id).disabled = true;
+    });
+    this._alert(this._t('resetComplete'), 'success');
+  }
+
+  // ── 다운로드 ──────────────────────────────────────────
+  _showDownloadModal() {
+    new bootstrap.Modal(document.getElementById('downloadModal')).show();
+  }
+
+  _download() {
+    const fmt = document.querySelector('input[name="downloadFormat"]:checked').value;
+    const now = new Date().toLocaleString();
+
+    if (fmt === 'xlsx') {
+      // ── 엑셀 ──
+      const header = ['N-gram', ...this.filenames];
+      const rows   = this.currentResultsData.map(d => [d.ng, ...d.freqs]);
+      const ws     = XLSX.utils.aoa_to_sheet([header, ...rows]);
+
+      // 열 너비 설정
+      ws['!cols'] = [{ wch: 12 }, ...this.filenames.map(() => ({ wch: 18 }))];
+
+      // 헤더 스타일 (배경색 + 굵게)
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
+        if (cell) {
+          cell.s = {
+            font: { bold: true, color: { rgb: 'FFFFFF' } },
+            fill: { fgColor: { rgb: '0D6EFD' } },
+            alignment: { horizontal: 'center' }
+          };
+        }
+      }
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'N-gram 분석');
+
+      // 메타 시트
+      const metaWs = XLSX.utils.aoa_to_sheet([
+        ['생성일', now],
+        ['저작권', 'Copyright © 2025 서담 한민수, 동명대학교'],
+        ['라이선스', 'CC BY-NC-ND 4.0']
+      ]);
+      XLSX.utils.book_append_sheet(wb, metaWs, '정보');
+
+      XLSX.writeFile(wb, 'ngram_analysis.xlsx');
+
+    } else if (fmt === 'html') {
+      const rows = this.currentResultsData.map(d =>
+        `<tr><td class="ng">${d.ng}</td>${d.freqs.map(v=>`<td>${v}</td>`).join('')}</tr>`
+      ).join('');
+      const content = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap');
+body{font-family:'Noto Serif KR',serif;margin:30px;background:#fafafa;color:#222;}
+h2{color:#0d6efd;border-bottom:2px solid #0d6efd;padding-bottom:8px;}
+.meta{font-size:.85em;color:#666;margin-bottom:20px;}
+table{border-collapse:collapse;width:100%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+th{background:#0d6efd;color:#fff;padding:10px 14px;text-align:center;}
+td{padding:7px 14px;border-bottom:1px solid #eee;}
+td.ng{font-weight:600;font-size:1.05em;}
+tr:hover td{background:#f0f6ff;}
+.footer{margin-top:24px;font-size:.78em;color:#aaa;text-align:center;}
+</style></head><body>
+<h2>N-gram 분석 결과</h2>
+<p class="meta">생성: ${now} &nbsp;|&nbsp; Copyright © 2025 서담 한민수, 동명대학교 | CC BY-NC-ND 4.0</p>
+<table><thead><tr><th>N-gram</th>${this.filenames.map(n=>`<th>${n}</th>`).join('')}</tr></thead>
+<tbody>${rows}</tbody></table>
+<div class="footer">CC BY-NC-ND 4.0 — 비영리·변경금지</div>
+</body></html>`;
+      this._triggerDownload(new Blob(['\ufeff'+content],{type:'text/html;charset=utf-8'}), 'ngram_analysis.html');
+
+    } else {
+      const content = `N-gram 분석 결과\n${'='.repeat(50)}\n생성: ${now}\nCopyright © 2025 서담 한민수, 동명대학교 | CC BY-NC-ND 4.0\n${'='.repeat(50)}\n\n` +
+        this.currentResults.join('\n');
+      this._triggerDownload(new Blob(['\ufeff'+content],{type:'text/plain;charset=utf-8'}), 'ngram_analysis.txt');
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById('downloadModal'))?.hide();
+  }
+
+  // ── 하이라이트 ────────────────────────────────────────
+  _showHighlightModal() {
+    if (!this.filenames.length) { this._alert(this._t('analyzeFirst'), 'danger'); return; }
+    const list = document.getElementById('fileSelectionList');
+    list.innerHTML = '';
+    this.filenames.forEach(name => {
+      const d = document.createElement('div');
+      d.className = 'form-check mb-2';
+      d.innerHTML = `<input class="form-check-input" type="radio" name="selFile" id="hl_${name}" value="${name}">
+        <label class="form-check-label" for="hl_${name}">${name}</label>`;
+      list.appendChild(d);
+    });
+    new bootstrap.Modal(document.getElementById('fileSelectionModal')).show();
+  }
+
+  _applyHighlight() {
+    const sel = document.querySelector('input[name="selFile"]:checked');
+    if (!sel) { this._alert(this._t('selectFile'), 'danger'); return; }
+    const fname  = sel.value;
+    const orig   = this.originalTexts[fname];
+    const hanja  = this.filesData[fname];
+    const idxMap = this.indexMap[fname];
+
+    // 창 제목
+    const mode = document.getElementById('modeSelect').value;
+    const modeLabel = mode === 'common'
+      ? (() => {
+          const checked = Array.from(document.querySelectorAll('#fileCheckboxes input:checked'));
+          if (checked.length === 0) return '공통';
+          const names = checked.map(cb => cb.value);
+          // fname과 동일한 이름만 있는 경우 "공통 분석"으로 표시
+          const others = names.filter(n => n !== fname);
+          return others.length > 0 ? `공통(${others.join(', ')})` : '공통 분석';
+        })()
+      : '전체 분석';
+    const pageTitle = `${fname} — N-gram 하이라이트 (${modeLabel})`;
+
+    // N-gram 위치 계산 (hanja는 코드포인트 배열)
+    const ngrams = new Set(this.currentResults.map(r => r.split(':')[0].trim()));
+    const redPos = new Set();
+    for (const ng of ngrams) {
+      const ngArr = Array.from(ng); // ng도 코드포인트 배열로 변환
+      const ngLen = ngArr.length;
+      for (let i = 0; i <= hanja.length - ngLen; i++) {
+        let match = true;
+        for (let k = 0; k < ngLen; k++) {
+          if (hanja[i + k] !== ngArr[k]) { match = false; break; }
+        }
+        if (match) {
+          for (let k = 0; k < ngLen; k++) redPos.add(idxMap[i + k]);
+        }
+      }
+    }
+
+    const total = idxMap.length;
+    const red   = redPos.size;
+    const ratio = total ? (red / total * 100).toFixed(2) : 0;
+
+    // 본문 HTML — for...of로 코드포인트 단위 순회
+    let body = '';
+    let pos = 0;
+    let prevWasNL = false;
+    for (const ch of orig) {
+      if (ch === '\n') {
+        if (prevWasNL) {
+          // 연속 빈줄 → 단락 간격 (작은 여백)
+          body += '<br style="display:block;margin:.15em 0">';
+        } else {
+          body += '<br>';
+        }
+        prevWasNL = true;
+        pos += ch.length;
+        continue;
+      }
+      prevWasNL = false;
+      if (ch === '\t') { body += '&nbsp;&nbsp;&nbsp;&nbsp;'; pos += ch.length; continue; }
+      const esc = ch.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      body += redPos.has(pos) ? `<span class="hl">${esc}</span>` : esc;
+      pos += ch.length;
+    }
+
+    const langMap = {
+      ko:{ total:'전체 한자수', hl:'해당 글자수', ratio:'비율', file:'파일', mode:'분석 모드' },
+      en:{ total:'Total Hanja', hl:'Highlighted', ratio:'Ratio', file:'File', mode:'Mode' },
+      zh:{ total:'总汉字数', hl:'高亮字符数', ratio:'比例', file:'文件', mode:'模式' },
+      ja:{ total:'総漢字数', hl:'ハイライト文字数', ratio:'比率', file:'ファイル', mode:'モード' }
+    };
+    const lt = langMap[this.currentLang] || langMap.ko;
+
+    // JSON 데이터 (저장용)
+    const jsonData = JSON.stringify({
+      meta: { file: fname, mode: modeLabel, date: new Date().toISOString(),
+              totalHanja: total, highlighted: red, ratio: parseFloat(ratio),
+              copyright: 'Copyright © 2025 서담 한민수, 동명대학교', license: 'CC BY-NC-ND 4.0' },
+      ngrams: [...ngrams],
+      highlightedPositions: [...redPos].sort((a,b)=>a-b)
+    }, null, 2);
+
+    // ── 저장 스크립트 (새 창 내부) ──
+    const saveScript = `
+<script>
+const _jsonData = ${JSON.stringify(jsonData)};
+function saveAs(fmt) {
+  const title = document.title.replace(/[\\\\/:*?"<>|]/g,'_');
+  if (fmt === 'html') {
+    dl(new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'}), title+'.html');
+  } else if (fmt === 'word') {
+    const wh = \`<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='utf-8'><title>\${document.title}</title>
+      <style>body{font-family:'맑은 고딕',serif;font-size:11pt;line-height:2;}
+      .hl{color:#dc2626;font-weight:bold;}
+      .statcard{display:flex;gap:12px;margin-bottom:16px;}
+      .statcard div{border:1px solid #ddd;padding:8px 14px;border-radius:4px;}
+      </style></head><body>\${document.getElementById('pageWrap').innerHTML}</body></html>\`;
+    dl(new Blob(['\\ufeff'+wh],{type:'application/msword;charset=utf-8'}), title+'.doc');
+  } else if (fmt === 'json') {
+    dl(new Blob([_jsonData],{type:'application/json;charset=utf-8'}), title+'.json');
+  }
+}
+function dl(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+// 폰트 크기 조절 (모바일 pinch-zoom 대응)
+let _fontSize = 17;
+function adjustFont(delta){
+  _fontSize = Math.min(32, Math.max(12, _fontSize + delta));
+  document.getElementById('mainBody').style.fontSize = _fontSize + 'px';
+}
+<\/script>`;
+
+    // ── 하이라이트 창 HTML ──
+    const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>${pageTitle}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ══ 메인 앱과 동일한 디자인 토큰 ══ */
+:root {
+  --brand:#1e3a5f; --brand-light:#2563eb; --accent:#dc2626;
+  --bg:#f7f6f1; --surface:#fff; --border:#e5e3db;
+  --text:#1a1a1a; --text-muted:#888;
+  --font:'Noto Serif KR','Malgun Gothic','Apple SD Gothic Neo',serif;
+  --radius:.5rem;
+}
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; padding:0; background:var(--bg); font-family:var(--font); color:var(--text); }
+
+/* ── Toolbar (메인 Navbar와 동일 색) ── */
+#toolbar {
+  position:sticky; top:0; z-index:100;
+  background:var(--brand); color:#fff;
+  padding:10px 20px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.22);
+}
+#toolbar h1 { margin:0; font-size:.95rem; font-weight:700; letter-spacing:.02em; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#toolbar .btns { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+#toolbar button {
+  font-family:var(--font); font-size:.78rem; font-weight:600;
+  padding:5px 11px; border:1px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.13); color:#fff; border-radius:var(--radius);
+  cursor:pointer; transition:background .15s; white-space:nowrap;
+}
+#toolbar button:hover { background:rgba(255,255,255,.28); }
+#toolbar .font-ctrl { display:flex; align-items:center; gap:4px; margin-left:6px; }
+#toolbar .font-ctrl button { padding:4px 9px; }
+
+/* ── 본문 래퍼: 전체 폭 활용 ── */
+#pageWrap {
+  width:100%;
+  max-width:1400px;       /* PC에서 충분히 넓게 */
+  margin:0 auto;
+  padding:24px 32px 60px;
+}
+
+/* ── 통계 카드 ── */
+.statcard {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;
+}
+.statcard > div {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px 18px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06); text-align:center;
+}
+.statcard .val { font-size:1.6rem; font-weight:700; color:var(--brand); }
+.statcard .val.red { color:var(--accent); }
+.statcard .lbl { font-size:.76rem; color:var(--text-muted); margin-top:3px; }
+
+/* ── 메타바 ── */
+.metabar {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; font-size:.8rem;
+}
+.metabar span {
+  background:#eeeade; color:#555; border-radius:4px; padding:3px 10px;
+}
+
+/* ── 본문 ── */
+#mainBody {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:28px 36px;
+  font-size:17px; line-height:1.7;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+  word-break:break-all;
+  transition:font-size .15s;
+}
+.hl { color:var(--accent); font-weight:700; }
+
+/* ── 푸터 ── */
+.pgfooter { margin-top:28px; text-align:center; font-size:.74rem; color:#bbb; }
+
+/* ── 스크롤바 ── */
+::-webkit-scrollbar { width:7px; }
+::-webkit-scrollbar-track { background:#ece9e0; }
+::-webkit-scrollbar-thumb { background:#b5b0a5; border-radius:4px; }
+
+/* ── 반응형 ── */
+@media(max-width:768px){
+  #pageWrap { padding:14px 12px 40px; }
+  #mainBody { padding:16px; font-size:16px; }
+  .statcard { grid-template-columns:1fr 1fr; }
+  #toolbar h1 { font-size:.82rem; }
+}
+@media(max-width:480px){
+  .statcard { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <h1>📄 ${pageTitle}</h1>
+  <div class="btns">
+    <button onclick="saveAs('html')">💾 HTML</button>
+    <button onclick="saveAs('word')">📝 Word</button>
+    <button onclick="saveAs('json')">{ } JSON</button>
+    <div class="font-ctrl">
+      <button onclick="adjustFont(-1)" title="글자 작게">A−</button>
+      <button onclick="adjustFont(1)"  title="글자 크게">A+</button>
+    </div>
+  </div>
+</div>
+<div id="pageWrap">
+  <div class="statcard">
+    <div><div class="val">${total.toLocaleString()}</div><div class="lbl">${lt.total}</div></div>
+    <div><div class="val red">${red.toLocaleString()}</div><div class="lbl">${lt.hl}</div></div>
+    <div><div class="val">${ratio}%</div><div class="lbl">${lt.ratio}</div></div>
+  </div>
+  <div class="metabar">
+    <span>${lt.file}: <strong>${fname}</strong></span>
+    <span>${lt.mode}: <strong>${modeLabel}</strong></span>
+    <span>${new Date().toLocaleString()}</span>
+  </div>
+  <div id="mainBody">${body}</div>
+  <div class="pgfooter">Copyright © 2025 서담 한민수, 동명대학교 &nbsp;|&nbsp; CC BY-NC-ND 4.0</div>
+</div>
+${saveScript}
+</body></html>`;
+
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); w.document.title = pageTitle; }
+    else { this._triggerDownload(new Blob([html],{type:'text/html;charset=utf-8'}), `${fname}_highlight.html`); }
+    bootstrap.Modal.getInstance(document.getElementById('fileSelectionModal'))?.hide();
+  }
+
+  // ── 워드클라우드 ─────────────────────────────────────
+  _showWordcloud() {
+    if (!this.currentResults.length) { this._alert(this._t('noValidData'), 'danger'); return; }
+
+    const freqMap = new Map();
+    this.currentResultsData.forEach(d => {
+      const tot = d.freqs.reduce((s,v) => s+v, 0);
+      if (tot > 0) freqMap.set(d.ng, tot);
+    });
+
+    const canvas = document.getElementById('wcCanvas');
+    canvas.width  = 900;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 배경: 연한 크림색
+    ctx.fillStyle = '#fffdf7';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 빈도 상위 300개 (항목 수 대폭 증가)
+    const entries = [...freqMap.entries()].sort((a,b) => b[1]-a[1]).slice(0, 300);
+    const maxFreq = entries[0]?.[1] || 1;
+    const minFreq = entries[entries.length-1]?.[1] || 1;
+
+    // Google Fonts Noto Serif KR (웹 안전 한중일 폰트)
+    // 브라우저가 이미 로드한 폰트 사용 + 시스템 폰트 폴백
+    const FONT_STACK = "'Noto Serif KR', 'Noto Serif SC', 'Noto Serif TC', 'Noto Serif JP', 'Source Han Serif', 'SimSun', serif";
+
+    // 파스텔 팔레트 (세련된 색조)
+    const palette = [
+      '#2563eb','#7c3aed','#db2777','#059669','#d97706',
+      '#0891b2','#be123c','#4338ca','#15803d','#b45309',
+      '#6d28d9','#0369a1','#9d174d','#1e40af','#065f46'
+    ];
+
+    const placed = [];
+    let placedCount = 0;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    for (const [word, freq] of entries) {
+      const t    = (freq - minFreq) / Math.max(maxFreq - minFreq, 1);
+      // 크기 범위: 10px ~ 58px
+      const size = Math.round(10 + t * 48);
+      const color = palette[placedCount % palette.length];
+
+      ctx.font      = `${size <= 20 ? '400' : '700'} ${size}px ${FONT_STACK}`;
+      ctx.fillStyle = color;
+      const tw = ctx.measureText(word).width;
+      const th = size;
+
+      // 황금각 나선으로 배치 시도 (더 촘촘히 채움)
+      let ok = false;
+      for (let r = 0; r < 600; r += 1.5) {
+        const angle = r * 0.28;
+        const x = cx + r * Math.cos(angle) - tw / 2;
+        const y = cy + r * Math.sin(angle) + th / 2;
+        if (x < 2 || x + tw > canvas.width - 2 || y - th < 2 || y > canvas.height - 2) continue;
+        const overlap = placed.some(p =>
+          x < p.x + p.w + 3 && x + tw > p.x - 3 &&
+          y - th < p.y + 3   && y > p.y - p.h - 3
+        );
+        if (!overlap) {
+          ctx.fillText(word, x, y);
+          placed.push({ x, y, w: tw, h: th });
+          ok = true;
+          break;
+        }
+      }
+      if (ok) placedCount++;
+    }
+
+    new bootstrap.Modal(document.getElementById('wcModal')).show();
+  }
+
+  _downloadWC() {
+    const canvas = document.getElementById('wcCanvas');
+    const a = document.createElement('a');
+    a.download = 'wordcloud.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+
+  // ── 유틸 ──────────────────────────────────────────────
+  _triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  _showLoading(msg, pct) {
+    document.getElementById('loadingMessage').textContent = msg;
+    const wrap = document.getElementById('loadingProgressWrap');
+    const bar  = document.getElementById('loadingProgress');
+    if (pct !== undefined) {
+      wrap.style.display = 'block';
+      bar.style.width = pct + '%';
+    } else {
+      wrap.style.display = 'none';
+    }
+    const ov = document.getElementById('loadingOverlay');
+    ov.style.display = 'flex';
+  }
+  _hideLoading() {
+    const ov = document.getElementById('loadingOverlay');
+    ov.style.display = 'none';
+  }
+
+  _alert(msg, type) {
+    document.querySelectorAll('.top-alert').forEach(el => el.remove());
+    const div = document.createElement('div');
+    div.className = `alert alert-${type} alert-dismissible fade show top-alert`;
+    div.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    document.querySelector('.container-fluid').prepend(div);
+    setTimeout(() => div.remove(), 5000);
+  }
+}
+
+// ── 초기화 ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  window.app = new NgramAnalyzer();
+});
+</script>
+</body>
+</html>

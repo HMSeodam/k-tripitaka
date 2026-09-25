@@ -747,6 +747,30 @@ async function viewHome() {
   renderSide(null);
 }
 
+/* ─── 번역 DOCX 내려받기 ─────────────────────────────
+   GitHub Pages 에 함께 올라가 있는 sources/<id>/번역.docx 를
+   「구사론기.docx」처럼 한국어 제목 한 단어로 받게 한다. */
+function docxName(w) {
+  const base = String(w.title_ko || w.id)
+    .replace(/\s*\([^)]*\)\s*/g, '')      // (회본) 같은 덧붙임은 뺀다
+    .replace(/[\\/:*?"<>|\s]+/g, '');
+  return (base || w.id) + '.docx';
+}
+function docxButton(w) {
+  const a = el('a', 'dlbtn');
+  a.href = `${BASE}sources/${encodeURIComponent(w.id)}/${encodeURIComponent('번역')}.docx`;
+  a.setAttribute('download', docxName(w));
+  a.title = `번역 DOCX 내려받기 — ${docxName(w)} (AI 번역, 인용 전 원문 대조 필요)`;
+  a.innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">` +
+    `<path d="M8 2v8m0 0L4.8 6.8M8 10l3.2-3.2M3 13h10" fill="none" stroke="currentColor" ` +
+    `stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>번역본</span>`;
+  // 파일이 없는 문헌이면 단추를 감춘다
+  fetch(a.href, { method: 'HEAD' })
+    .then(r => { if (!r.ok) a.remove(); })
+    .catch(() => {});
+  return a;
+}
+
 /* ─── 화면: 대조 열람 ────────────────────────────── */
 async function viewWork(id, anchor, hit) {
   const main = $('#main');
@@ -779,6 +803,7 @@ async function viewWork(id, anchor, hit) {
     ai.title = '이 문헌의 한국어 번역은 AI가 생성했습니다. 인용 전 원문 대조가 필요합니다.';
     bar.append(ai);
   }
+  if (w.has_translation) bar.append(docxButton(w));
   const fsbox = el('div', 'fsbox');
   const minus = el('button', 'fsbtn', '가−');
   minus.title = '글자 작게';
@@ -1299,6 +1324,46 @@ async function viewRights() {
   if (d) d.textContent = `${t.getFullYear()}. ${t.getMonth() + 1}. ${t.getDate()}.`;
 }
 
+/* ─── 도구: N-gram 분석 · 텍스트 교감 (저장소 안 apps/) ─────
+   iframe 으로 신한글대장경 화면 안에서 연다. 다른 화면으로 갔다 와도
+   분석 내용이 남도록 한 번 만든 iframe 은 지우지 않고 감춰 둔다. */
+const TOOLS = {
+  ngram:   { title: 'N-gram 분석', sub: 'N-gram Chinese Text Analyzer', src: 'apps/ngram/index.html' },
+  compare: { title: '텍스트 교감', sub: 'Chinese Text Comparison',      src: 'apps/compare/index.html' },
+};
+function showTool(name) {
+  const t = TOOLS[name];
+  const host = $('#toolHost');
+  if (!t || !host) return viewHome();
+  $('#main').hidden = true;
+  host.hidden = false;
+  document.body.classList.add('tool-on');
+  host.querySelectorAll('.toolpane').forEach(p => { p.hidden = p.dataset.tool !== name; });
+  let pane = host.querySelector(`.toolpane[data-tool="${name}"]`);
+  if (!pane) {
+    pane = el('div', 'toolpane'); pane.dataset.tool = name;
+    pane.innerHTML =
+      `<div class="toolbar"><h2>${esc(t.title)}</h2><span class="toolsub">${esc(t.sub)}</span>` +
+      `<span class="spacer"></span>` +
+      `<a class="toolnew" href="${BASE + t.src}" target="_blank" rel="noopener" title="새 창에서 크게 열기">새 창 ↗</a></div>`;
+    const fr = document.createElement('iframe');
+    fr.className = 'toolframe';
+    fr.src = BASE + t.src;
+    fr.title = t.title;
+    fr.setAttribute('allow', 'clipboard-write');
+    pane.append(fr);
+    host.append(pane);
+  }
+  document.querySelectorAll('.applinks a').forEach(a => a.classList.toggle('on', a.dataset.tool === name));
+}
+function hideTools() {
+  const host = $('#toolHost');
+  if (host) host.hidden = true;
+  $('#main').hidden = false;
+  document.body.classList.remove('tool-on');
+  document.querySelectorAll('.applinks a').forEach(a => a.classList.remove('on'));
+}
+
 /* ─── 라우터 ─────────────────────────────────────── */
 function route() {
   const h = location.hash.slice(1) || '/';
@@ -1307,6 +1372,8 @@ function route() {
   const seg = path.split('/').filter(Boolean);
   $('#sidebar').classList.remove('open');
   document.querySelectorAll('.tabbar a,.tabbar button').forEach(b => b.classList.remove('on'));
+  if (seg[0] === 'tool') return showTool(seg[1]);
+  hideTools();
 
   if (seg[0] === 'w' && seg[1]) {
     document.querySelector('[data-tab="view"]')?.classList.add('on');
@@ -1371,8 +1438,71 @@ document.addEventListener('keydown', e => {
   if (e.key === '/' && document.activeElement !== $('#q')) { e.preventDefault(); $('#q').focus(); }
 });
 
+/* ─── 자료 업데이트 현황 (상단 오른쪽) ─────────────────
+   data/updates.json 에 날짜별로 추가·수정한 문헌을 적어 두면
+   버튼에 최근 날짜가, 창에 문헌 목록이 뜬다. */
+function fmtDate(d, short) {
+  const [y, mo, da] = String(d).split('-');
+  if (!mo) return `${y}년`;
+  if (!da) return short ? `${+mo}월` : `${y}년 ${+mo}월`;
+  return short ? `${mo}.${da}` : `${y}. ${+mo}. ${+da}.`;
+}
+
+async function initUpdates() {
+  const box = $('#updBox'), btn = $('#updBtn'), panel = $('#updPanel');
+  if (!box) return;
+  let log;
+  try {
+    const res = await fetch(BASE + 'data/updates.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    log = (await res.json()).updates || [];
+  } catch { return; }
+  if (!log.length) return;
+  const m = await manifest();
+  const byId = new Map(m.works.map(w => [w.id, w]));
+
+  $('#updDate').textContent = fmtDate(log[0].date, true);
+  btn.title = `자료 업데이트 현황 — 최근 ${fmtDate(log[0].date)}`;
+
+  const workLink = id => {
+    const w = byId.get(id);
+    if (!w) return '';
+    return `<a href="#/w/${esc(id)}"><span class="cnw">${esc(w.title_cn)}</span>` +
+           `<span class="upd-ko">${esc(w.title_ko || '')}</span></a>`;
+  };
+  panel.innerHTML =
+    `<div class="upd-head"><b>자료 업데이트</b>` +
+    `<span>수록 ${m.totals.works.toLocaleString()}종</span>` +
+    `<button type="button" class="upd-x" aria-label="닫기">×</button></div>` +
+    log.slice(0, 6).map(e => {
+      const added = (e.added || []).filter(id => byId.has(id));
+      const changed = (e.changed || []).filter(id => byId.has(id) && !added.includes(id));
+      return `<section class="upd-item">
+        <div class="upd-when"><time>${esc(fmtDate(e.date))}</time>` +
+        `${e.title ? `<span>${esc(e.title)}</span>` : ''}</div>` +
+        (e.memo ? `<p class="upd-memo">${esc(e.memo)}</p>` : '') +
+        (added.length ? `<div class="upd-lab">추가</div><div class="upd-works">${added.map(workLink).join('')}</div>` : '') +
+        (changed.length ? `<div class="upd-lab">수정</div><div class="upd-works">${changed.map(workLink).join('')}</div>` : '') +
+      `</section>`;
+    }).join('');
+
+  const open = on => {
+    panel.hidden = !on;
+    btn.setAttribute('aria-expanded', String(on));
+  };
+  btn.addEventListener('click', e => { e.stopPropagation(); open(panel.hidden); });
+  panel.addEventListener('click', e => {
+    if (e.target.closest('.upd-x') || e.target.closest('a')) open(false);
+  });
+  document.addEventListener('click', e => { if (!box.contains(e.target)) open(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') open(false); });
+  window.addEventListener('hashchange', () => open(false));
+  box.hidden = false;
+}
+
 window.addEventListener('hashchange', route);
 route();
+initUpdates();
 
 // 오프라인 열람
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {

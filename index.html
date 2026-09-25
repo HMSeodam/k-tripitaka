@@ -45,15 +45,23 @@
   </div>
 
   <nav class="applinks" aria-label="관련 도구">
-    <a href="https://hmseodam.github.io/ngram-chinese-analyzer/"
-       target="_blank" rel="noopener"
+    <a href="#/tool/ngram" data-tool="ngram"
        title="N-gram Chinese Text Analyzer — 한문 텍스트 N-gram 분석"
     ><span class="lab-full">N-gram 분석</span><span class="lab-short">N-gram</span></a>
-    <a href="https://hmseodam.github.io/Chinese-Text-Comparison/"
-       target="_blank" rel="noopener"
+    <a href="#/tool/compare" data-tool="compare"
        title="Chinese Text Comparison — 한문 텍스트 교감 비교"
     ><span class="lab-full">텍스트 교감</span><span class="lab-short">교감</span></a>
   </nav>
+
+  <div class="upd" id="updBox" hidden>
+    <button type="button" class="updbtn" id="updBtn" aria-expanded="false" aria-controls="updPanel"
+            title="자료 업데이트 현황">
+      <span class="upd-dot" aria-hidden="true"></span>
+      <span class="lab-full">업데이트</span>
+      <span class="upd-date" id="updDate"></span>
+    </button>
+    <div class="updpanel" id="updPanel" role="dialog" aria-label="자료 업데이트 현황" hidden></div>
+  </div>
 </header>
 
 <div class="shell">
@@ -67,6 +75,8 @@
   </nav>
 
   <main id="main" class="main" tabindex="-1"></main>
+  <!-- N-gram·교감 도구: 한 번 연 화면은 숨겨 두었다가 다시 보여 준다(분석 내용 유지) -->
+  <section class="toolhost" id="toolHost" hidden></section>
 </div>
 
 <div class="railtip" id="railtip" hidden></div>

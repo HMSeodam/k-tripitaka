@@ -84,6 +84,65 @@ button{background:none;border:0;cursor:pointer}
 .applinks a:hover{
   border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash);
 }
+/* 자료 업데이트 현황 */
+.upd{position:relative;flex:0 0 auto}
+.upd[hidden]{display:none}
+.updbtn{display:flex;align-items:center;gap:.35rem;
+  padding:.34rem .68rem;font-size:.8rem;color:var(--ink-2);line-height:1.2;
+  border:1px solid var(--mist);border-radius:var(--radius);background:var(--paper-2);white-space:nowrap;
+  transition:border-color .15s,color .15s,background .15s}
+.updbtn:hover,.updbtn[aria-expanded="true"]{border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash)}
+.upd-dot{width:7px;height:7px;border-radius:50%;background:var(--celadon);flex:0 0 auto}
+.upd-date{font-family:var(--mono);font-size:.74rem;color:var(--indigo)}
+.updpanel{position:absolute;right:0;top:calc(100% + 8px);z-index:70;
+  width:min(380px,calc(100vw - 24px));max-height:min(70vh,560px);overflow-y:auto;
+  background:var(--paper-2);border:1px solid var(--mist);border-radius:12px;
+  box-shadow:0 12px 32px rgba(14,31,38,.14);padding:.2rem 0 .4rem;font-size:.84rem}
+.updpanel[hidden]{display:none}
+.upd-head{display:flex;align-items:baseline;gap:.6rem;padding:.75rem 1rem .6rem;
+  border-bottom:1px solid var(--mist-2);position:sticky;top:0;background:var(--paper-2)}
+.upd-head b{font-size:.9rem;color:var(--ink)}
+.upd-head span{font-size:.74rem;color:var(--ink-3)}
+.upd-x{margin-left:auto;font-size:1.2rem;line-height:1;color:var(--ink-3);padding:0 .2rem}
+.upd-x:hover{color:var(--ink)}
+.upd-item{padding:.75rem 1rem .6rem;border-bottom:1px solid var(--mist-2)}
+.upd-item:last-child{border-bottom:0}
+.upd-when{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.upd-when time{font-family:var(--mono);font-size:.76rem;color:var(--indigo)}
+.upd-when span{font-weight:600;color:var(--ink);font-size:.86rem}
+.upd-memo{margin:.3rem 0 .2rem;color:var(--ink-2);font-size:.8rem;line-height:1.6}
+.upd-lab{font-size:.68rem;letter-spacing:.14em;color:var(--ink-3);margin:.45rem 0 .2rem}
+.upd-works{display:flex;flex-wrap:wrap;gap:.3rem}
+.upd-works a{display:inline-flex;align-items:baseline;gap:.35rem;padding:.18rem .5rem;
+  border:1px solid var(--mist);border-radius:6px;background:var(--paper);font-size:.8rem}
+.upd-works a:hover{border-color:var(--celadon);background:var(--celadon-wash)}
+.upd-works .cnw{font-family:var(--serif);color:var(--ink)}
+.upd-ko{font-size:.7rem;color:var(--ink-3)}
+
+/* N-gram·교감 도구 (신한글대장경 화면 안에서 열기) */
+.applinks a.on{border-color:var(--indigo);background:var(--indigo);color:#fff}
+.toolhost{grid-column:2;grid-row:1;min-width:0;display:flex;flex-direction:column}
+.toolhost[hidden],.toolpane[hidden]{display:none}
+.toolpane{display:flex;flex-direction:column;flex:1}
+.toolbar{display:flex;align-items:baseline;gap:.6rem;padding:.6rem 1.2rem;
+  border-bottom:1px solid var(--mist);background:var(--paper)}
+.toolbar h2{font-family:var(--serif);font-size:1.02rem;font-weight:600;margin:0}
+.toolsub{font-size:.74rem;color:var(--ink-3)}
+.toolbar .spacer{flex:1}
+.toolnew{font-size:.76rem;color:var(--ink-3);border:1px solid var(--mist);border-radius:var(--radius);
+  padding:.2rem .55rem;background:var(--paper-2)}
+.toolnew:hover{border-color:var(--celadon);color:var(--celadon-deep)}
+.toolframe{display:block;width:100%;border:0;background:#fff;
+  height:calc(100vh - var(--top) - 46px);height:calc(100dvh - var(--top) - 46px)}
+body.tool-on .sitefoot{display:none}
+
+/* 번역 DOCX 내려받기 */
+.dlbtn{display:inline-flex;align-items:center;gap:.3rem;font-size:.74rem;
+  padding:.24rem .55rem;border:1px solid var(--mist);border-radius:var(--radius);
+  color:var(--ink-2);background:var(--paper-2);white-space:nowrap;
+  transition:border-color .15s,color .15s,background .15s}
+.dlbtn:hover{border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash)}
+
 .lab-short{display:none}
 /* 좁은 화면에서만 드는 줄바꿈 */
 .br-m{display:none}
@@ -384,6 +443,47 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .tabbar svg{width:20px;height:20px}
   .tabbar .on{color:var(--indigo)}
   .brand-sub{display:none}
+  /* 좁은 화면: 첫 줄 = 이름 · 도구 · 업데이트, 둘째 줄 = 검색창 */
+  :root{--top:102px}
+  .topbar{display:grid;grid-template-columns:auto 1fr auto auto;
+    grid-template-areas:"brand . links upd" "search search search search";
+    align-content:center;row-gap:.45rem;column-gap:.35rem;padding:.4rem .8rem}
+  .brand{grid-area:brand}
+  .applinks{grid-area:links}
+  .upd{grid-area:upd}
+  .search{grid-area:search;max-width:none}
+  .updbtn{padding:.3rem .45rem;font-size:.72rem;gap:.3rem}
+  .upd-date{font-size:.7rem}
+  .updpanel{position:fixed;left:12px;right:12px;top:calc(var(--top) + 6px);width:auto;max-height:calc(100dvh - var(--top) - 90px)}
+  .toolhost{grid-column:1}
+  .toolbar{padding:.5rem 1rem}
+  .toolsub{display:none}
+  .toolframe{height:calc(100vh - var(--top) - 44px - 58px);height:calc(100dvh - var(--top) - 44px - 58px - env(safe-area-inset-bottom))}
+}
+
+/* 태블릿 가로·작은 노트북: 상단 도구를 줄여 검색창 자리를 넓힌다 */
+@media (min-width:901px) and (max-width:1200px){
+  .brand-sub{display:none}
+  .applinks a{padding:.34rem .5rem}
+  .applinks .lab-full{display:none}
+  .applinks .lab-short{display:inline}
+  .updbtn .lab-full{display:none}
+  .topbar{gap:.6rem}
+}
+
+/* 작은 휴대폰: 권 이동 줄이 한 줄에 들어가게 */
+@media (max-width:420px){
+  .docbar .chapnav{gap:.3rem;min-width:0;flex-wrap:nowrap}
+  .docbar .chapbtn{padding:.3rem .45rem;font-size:.76rem;flex:0 0 auto}
+  .docbar .chapsel{flex:1 1 0;min-width:0}
+  .docbar .chapcount{display:none}
+}
+
+/* 휴대폰 가로(낮은 화면): 상단을 다시 한 줄로 두어 본문 자리를 넓힌다 */
+@media (max-width:900px) and (max-height:500px) and (orientation:landscape){
+  :root{--top:56px}
+  .topbar{grid-template-columns:auto minmax(0,1fr) auto auto;
+    grid-template-areas:"brand search links upd";row-gap:0;padding:0 .8rem}
 }
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

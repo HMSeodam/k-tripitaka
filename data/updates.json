@@ -1,0 +1,23 @@
+{
+  "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
+  "updates": [
+    {
+      "date": "2026-09-25",
+      "title": "신규 3종 추가",
+      "added": ["gusaron-gi-bogwang", "gusaron-so-beopbo", "hongmyeongjip"],
+      "changed": ["gusaron-songso-seogi"],
+      "memo": "구사 삼대소 가운데 보광의 『구사론기』와 법보의 『구사론소』, 승우의 『홍명집』을 실었습니다. 『구사론송소서기』의 제목이 두 번 보이던 문제를 고쳤습니다."
+    },
+    {
+      "date": "2026-09",
+      "title": "구사론 계통 등 10종 추가",
+      "added": [
+        "sibilmyeon-sinjusimgyeong-uiso", "ichwibun-suljan",
+        "gusaron-so-sintae", "gusaron-beopjongwon", "gusaron-songso-seogi", "gusaron-songso",
+        "gusaron-songso-nonbon", "gusaron-songso-uicho", "gusaron-songsogi", "seoksiyoram"
+      ],
+      "changed": ["sa-ron-hyeonuigi", "gongmokjang", "tamhyeongi", "wongak-daeso", "gisin-uiso-hyewon"],
+      "memo": "교감 메모를 요지 한 줄과 펼침 상세로 정리하고, 대승사론현의기의 번역 유보 구절 227곳을 보완했습니다."
+    }
+  ]
+}
