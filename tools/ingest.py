@@ -1501,7 +1501,24 @@ def parse_shtk_docx(d, tables, path=None):
         pending = []
         cur = {"m": marker, "cn": [cn], "ko": list(ko or []), "nt": [], "h": cur_sec}
 
-    for p in d.paragraphs:
+    # 제목 바로 뒤(블록 이름표만 사이에 두고)에 오는 원문 칸의 글.
+    # 제목의 한문과 그 원문 칸이 같으면 원문은 원문 칸 하나로 충분하다.
+    # 제목까지 원문 단위로 세우면 같은 줄이 앱에 두 번 뜬다(구사론송소서기 No. 838).
+    paras = d.paragraphs
+    next_src = {}
+    for k, q in enumerate(paras):
+        qs = (q.style.name or "").strip()
+        if not (qs.startswith("Heading") or qs in ("SHTK Subheading", "SHTK Meta")):
+            continue
+        for r in paras[k + 1:k + 4]:
+            rs = (r.style.name or "").strip()
+            if not r.text.strip() or rs == "SHTK Block Label":
+                continue
+            if rs == "SHTK Source Text":
+                next_src[k] = skey(r.text)
+            break
+
+    for pi, p in enumerate(paras):
         style = (p.style.name or "").strip()
         if style != "SHTK Note Detail":
             in_log = False
@@ -1547,7 +1564,8 @@ def parse_shtk_docx(d, tables, path=None):
                         last_head = None
                         continue
             pair = [cn_t] if cn_t else [txt.strip()]
-            if pair[0] and skey(pair[0]) in txt_keys:
+            if (pair[0] and skey(pair[0]) in txt_keys
+                    and next_src.get(pi) != skey(pair[0])):
                 ko = [ko_t] if ko_t else None
                 # 「제목 3: 한국어 장제 → 소제목: 한문 장제」 짝이면 바로 앞 제목이
                 # 이 장제의 번역이다. 비워 두면 앱에 '번역 대응 없음'이 뜬다.
@@ -1576,7 +1594,8 @@ def parse_shtk_docx(d, tables, path=None):
             # 목록 제목은 두 말을 함께 보이고, 품제는 원문 단위로도 세운다
             cn_t, ko_t = shtk_title_pair(txt, txt_keys, skey)
             pair = [cn_t, ko_t]
-            if cn_t and skey(pair[0]) in txt_keys:
+            if (cn_t and skey(pair[0]) in txt_keys
+                    and next_src.get(pi) != skey(pair[0])):
                 hl = int(hm.group(1))
                 if hl == 2:
                     parent = None
