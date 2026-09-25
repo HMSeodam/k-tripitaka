@@ -768,6 +768,31 @@ function docxButton(w) {
   fetch(a.href, { method: 'HEAD' })
     .then(r => { if (!r.ok) a.remove(); })
     .catch(() => {});
+  // Edge 등은 docx 주소를 누르면 내려받지 않고 Office 온라인 뷰어로 넘긴다(큰 파일에서 멈춤).
+  // 파일을 먼저 받아 blob 으로 저장시키면 뷰어로 넘어갈 주소가 없어 늘 내려받기로 끝난다.
+  a.addEventListener('click', async ev => {
+    ev.preventDefault();
+    if (a.classList.contains('busy')) return;
+    const label = a.querySelector('span');
+    const orig = label.textContent;
+    a.classList.add('busy');
+    label.textContent = '받는 중…';
+    try {
+      const res = await fetch(a.href);
+      if (!res.ok) throw new Error(res.status);
+      const blob = new Blob([await res.arrayBuffer()], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const tmp = document.createElement('a');
+      tmp.href = url; tmp.download = docxName(w);
+      document.body.append(tmp); tmp.click(); tmp.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      location.href = a.href;          // 받지 못하면 예전 방식으로
+    } finally {
+      a.classList.remove('busy');
+      label.textContent = orig;
+    }
+  });
   return a;
 }
 

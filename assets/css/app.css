@@ -88,12 +88,13 @@ button{background:none;border:0;cursor:pointer}
 .upd{position:relative;flex:0 0 auto}
 .upd[hidden]{display:none}
 .updbtn{display:flex;align-items:center;gap:.35rem;
-  padding:.34rem .68rem;font-size:.8rem;color:var(--ink-2);line-height:1.2;
+  padding:.34rem .68rem;font-size:.8rem;color:var(--ink-3);line-height:1.2;
   border:1px solid var(--mist);border-radius:var(--radius);background:var(--paper-2);white-space:nowrap;
   transition:border-color .15s,color .15s,background .15s}
 .updbtn:hover,.updbtn[aria-expanded="true"]{border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash)}
 .upd-dot{width:7px;height:7px;border-radius:50%;background:var(--celadon);flex:0 0 auto}
-.upd-date{font-family:var(--mono);font-size:.74rem;color:var(--indigo)}
+/* 날짜도 옆 버튼들(N-gram 분석·대조)과 같은 글꼴·크기로 */
+.upd-date{font:inherit;color:inherit}
 .updpanel{position:absolute;right:0;top:calc(100% + 8px);z-index:70;
   width:min(380px,calc(100vw - 24px));max-height:min(70vh,560px);overflow-y:auto;
   background:var(--paper-2);border:1px solid var(--mist);border-radius:12px;
@@ -137,11 +138,12 @@ button{background:none;border:0;cursor:pointer}
 body.tool-on .sitefoot{display:none}
 
 /* 번역 DOCX 내려받기 */
-.dlbtn{display:inline-flex;align-items:center;gap:.3rem;font-size:.74rem;
-  padding:.24rem .55rem;border:1px solid var(--mist);border-radius:var(--radius);
-  color:var(--ink-2);background:var(--paper-2);white-space:nowrap;
+.dlbtn{display:inline-flex;align-items:center;gap:.3rem;font-size:.8rem;line-height:1.2;
+  padding:.34rem .68rem;border:1px solid var(--mist);border-radius:var(--radius);
+  color:var(--ink-3);background:var(--paper-2);white-space:nowrap;
   transition:border-color .15s,color .15s,background .15s}
 .dlbtn:hover{border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash)}
+.dlbtn.busy{opacity:.6;cursor:progress}
 
 .lab-short{display:none}
 /* 좁은 화면에서만 드는 줄바꿈 */
@@ -453,7 +455,6 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .upd{grid-area:upd}
   .search{grid-area:search;max-width:none}
   .updbtn{padding:.3rem .45rem;font-size:.72rem;gap:.3rem}
-  .upd-date{font-size:.7rem}
   .updpanel{position:fixed;left:12px;right:12px;top:calc(var(--top) + 6px);width:auto;max-height:calc(100dvh - var(--top) - 90px)}
   .toolhost{grid-column:1}
   .toolbar{padding:.5rem 1rem}
