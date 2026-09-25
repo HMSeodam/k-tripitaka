@@ -38,6 +38,9 @@ jobs:
       - name: 문헌 목록 재생성
         run: python3 tools/rebuild_manifest.py
 
+      - name: 수록 문헌 점검 (data/verify-report.json 갱신)
+        run: python3 tools/verify.py
+        
       - name: 생성 결과 되돌려 커밋
         run: |
           git config user.name  "github-actions[bot]"
