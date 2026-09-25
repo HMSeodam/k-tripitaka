@@ -1150,7 +1150,8 @@ def _orig_gist(o):
     wits = "·".join(w for w in RE_WIT.findall(o) if w != "大")
     body = RE_WIT.sub("", o).replace("＊", "").strip()
     mark = ""
-    for k, v in (("ィ", " (일본)"), ("ヵ", " (의심)")):
+    # ィ는 대정장 교감의 一本(다른 본) 표시다. 「일본」으로 적으면 日本으로 읽히므로 한자로 둔다
+    for k, v in (("ィ", " (一本)"), ("ヵ", " (의심)")):
         if k in body:
             body = body.replace(k, ""); mark = v
     w = f"{wits}본" if wits else "이본"
