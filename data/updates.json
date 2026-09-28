@@ -3,6 +3,19 @@
   "updates": [
     {
       "date": "2026-09-28",
+      "title": "범망경 보살계 주석 5종 추가",
+      "added": [
+        "bosalgye-jibeom-yogi-wonhyo",
+        "beommang-sagi-wonhyo",
+        "beommang-gojeokgi-taehyeon",
+        "beommang-sulgi-seungjang",
+        "beommang-so-jiju"
+      ],
+      "changed": [],
+      "memo": "원효의 『보살계본지범요기』·『범망경보살계본사기』, 태현의 『범망경고적기』, 승장의 『범망경술기』, 지주의 『범망경소』를 실었습니다. 『보살계본지범요기』에는 한국불교전서 교감주를 함께 실었습니다."
+    },
+    {
+      "date": "2026-09-28",
       "title": "신규 16종 추가",
       "added": [
         "gwanghongmyeongjip",
