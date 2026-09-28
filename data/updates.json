@@ -2,6 +2,30 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-09-28",
+      "title": "신규 16종 추가",
+      "added": [
+        "gwanghongmyeongjip",
+        "jegyeong-yojip",
+        "bosalgye-bonso-uijeok",
+        "bosalgye-uiso-jiui",
+        "bosalgye-so-myeonggwang",
+        "gisin-so-wonhyo",
+        "gisin-byeolgi-wonhyo",
+        "geumgang-sammaeron-wonhyo",
+        "beophwa-jongyo-wonhyo",
+        "daehyedo-jongyo-wonhyo",
+        "muryangsu-jongyo-wonhyo",
+        "amita-so-wonhyo",
+        "yeolban-jongyo-wonhyo",
+        "mireuk-sangsaeng-jongyo-wonhyo",
+        "hwaeom-so-wonhyo",
+        "bonup-so-wonhyo"
+      ],
+      "changed": [],
+      "memo": "원효의 저술 11종(기신론소·기신론별기·금강삼매경론·법화종요·대혜도경종요·무량수경종요·아미타경소·열반종요·미륵상생경종요·화엄경소 권3·영락본업경소), 『범망경』 보살계 주석 3종(지의·명광·의적), 도선의 『광홍명집』과 도세의 『제경요집』을 실었습니다. 분류에 정토·법화를 새로 두었습니다."
+    },
+    {
       "date": "2026-09-25",
       "title": "신규 3종 추가",
       "added": ["gusaron-gi-bogwang", "gusaron-so-beopbo", "hongmyeongjip"],

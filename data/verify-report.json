@@ -1,4 +1,20 @@
 {
+ "amita-so-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 29,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 12,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 33,
+  "units": 33
+ },
  "baengnon-so": {
   "apparatus_without_note": 13,
   "bare_number_in_ko": 0,
@@ -148,6 +164,22 @@
   "translated": 76,
   "units": 76
  },
+ "beophwa-jongyo-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 22,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 70,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 177,
+  "units": 177
+ },
  "beophwagyeongnon-sulgi": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
@@ -264,6 +296,22 @@
   "translated": 52,
   "units": 53
  },
+ "bonup-so-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 91,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 140,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 525,
+  "units": 525
+ },
  "bosalgye-bongi": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
@@ -280,6 +328,22 @@
   "translated": 134,
   "units": 134
  },
+ "bosalgye-bonso-uijeok": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 105,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 103,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 875,
+  "units": 875
+ },
  "bosalgye-galmagi": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
@@ -295,6 +359,38 @@
   "source_match": null,
   "translated": 30,
   "units": 30
+ },
+ "bosalgye-so-myeonggwang": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 55,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 26,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 409,
+  "units": 409
+ },
+ "bosalgye-uiso-jiui": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 3,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 336,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 467,
+  "units": 467
  },
  "cheongnyang-so": {
   "apparatus_without_note": 80,
@@ -479,6 +575,22 @@
   "source_match": true,
   "translated": 975,
   "units": 1244
+ },
+ "daehyedo-jongyo-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 14,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 21,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 133,
+  "units": 133
  },
  "daejongji-hyeonmun-bollon": {
   "apparatus_without_note": 19,
@@ -1019,6 +1131,22 @@
   "translated": 500,
   "units": 508
  },
+ "geumgang-sammaeron-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 526,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 53,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 553,
+  "units": 553
+ },
  "geumgang-so-jiui": {
   "apparatus_without_note": 45,
   "bare_number_in_ko": 0,
@@ -1368,6 +1496,22 @@
   "translated": 1075,
   "units": 1078
  },
+ "gisin-byeolgi-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 143,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 70,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 150,
+  "units": 150
+ },
  "gisin-pilsakgi": {
   "apparatus_without_note": 127,
   "bare_number_in_ko": 0,
@@ -1407,6 +1551,22 @@
   "source_match": false,
   "translated": 1991,
   "units": 1991
+ },
+ "gisin-so-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 4,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 38,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 585,
+  "units": 585
  },
  "gisin-uigi": {
   "apparatus_without_note": 91,
@@ -1803,6 +1963,22 @@
   "translated": 4287,
   "units": 4287
  },
+ "gwanghongmyeongjip": {
+  "apparatus_without_note": 1,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 2016,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 8845,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 11943,
+  "units": 11943
+ },
  "gwonsilgyo-yuhok": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
@@ -2129,6 +2305,22 @@
   "translated": 166,
   "units": 166
  },
+ "hwaeom-so-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 2,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 15,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 45,
+  "units": 45
+ },
  "hwaeomnon-jeoryo": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
@@ -2426,6 +2618,22 @@
   "translated": 836,
   "units": 836
  },
+ "jegyeong-yojip": {
+  "apparatus_without_note": 10,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 1349,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 4198,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 8033,
+  "units": 8033
+ },
  "jeongmyeong-hyeonnon": {
   "apparatus_without_note": 14,
   "bare_number_in_ko": 0,
@@ -2703,6 +2911,22 @@
   "translated": 188,
   "units": 194
  },
+ "mireuk-sangsaeng-jongyo-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 16,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 19,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 92,
+  "units": 92
+ },
  "mireuk-yuui": {
   "apparatus_without_note": 17,
   "bare_number_in_ko": 0,
@@ -2817,6 +3041,22 @@
   "source_match": false,
   "translated": 769,
   "units": 798
+ },
+ "muryangsu-jongyo-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 3,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 17,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 594,
+  "units": 594
  },
  "naeui-yaktamgi": {
   "apparatus_without_note": 5,
@@ -3760,6 +4000,22 @@
   "source_match": true,
   "translated": 6038,
   "units": 6041
+ },
+ "yeolban-jongyo-wonhyo": {
+  "apparatus_without_note": 1,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 18,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 237,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 454,
+  "units": 454
  },
  "yeolban-uigi": {
   "apparatus_without_note": 194,
