@@ -146,6 +146,7 @@ body.tool-on .sitefoot{display:none}
 .dlbtn.busy{opacity:.6;cursor:progress}
 
 .lab-short{display:none}
+.lab-mid{display:none}
 /* 좁은 화면에서만 드는 줄바꿈 */
 .br-m{display:none}
 .seg{display:flex;border:1px solid var(--mist);border-radius:var(--radius);overflow:hidden;background:var(--paper-2)}
@@ -468,6 +469,8 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .applinks a{padding:.34rem .5rem}
   .applinks .lab-full{display:none}
   .applinks .lab-short{display:inline}
+  .applinks a.ext .lab-short{display:none}
+  .applinks a.ext .lab-mid{display:inline}
   .updbtn .lab-full{display:none}
   .topbar{gap:.6rem}
 }
