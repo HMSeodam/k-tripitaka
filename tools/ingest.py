@@ -2827,6 +2827,10 @@ def build_work(entry):
         txt_units.extend(part)
     dp = wdir / "번역.docx"
     kabc = entry.get("source") == "KABC"
+    if kabc and (wdir / "원문.txt").exists() and dp.exists() and is_shtk_docx(open_docx(dp)):
+        # KABC 원문이라도 문단이 이어진 원문 TXT와 표준 DOCX(SHTK 스타일)로 들어오면
+        # CBETA 계열과 같은 길로 읽는다(판비량론). 옛 한불전 30종은 해당 없음.
+        kabc = False
     if kabc:
         # 한국불교전서 계열은 저본 txt 가 15~16자마다 끊겨 있어 본문으로
         # 쓸 수 없다. 번역 docx 안의 원문이 이미 문단으로 이어져 있으므로

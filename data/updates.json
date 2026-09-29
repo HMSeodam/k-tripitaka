@@ -2,6 +2,17 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-09-29",
+      "title": "판비량론 등 3종 추가",
+      "added": [
+        "panbiryangnon-wonhyo",
+        "beommang-so-beopseon",
+        "beommang-sulgi-dunhwang"
+      ],
+      "changed": [],
+      "memo": "원효의 『판비량론』(한국불교전서 제1책), 법선의 『범망경보살계소』 권상, 돈황본 『범망경술기』 권제1을 실었습니다."
+    },
+    {
       "date": "2026-09-28",
       "title": "범망경 보살계 주석 5종 추가",
       "added": [

@@ -82,6 +82,22 @@
   "translated": 47,
   "units": 47
  },
+ "beommang-so-beopseon": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 59,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 177,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 601,
+  "units": 601
+ },
  "beommang-so-jiju": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
@@ -97,6 +113,22 @@
   "source_match": true,
   "translated": 436,
   "units": 436
+ },
+ "beommang-sulgi-dunhwang": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 48,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 43,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 52,
+  "units": 52
  },
  "beommang-sulgi-seungjang": {
   "apparatus_without_note": 0,
@@ -3229,6 +3261,22 @@
   "source_match": true,
   "translated": 58,
   "units": 113
+ },
+ "panbiryangnon-wonhyo": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 0,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 161,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 195,
+  "units": 195
  },
  "sa-ron-hyeonuigi": {
   "apparatus_without_note": 0,
