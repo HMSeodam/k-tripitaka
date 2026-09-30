@@ -2809,6 +2809,35 @@ def plain_note(n):
     return {"t": t, "d": d} if d else t
 
 
+# 번역 DOCX 제작 때의 지시문(「마스터 프롬프트」 따위)을 가리키는 문장은 독자에게 쓸모가 없다.
+# DOCX는 그대로 두고, 앱에 나가는 해제·교감 메모에서 그 문장만 뺀다.
+RE_PROMPT = re.compile(r"프롬프트|[Pp]rompt")
+RE_SENT_SPLIT = re.compile(r"(?<=[.。!?])\s+")
+
+
+def _drop_prompt_text(t):
+    if not t or not RE_PROMPT.search(t):
+        return t
+    head = ""
+    m = re.match(r"^([^:：]{1,16}[:：]\s*)", t)            # 「한국어 해설: …」의 칸 이름은 남긴다
+    if m and not RE_PROMPT.search(m.group(1)):
+        head, t = m.group(1), t[m.end():]
+    body = " ".join(x for x in RE_SENT_SPLIT.split(t) if not RE_PROMPT.search(x)).strip()
+    return (head + body) if body else ""
+
+
+def drop_prompt(n):
+    if isinstance(n, str):
+        return _drop_prompt_text(n)
+    if isinstance(n, dict):
+        t = _drop_prompt_text(n.get("t", ""))
+        d = [x for x in (_drop_prompt_text(y) for y in n.get("d", [])) if x]
+        if not t:
+            return {"t": d[0], "d": d[1:]} if d else ""
+        return {**n, "t": t, "d": d}
+    return n
+
+
 def build_work(entry):
     wid = entry["id"]
     wdir = SRC / wid
@@ -2998,12 +3027,12 @@ def build_work(entry):
 
     # 화면에 나가는 글에서 기계용 말(태그 이름·파일 경로·내부 식별자)을 걷어 낸다
     for u in units:
-        u["nt"] = [x for x in (plain_note(n) for n in u["nt"]) if x]
+        u["nt"] = [x for x in (drop_prompt(plain_note(n)) for n in u["nt"]) if x]
 
     doc = {
         "meta": meta,
         "glossary": gl,
-        "front": [x for x in ((plain_words(f) if isinstance(f, str) else f)
+        "front": [x for x in ((drop_prompt(plain_words(f)) if isinstance(f, str) else f)
                               for f in ((dx["front"] + dx["appendix"]) if dx else [])) if x],
         "chapters": [{"t": c["t"], "i": c["i"]} for c in chapters],
         "sections": [{"lv": s["lv"], "t": s["t"], "i": s["i"]} for s in sections],

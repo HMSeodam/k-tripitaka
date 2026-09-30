@@ -3,8 +3,8 @@
    데이터(data/)는 '網 우선' — 새 자료를 올리면 곧바로 반영되고,
    연결이 없을 때만 캐시본을 쓴다.
    셸(html/css/js)은 '캐시 우선' — 빠르게 뜨되 뒤에서 갱신한다. */
-const V = 'sinhangeul-v7';
-const SHELL = ['./', './index.html', './assets/css/app.css',
+const V = 'sinhangeul-v9';
+const SHELL = ['./', './index.html', './assets/css/app.css', './assets/css/cbeta-font.css',
                './assets/js/app.js', './assets/js/search.worker.js'];
 
 self.addEventListener('install', e => {

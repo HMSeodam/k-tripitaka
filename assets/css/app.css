@@ -15,8 +15,8 @@
   --amber:#9A6B1F;
   --amber-wash:#FBEECF;
 
-  --serif:"Noto Serif KR",'Songti SC','SimSun',serif;
-  --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --serif:"Noto Serif KR","CBETA Supplement",'Songti SC','SimSun',serif;
+  --sans:"Pretendard Variable",Pretendard,"CBETA Supplement",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 
   --rail:88px;
@@ -404,6 +404,20 @@ mark{background:var(--amber-wash);color:var(--amber);padding:0 .1em;border-radiu
 .meta-table td .cnw{font-family:var(--serif)}
 h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0 .5rem;font-weight:500}
 
+/* CBETA 외자: 조합식·외자 번호에 손을 얹거나 누르면 보충 글꼴로 그린 글자를 쪽지로 보인다 */
+.gj{border-bottom:1px dotted var(--indigo);cursor:help;border-radius:2px}
+.gj:hover,.gj:focus{background:var(--indigo-wash)}
+.gjtip{position:fixed;z-index:70;display:flex;align-items:center;gap:.7rem;
+  max-width:min(22rem,92vw);padding:.55rem .75rem;
+  background:var(--paper-2);color:var(--ink-2);border:1px solid var(--mist);border-radius:8px;
+  box-shadow:0 6px 20px rgba(14,31,38,.16);font-family:var(--sans);font-size:.74rem;line-height:1.55;
+  pointer-events:none}
+.gjtip[hidden]{display:none}
+.gj-ch{font-family:"CBETA Supplement",var(--serif);font-size:2.4rem;line-height:1;color:var(--ink);
+  min-width:2.6rem;text-align:center}
+.gj-ch.gj-none{color:var(--ink-3)}
+.gj-meta{display:flex;flex-direction:column}
+.gj-meta b{font-family:var(--mono);font-weight:500;color:var(--indigo)}
 .railtip{position:fixed;z-index:60;background:var(--ink);color:#fff;font-size:.74rem;
   padding:.3rem .55rem;border-radius:5px;pointer-events:none;transform:translate(-50%,-140%)}
 

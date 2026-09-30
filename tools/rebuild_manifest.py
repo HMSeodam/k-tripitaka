@@ -156,6 +156,13 @@ def main():
     print(f"\n{len(metas)}종 · {manifest['totals']['units']:,}단위 · "
           f"원문 {manifest['totals']['chars_cn']:,}자 → data/manifest.json")
 
+    # 앱이 쓰는 CBETA 외자 대응표(조합식·외자 번호 → 글자)도 함께 새로 만든다
+    try:
+        import gaiji_map
+        print(f"외자 대응표 {gaiji_map.build()}자 → data/gaiji.json")
+    except Exception as e:          # 대응표가 없어도 문헌 목록은 그대로 쓸 수 있다
+        print(f"! 외자 대응표를 만들지 못했습니다: {e}")
+
 
 if __name__ == "__main__":
     main()

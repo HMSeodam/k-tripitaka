@@ -482,10 +482,87 @@ function markHTML(raw, ranges) {
 }
 
 function decorateCN(html) {
-  return html
+  return gjComp(html
     .replace(/^(\[\d{3,4}[abc]\d{2}\])\s*/gm, '<span class="mk">$1</span>')
-    .replace(APP_TAG, m => `<span class="app">${m}</span>`);
+    .replace(APP_TAG, m => `<span class="app">${m}</span>`));
 }
+
+/* ─── CBETA 외자 ─────────────────────────────────────
+   원문은 CBETA 2016판 그대로 둔다. 그때 유니코드에 없던 글자는 조합식([卄/公/心])으로 남아 있는데,
+   CBETA가 외자 자료와 보충 글꼴을 갱신해 이제 많은 글자를 실제 모양으로 보일 수 있다.
+   조합식이나 교감 메모의 외자 번호(CB01470)에 손을 얹거나(넓은 화면) 누르면(터치 화면)
+   보충 글꼴로 그린 글자와 번호·조합식·정규형을 쪽지로 보여 준다.
+   대응표: data/gaiji.json (tools/gaiji_map.py 가 만든다) */
+let GJ = null;
+async function loadGaiji() {
+  if (GJ) return GJ;
+  try { GJ = await (await fetch(`${BASE}data/gaiji.json`)).json(); }
+  catch (e) { GJ = { g: {}, c: {} }; }
+  GJ.g = GJ.g || {}; GJ.c = GJ.c || {};
+  return GJ;
+}
+const RE_GJ_COMP = /\[[^\[\]\d\s<>]{2,40}\]/g;
+function gjComp(html) {
+  if (!GJ) return html;
+  return html.replace(RE_GJ_COMP, m => GJ.c[m] ? `<span class="gj" data-cb="${GJ.c[m]}">${m}</span>` : m);
+}
+/* 교감 메모 글: 외자 번호에 쪽지를 달고, 남아 있는 CBETA 사용자 영역(PUA) 코드는
+   실제 글자(없으면 조합식)로 바꿔 보인다. */
+function gjNote(text) {
+  let h = esc(String(text));
+  if (!GJ) return h;
+  h = h.replace(/[\u{F0000}-\u{FFFFD}]/gu, ch => {
+    const cb = 'CB' + String(ch.codePointAt(0) - 0xF0000).padStart(5, '0');
+    const v = GJ.g[cb];
+    return v ? `<span class="gj" data-cb="${cb}">${esc(v[0] || v[2] || v[1] || ch)}</span>` : ch;
+  });
+  h = h.replace(/CB\d{5}/g, cb => GJ.g[cb] ? `<span class="gj" data-cb="${cb}">${cb}</span>` : cb);
+  return gjComp(h);
+}
+const gjTip = el('div', 'gjtip');
+gjTip.hidden = true;
+gjTip.setAttribute('role', 'tooltip');
+if (document.body) document.body.append(gjTip);
+else document.addEventListener('DOMContentLoaded', () => document.body.append(gjTip));
+function showGj(span) {
+  const cb = span.dataset.cb, v = GJ && GJ.g[cb];
+  if (!v) return;
+  const [uni, norm, comp] = v;
+  gjTip.innerHTML =
+    (uni ? `<span class="gj-ch">${esc(uni)}</span>`
+         : `<span class="gj-ch gj-none">${esc(norm || '〓')}</span>`) +
+    `<span class="gj-meta"><b>${cb}</b>` +
+    (comp ? `<span>조합식 ${esc(comp)}</span>` : '') +
+    (norm ? `<span>정규형 ${esc(norm)}</span>` : '') +
+    (uni ? '' : norm ? '<span>표준 문자가 없어 정규형으로 보입니다</span>'
+                     : '<span>아직 표준 문자와 글꼴에 없는 글자입니다</span>') + '</span>';
+  gjTip.dataset.cb = cb;
+  gjTip.hidden = false;
+  const r = span.getBoundingClientRect();
+  const w = gjTip.offsetWidth, h = gjTip.offsetHeight;
+  const x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+  const y = r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8;
+  gjTip.style.left = x + 'px';
+  gjTip.style.top = y + 'px';
+}
+function hideGj() { gjTip.hidden = true; gjTip.dataset.cb = ''; }
+const HOVER = matchMedia('(hover:hover)');
+document.addEventListener('mouseover', e => {
+  const s = e.target.closest && e.target.closest('.gj');
+  if (s && HOVER.matches) showGj(s);
+});
+document.addEventListener('mouseout', e => {
+  if (HOVER.matches && e.target.closest && e.target.closest('.gj')) hideGj();
+});
+// 누르기: 같은 글자를 다시 누르면 닫힌다. 교감 쪽지 안의 번호를 눌러도 쪽지는 그대로 둔다.
+document.addEventListener('click', e => {
+  const s = e.target.closest && e.target.closest('.gj');
+  if (!s) { hideGj(); return; }
+  e.stopPropagation();
+  if (!gjTip.hidden && gjTip.dataset.cb === s.dataset.cb) hideGj(); else showGj(s);
+}, true);
+window.addEventListener('scroll', hideGj, true);
+window.addEventListener('hashchange', hideGj);
 
 /* 번역 문단 앞머리의 위치표지를 화면에서 걷어낸다.
    저본마다 표지를 붙인 것도 있고 안 붙인 것도 있어 들쭉날쭉하다.
@@ -590,11 +667,13 @@ function unitNode(u, wid) {
     const nt = el('div', 'notes');    u.nt.forEach(t => {
       // 한불전 교감주는 요지만 내고, 자세한 내용은 손을 얹거나
       // 눌렀을 때 쪽지로 편다. (t 가 문자열이면 예전처럼 한 줄로)
-      if (typeof t === 'string') { nt.append(el('p', null, t)); return; }
+      if (typeof t === 'string') { const q = el('p'); q.innerHTML = gjNote(t); nt.append(q); return; }
       const p = el('p', 'note-more');
-      p.append(el('span', 'note-gist', t.t));
+      const gist = el('span', 'note-gist');
+      gist.innerHTML = gjNote(t.t);
+      p.append(gist);
       const box = el('span', 'note-detail');
-      (t.d || []).forEach(x => box.append(el('span', 'note-line', x)));
+      (t.d || []).forEach(x => { const ln = el('span', 'note-line'); ln.innerHTML = gjNote(x); box.append(ln); });
       p.append(box);
       p.tabIndex = 0;
       p.setAttribute('role', 'button');
@@ -802,7 +881,7 @@ async function viewWork(id, anchor, hit) {
   main.innerHTML = '<p class="loading">문헌을 여는 중…</p>';
   renderSide(id);
 
-  const doc = await work(id);
+  const [doc] = await Promise.all([work(id), loadGaiji()]);
   FIGCAP = (doc.meta && doc.meta.figcap) || {};
   const w = doc.meta;
   main.innerHTML = '';
