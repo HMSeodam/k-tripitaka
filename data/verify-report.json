@@ -2449,6 +2449,22 @@
   "translated": 718,
   "units": 718
  },
+ "ibujongnyun-sulgi": {
+  "apparatus_without_note": 0,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 400,
+  "no_translation": [],
+  "no_translation_count": 0,
+  "notes": 192,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 566,
+  "units": 566
+ },
  "ichwibun-suljan": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,

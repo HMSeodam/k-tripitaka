@@ -2,6 +2,13 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-09-30",
+      "title": "이부종륜론술기 추가",
+      "added": ["ibujongnyun-sulgi"],
+      "changed": [],
+      "memo": "규기의 『이부종륜론술기』를 실었습니다."
+    },
+    {
       "date": "2026-09-29",
       "title": "판비량론 등 3종 추가",
       "added": [
