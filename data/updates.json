@@ -2,6 +2,13 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-10-04",
+      "title": "법원주림 추가",
+      "added": ["beobwon-jurim"],
+      "changed": [],
+      "memo": "도세의 『법원주림』 100권(T53 no.2122)을 실었습니다. 권·편·부 표제로 목차를 나누었습니다."
+    },
+    {
       "date": "2026-09-30",
       "title": "이부종륜론술기 추가",
       "added": ["ibujongnyun-sulgi"],
@@ -11,48 +18,21 @@
     {
       "date": "2026-09-29",
       "title": "판비량론 등 3종 추가",
-      "added": [
-        "panbiryangnon-wonhyo",
-        "beommang-so-beopseon",
-        "beommang-sulgi-dunhwang"
-      ],
+      "added": ["panbiryangnon-wonhyo", "beommang-so-beopseon", "beommang-sulgi-dunhwang"],
       "changed": [],
       "memo": "원효의 『판비량론』(한국불교전서 제1책), 법선의 『범망경보살계소』 권상, 돈황본 『범망경술기』 권제1을 실었습니다."
     },
     {
       "date": "2026-09-28",
       "title": "범망경 보살계 주석 5종 추가",
-      "added": [
-        "bosalgye-jibeom-yogi-wonhyo",
-        "beommang-sagi-wonhyo",
-        "beommang-gojeokgi-taehyeon",
-        "beommang-sulgi-seungjang",
-        "beommang-so-jiju"
-      ],
+      "added": ["bosalgye-jibeom-yogi-wonhyo", "beommang-sagi-wonhyo", "beommang-gojeokgi-taehyeon", "beommang-sulgi-seungjang", "beommang-so-jiju"],
       "changed": [],
       "memo": "원효의 『보살계본지범요기』·『범망경보살계본사기』, 태현의 『범망경고적기』, 승장의 『범망경술기』, 지주의 『범망경소』를 실었습니다. 『보살계본지범요기』에는 한국불교전서 교감주를 함께 실었습니다."
     },
     {
       "date": "2026-09-28",
       "title": "신규 16종 추가",
-      "added": [
-        "gwanghongmyeongjip",
-        "jegyeong-yojip",
-        "bosalgye-bonso-uijeok",
-        "bosalgye-uiso-jiui",
-        "bosalgye-so-myeonggwang",
-        "gisin-so-wonhyo",
-        "gisin-byeolgi-wonhyo",
-        "geumgang-sammaeron-wonhyo",
-        "beophwa-jongyo-wonhyo",
-        "daehyedo-jongyo-wonhyo",
-        "muryangsu-jongyo-wonhyo",
-        "amita-so-wonhyo",
-        "yeolban-jongyo-wonhyo",
-        "mireuk-sangsaeng-jongyo-wonhyo",
-        "hwaeom-so-wonhyo",
-        "bonup-so-wonhyo"
-      ],
+      "added": ["gwanghongmyeongjip", "jegyeong-yojip", "bosalgye-bonso-uijeok", "bosalgye-uiso-jiui", "bosalgye-so-myeonggwang", "gisin-so-wonhyo", "gisin-byeolgi-wonhyo", "geumgang-sammaeron-wonhyo", "beophwa-jongyo-wonhyo", "daehyedo-jongyo-wonhyo", "muryangsu-jongyo-wonhyo", "amita-so-wonhyo", "yeolban-jongyo-wonhyo", "mireuk-sangsaeng-jongyo-wonhyo", "hwaeom-so-wonhyo", "bonup-so-wonhyo"],
       "changed": [],
       "memo": "원효의 저술 11종(기신론소·기신론별기·금강삼매경론·법화종요·대혜도경종요·무량수경종요·아미타경소·열반종요·미륵상생경종요·화엄경소 권3·영락본업경소), 『범망경』 보살계 주석 3종(지의·명광·의적), 도선의 『광홍명집』과 도세의 『제경요집』을 실었습니다. 분류에 정토·법화를 새로 두었습니다."
     },
@@ -66,11 +46,7 @@
     {
       "date": "2026-09",
       "title": "구사론 계통 등 10종 추가",
-      "added": [
-        "sibilmyeon-sinjusimgyeong-uiso", "ichwibun-suljan",
-        "gusaron-so-sintae", "gusaron-beopjongwon", "gusaron-songso-seogi", "gusaron-songso",
-        "gusaron-songso-nonbon", "gusaron-songso-uicho", "gusaron-songsogi", "seoksiyoram"
-      ],
+      "added": ["sibilmyeon-sinjusimgyeong-uiso", "ichwibun-suljan", "gusaron-so-sintae", "gusaron-beopjongwon", "gusaron-songso-seogi", "gusaron-songso", "gusaron-songso-nonbon", "gusaron-songso-uicho", "gusaron-songsogi", "seoksiyoram"],
       "changed": ["sa-ron-hyeonuigi", "gongmokjang", "tamhyeongi", "wongak-daeso", "gisin-uiso-hyewon"],
       "memo": "교감 메모를 요지 한 줄과 펼침 상세로 정리하고, 대승사론현의기의 번역 유보 구절 227곳을 보완했습니다."
     }

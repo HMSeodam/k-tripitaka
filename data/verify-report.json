@@ -50,6 +50,32 @@
   "translated": 144,
   "units": 145
  },
+ "beobwon-jurim": {
+  "apparatus_without_note": 5,
+  "bare_number_in_ko": 0,
+  "figures_missing": [],
+  "figures_unused": 0,
+  "figures_used": 0,
+  "junk_in_notes": 0,
+  "markers": 5475,
+  "no_translation": [
+   "0634a29",
+   "0672c26",
+   "0678c12",
+   "0681a27",
+   "0758a13",
+   "0761b01",
+   "0825b01",
+   "0829c07",
+   "0953c13"
+  ],
+  "no_translation_count": 9,
+  "notes": 19811,
+  "source_kind": "base",
+  "source_match": true,
+  "translated": 25865,
+  "units": 25874
+ },
  "beommang-gojeokgi-taehyeon": {
   "apparatus_without_note": 0,
   "bare_number_in_ko": 0,
