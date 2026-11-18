@@ -435,7 +435,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 /* ─── 하단 탭(모바일) ──────────────────────────── */
 .tabbar{display:none}
 
-@media (max-width:900px){
+@media (max-width:900px),(max-width:1000px) and (max-height:500px) and (pointer:coarse){
   .shell{grid-template-columns:1fr}
   .sidebar{display:none}
   .sidebar.open{display:block;position:fixed;inset:var(--top) 0 0;height:auto;z-index:35;background:var(--paper);border:0}
@@ -489,18 +489,6 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .toolframe{height:calc(100vh - var(--top) - 44px - 58px);height:calc(100dvh - var(--top) - 44px - 58px - env(safe-area-inset-bottom))}
 }
 
-/* 태블릿 가로·작은 노트북: 상단 도구를 줄여 검색창 자리를 넓힌다 */
-@media (min-width:901px) and (max-width:1200px){
-  .brand-sub{display:none}
-  .applinks a{padding:.34rem .5rem}
-  .applinks .lab-full{display:none}
-  .applinks .lab-short{display:inline}
-  .applinks a.ext .lab-short{display:none}
-  .applinks a.ext .lab-mid{display:inline}
-  .updbtn .lab-full{display:none}
-  .topbar{gap:.6rem}
-}
-
 /* 작은 휴대폰: 권 이동 줄이 한 줄에 들어가게 */
 @media (max-width:420px){
   .docbar .chapnav{gap:.3rem;min-width:0;flex-wrap:nowrap}
@@ -510,7 +498,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 }
 
 /* 휴대폰 가로(낮은 화면): 상단을 다시 한 줄로 두어 본문 자리를 넓힌다 */
-@media (max-width:900px) and (max-height:500px) and (orientation:landscape){
+@media (max-width:900px) and (max-height:500px) and (orientation:landscape),(max-width:1000px) and (max-height:500px) and (orientation:landscape) and (pointer:coarse){
   :root{--top:56px}
   .topbar{grid-template-columns:auto minmax(0,1fr) auto auto;
     grid-template-areas:"brand search links upd";row-gap:0;padding:0 .8rem}
@@ -552,7 +540,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   background:var(--mist-2);border-radius:6px}
 .frontnote p{margin:.2rem 0}
 
-@media (max-width:900px){
+@media (max-width:900px),(max-width:1000px) and (max-height:500px) and (pointer:coarse){
   .chapnav{position:static}
   .chapcount{display:none}
 }
@@ -573,7 +561,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   font-size:.72rem;color:var(--ink-3);margin-top:1rem;
   padding-top:.9rem;border-top:1px solid var(--mist);letter-spacing:.03em;
 }
-@media (max-width:900px){
+@media (max-width:900px),(max-width:1000px) and (max-height:500px) and (pointer:coarse){
   .sitefoot{padding:1.2rem 1rem 5.5rem}
   .foot-grid{grid-template-columns:1fr;gap:.9rem}
 }
@@ -661,7 +649,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 .pgbtn.edge{color:var(--ink-3)}
 .pgbtn:disabled{opacity:.3;cursor:default}
 
-@media (max-width:900px){
+@media (max-width:900px),(max-width:1000px) and (max-height:500px) and (pointer:coarse){
   .perbox{margin-left:0;width:100%}
   .persel{width:100%}
   .pager{gap:.2rem}
@@ -670,7 +658,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 
 /* 좁은 화면에서만 줄을 바꾸는 자리 (제목 등) */
 .mo-only{display:none}
-@media (max-width:900px){
+@media (max-width:900px),(max-width:1000px) and (max-height:500px) and (pointer:coarse){
   .mo-only{display:inline}
 }
 
@@ -703,4 +691,21 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .unit.lv6 .cnbox,.unit.lv6 .kobox{padding-left:4.0em}
   .unit.lv7 .cnbox,.unit.lv7 .kobox{padding-left:4.8em}
   .unit.lv8 .cnbox,.unit.lv8 .kobox{padding-left:5.6em}
+}
+
+/* iPhone 가로: 노치 자리만큼 좌우 여백 */
+.topbar{padding-left:max(.8rem,env(safe-area-inset-left));padding-right:max(.8rem,env(safe-area-inset-right))}
+
+/* 태블릿·좁은 PC(901~1279px): 첫 줄 = 이름·도구·업데이트, 둘째 줄 = 검색창·검색 범위.
+   한 줄에 두면 검색칸이 400px 안팎으로 좁아지므로(2026-11-18 결정). 휴대폰 가로는 한 줄 그대로 */
+@media (min-width:901px) and (max-width:1279px) and (min-height:501px),(min-width:901px) and (max-width:1279px) and (pointer:fine),(min-width:1001px) and (max-width:1279px){
+  :root{--top:104px}
+  .topbar{display:grid;grid-template-columns:auto 1fr auto auto;
+    grid-template-areas:"brand . links upd" "search search search tools";
+    align-content:center;row-gap:.45rem;column-gap:.5rem}
+  .brand{grid-area:brand}
+  .applinks{grid-area:links}
+  .upd{grid-area:upd;justify-self:end}
+  .topbar-tools{grid-area:tools;justify-self:end}
+  .search{grid-area:search;max-width:none}
 }
