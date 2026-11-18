@@ -793,13 +793,13 @@
    "#48",
    "#50"
   ],
-  "no_translation_count": 1479,
+  "no_translation_count": 1379,
   "notes": 195,
   "screens": 39,
   "source_diff_chars": null,
   "source_kind": "base",
   "source_match": false,
-  "translated": 1387,
+  "translated": 1487,
   "units": 2866
  },
  "daehwaeom-beopgyedoju": {
@@ -837,7 +837,6 @@
   "markers": 839,
   "no_translation": [
    "#1",
-   "#4",
    "#47",
    "#48",
    "#105",
@@ -850,19 +849,20 @@
    "#244",
    "#276",
    "#277",
-   "#280",
    "#322",
    "#323",
    "#372",
    "#373",
-   "#386"
+   "#386",
+   "#409",
+   "#410"
   ],
-  "no_translation_count": 269,
+  "no_translation_count": 267,
   "notes": 1139,
   "screens": 31,
   "source_kind": "base",
   "source_match": true,
-  "translated": 975,
+  "translated": 977,
   "units": 1244
  },
  "daehyedo-jongyo-wonhyo": {
@@ -1466,17 +1466,16 @@
   "longest_screen": 13828,
   "markers": 552,
   "no_translation": [
-   "#11",
    "#597",
    "#598"
   ],
-  "no_translation_count": 3,
+  "no_translation_count": 2,
   "notes": 111,
   "screens": 3,
   "source_diff_chars": 31,
   "source_kind": "base",
   "source_match": false,
-  "translated": 595,
+  "translated": 596,
   "units": 598
  },
  "geumgang-ju-seungjo": {
@@ -2806,16 +2805,12 @@
   "no_translation": [
    "#3",
    "#54",
-   "#74",
    "#76",
    "#78",
-   "#92",
    "#94",
    "#110",
-   "#121",
    "#123",
    "#127",
-   "#174",
    "#176",
    "#178",
    "#182",
@@ -2823,14 +2818,18 @@
    "#204",
    "#222",
    "#230",
-   "#237"
+   "#237",
+   "#241",
+   "#243",
+   "#251",
+   "#270"
   ],
-  "no_translation_count": 64,
+  "no_translation_count": 50,
   "notes": 4018,
   "screens": 14,
   "source_kind": "base",
   "source_match": true,
-  "translated": 855,
+  "translated": 869,
   "units": 919
  },
  "hwaeom-chaengnim": {
@@ -3251,7 +3250,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 12567,
+  "longest_screen": 12539,
   "markers": 226,
   "no_translation": [
    "#2",
@@ -4079,7 +4078,7 @@
   "units": 195
  },
  "sa-ron-hyeonuigi": {
-  "apparatus_without_note": 1,
+  "apparatus_without_note": 2,
   "bare_number_in_ko": 0,
   "figures_missing": [],
   "figures_unused": 0,
@@ -4096,8 +4095,8 @@
   "screens": 9,
   "source_kind": "base",
   "source_match": true,
-  "translated": 1776,
-  "units": 1776
+  "translated": 1777,
+  "units": 1777
  },
  "sabunyul-so": {
   "apparatus_without_note": 229,
@@ -4996,7 +4995,6 @@
    "#65",
    "#66",
    "#67",
-   "#159",
    "#161",
    "#162",
    "#250",
@@ -5008,14 +5006,15 @@
    "#374",
    "#375",
    "#376",
-   "#430"
+   "#430",
+   "#431"
   ],
-  "no_translation_count": 151,
+  "no_translation_count": 150,
   "notes": 45,
   "screens": 27,
   "source_kind": "base",
   "source_match": true,
-  "translated": 1417,
+  "translated": 1418,
   "units": 1568
  },
  "wongak-yakso": {
