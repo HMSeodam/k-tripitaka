@@ -75,7 +75,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 22679,
+  "longest_screen": 22697,
   "markers": 5475,
   "no_translation": [
    "0634a29",
@@ -106,7 +106,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 17394,
+  "longest_screen": 17378,
   "markers": 176,
   "no_translation": [],
   "no_translation_count": 0,
@@ -169,7 +169,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 19358,
+  "longest_screen": 19309,
   "markers": 429,
   "no_translation": [],
   "no_translation_count": 0,
@@ -575,7 +575,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 23064,
+  "longest_screen": 23046,
   "markers": 105,
   "no_translation": [],
   "no_translation_count": 0,
@@ -671,7 +671,7 @@
   "units": 467
  },
  "cheongnyang-so": {
-  "apparatus_without_note": 80,
+  "apparatus_without_note": 81,
   "bare_number_in_ko": 0,
   "figures_missing": [],
   "figures_unused": 0,
@@ -691,8 +691,8 @@
   "source_diff_chars": null,
   "source_kind": "base",
   "source_match": false,
-  "translated": 246,
-  "units": 247
+  "translated": 248,
+  "units": 249
  },
  "cheongnyang-yakchaek": {
   "apparatus_without_note": 19,
@@ -793,14 +793,14 @@
    "#48",
    "#50"
   ],
-  "no_translation_count": 1483,
+  "no_translation_count": 1479,
   "notes": 195,
   "screens": 39,
   "source_diff_chars": null,
   "source_kind": "base",
   "source_match": false,
-  "translated": 1381,
-  "units": 2864
+  "translated": 1387,
+  "units": 2866
  },
  "daehwaeom-beopgyedoju": {
   "apparatus_without_note": 0,
@@ -1014,7 +1014,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 28310,
+  "longest_screen": 28299,
   "markers": 1233,
   "no_translation": [
    "#1",
@@ -1260,7 +1260,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 13266,
+  "longest_screen": 13276,
   "markers": 168,
   "no_translation": [
    "#1",
@@ -1590,7 +1590,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 20019,
+  "longest_screen": 20003,
   "markers": 15,
   "no_translation": [],
   "no_translation_count": 0,
@@ -1638,7 +1638,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 15791,
+  "longest_screen": 15774,
   "markers": 197,
   "no_translation": [],
   "no_translation_count": 0,
@@ -1768,7 +1768,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 27827,
+  "longest_screen": 27799,
   "markers": 2538,
   "no_translation": [
    "0299a18",
@@ -1995,7 +1995,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 12083,
+  "longest_screen": 12092,
   "markers": 143,
   "no_translation": [],
   "no_translation_count": 0,
@@ -2092,17 +2092,17 @@
   "no_translation": [
    "#12",
    "#89",
-   "#129",
-   "#204",
-   "#326"
+   "#130",
+   "#205",
+   "#327"
   ],
   "no_translation_count": 5,
   "notes": 68,
   "screens": 5,
   "source_kind": "base",
   "source_match": true,
-  "translated": 382,
-  "units": 387
+  "translated": 383,
+  "units": 388
  },
  "gisin-uigi-byeolgi": {
   "apparatus_without_note": 8,
@@ -2380,7 +2380,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 26606,
+  "longest_screen": 26586,
   "markers": 5371,
   "no_translation": [
    "0016b13",
@@ -2416,7 +2416,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 28294,
+  "longest_screen": 26449,
   "markers": 6579,
   "no_translation": [
    "0512a08",
@@ -2435,7 +2435,7 @@
   ],
   "no_translation_count": 13,
   "notes": 8742,
-  "screens": 33,
+  "screens": 34,
   "source_kind": "base",
   "source_match": true,
   "translated": 19722,
@@ -2451,7 +2451,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 19329,
+  "longest_screen": 19325,
   "markers": 239,
   "no_translation": [],
   "no_translation_count": 0,
@@ -2552,18 +2552,16 @@
   "figures_missing": [],
   "figures_unused": 0,
   "figures_used": 0,
-  "juan": 28,
+  "juan": 29,
   "juan_starts_on_close": [],
-  "juan_warn": [
-   "CBETA 권2의 첫머리를 원문에서 찾지 못함(그 권이 앞 권에 섞여 있음)"
-  ],
+  "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 23016,
+  "longest_screen": 17513,
   "markers": 932,
   "no_translation": [],
   "no_translation_count": 0,
   "notes": 1917,
-  "screens": 29,
+  "screens": 30,
   "source_kind": "base",
   "source_match": true,
   "translated": 4287,
@@ -2733,7 +2731,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 25063,
+  "longest_screen": 25097,
   "markers": 107,
   "no_translation": [],
   "no_translation_count": 0,
@@ -2746,7 +2744,7 @@
   "units": 516
  },
  "haengsacho-bi": {
-  "apparatus_without_note": 524,
+  "apparatus_without_note": 535,
   "bare_number_in_ko": 0,
   "figures_missing": [],
   "figures_unused": 0,
@@ -2755,7 +2753,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 29316,
+  "longest_screen": 29695,
   "markers": 2614,
   "no_translation": [
    "#1",
@@ -2764,12 +2762,12 @@
   ],
   "no_translation_count": 3,
   "notes": 516,
-  "screens": 34,
+  "screens": 33,
   "source_diff_chars": 18,
   "source_kind": "base",
   "source_match": false,
-  "translated": 2623,
-  "units": 2626
+  "translated": 2678,
+  "units": 2681
  },
  "hoehyeongi": {
   "apparatus_without_note": 60,
@@ -2898,16 +2896,16 @@
   "figures_missing": [],
   "figures_unused": 0,
   "figures_used": 0,
-  "juan": 4,
+  "juan": 5,
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 12412,
+  "longest_screen": 9054,
   "markers": 95,
   "no_translation": [],
   "no_translation_count": 0,
   "notes": 1,
-  "screens": 4,
+  "screens": 5,
   "source_diff_chars": 44,
   "source_kind": "base",
   "source_match": false,
@@ -3069,7 +3067,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 1,
-  "longest_screen": 20936,
+  "longest_screen": 20962,
   "markers": 330,
   "no_translation": [],
   "no_translation_count": 0,
@@ -3305,7 +3303,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 16237,
+  "longest_screen": 16267,
   "markers": 13,
   "no_translation": [
    "#1"
@@ -3427,7 +3425,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 21745,
+  "longest_screen": 21756,
   "markers": 1349,
   "no_translation": [],
   "no_translation_count": 0,
@@ -3866,7 +3864,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 22823,
+  "longest_screen": 27723,
   "markers": 1416,
   "no_translation": [
    "#1",
@@ -3881,7 +3879,7 @@
   ],
   "no_translation_count": 9,
   "notes": 927,
-  "screens": 13,
+  "screens": 12,
   "source_diff_chars": 29,
   "source_kind": "base",
   "source_match": false,
@@ -3985,7 +3983,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 9610,
+  "longest_screen": 9639,
   "markers": 2819,
   "no_translation": [
    "#5",
@@ -4027,7 +4025,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 14602,
+  "longest_screen": 14614,
   "markers": 54,
   "no_translation": [
    "#4",
@@ -4081,27 +4079,25 @@
   "units": 195
  },
  "sa-ron-hyeonuigi": {
-  "apparatus_without_note": 0,
+  "apparatus_without_note": 1,
   "bare_number_in_ko": 0,
   "figures_missing": [],
   "figures_unused": 0,
   "figures_used": 163,
   "juan": 7,
-  "juan_starts_on_close": [
-   "권9"
-  ],
+  "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
   "longest_screen": 28392,
-  "markers": 158,
+  "markers": 159,
   "no_translation": [],
   "no_translation_count": 0,
   "notes": 2676,
   "screens": 9,
   "source_kind": "base",
   "source_match": true,
-  "translated": 1775,
-  "units": 1775
+  "translated": 1776,
+  "units": 1776
  },
  "sabunyul-so": {
   "apparatus_without_note": 229,
@@ -4122,8 +4118,8 @@
   "source_diff_chars": 189,
   "source_kind": "base",
   "source_match": false,
-  "translated": 2357,
-  "units": 2357
+  "translated": 2358,
+  "units": 2358
  },
  "sabunyul-suhyeollok": {
   "apparatus_without_note": 60,
@@ -4308,11 +4304,11 @@
   "figures_missing": [],
   "figures_unused": 0,
   "figures_used": 0,
-  "juan": 2,
+  "juan": 8,
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 30682,
+  "longest_screen": 25552,
   "markers": 1245,
   "no_translation": [
    "#1",
@@ -4333,7 +4329,7 @@
   ],
   "no_translation_count": 15,
   "notes": 545,
-  "screens": 6,
+  "screens": 8,
   "source_kind": "base",
   "source_match": true,
   "translated": 1253,
@@ -4773,7 +4769,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 19418,
+  "longest_screen": 19426,
   "markers": 561,
   "no_translation": [
    "#2",
@@ -5255,7 +5251,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 25517,
+  "longest_screen": 25518,
   "markers": 245,
   "no_translation": [
    "0689a07",
@@ -5309,7 +5305,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 26830,
+  "longest_screen": 26811,
   "markers": 44,
   "no_translation": [],
   "no_translation_count": 0,
@@ -5426,7 +5422,7 @@
   "juan_starts_on_close": [],
   "juan_warn": [],
   "junk_in_notes": 0,
-  "longest_screen": 21523,
+  "longest_screen": 21510,
   "markers": 477,
   "no_translation": [
    "#1",
