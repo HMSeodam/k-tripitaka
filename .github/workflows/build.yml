@@ -44,11 +44,14 @@ jobs:
       - name: 수록 문헌 점검 (data/verify-report.json 갱신)
         run: python3 tools/verify.py
         
+      - name: 검색 색인 만들기 (data/search — 저장소에는 넣지 않고 배포에만 실음)
+        run: python3 tools/build_search_index.py || (rm -rf data/search && echo "검색 색인 실패 — 전체 훑기 검색으로 돌아갑니다.")
+
       - name: 생성 결과 되돌려 커밋
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data tools/cbeta_juan.json
+          git add data tools/cbeta_juan.json ':!data/search'
           if git diff --staged --quiet; then
             echo "바뀐 데이터가 없습니다."
           else
