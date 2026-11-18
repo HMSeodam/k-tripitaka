@@ -36,7 +36,7 @@ KEEP = [
     "source", "底本_publisher",
     "collection", "tags", "verify", "note",
     "units", "translated", "coverage", "chars_cn", "chars_ko",
-    "range", "has_source", "has_translation", "chapters",
+    "range", "has_source", "has_translation", "chapters", "juan",
     "canon_full", "author_line", "author_short",
 ]
 
@@ -75,6 +75,7 @@ def stats_from_units(doc):
         "has_source": bool(units),
         "has_translation": n_ko > 0,
         "chapters": len(doc.get("chapters", [])),
+        "juan": len(doc.get("juan", [])),
     }
 
 

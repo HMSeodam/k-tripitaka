@@ -9,6 +9,8 @@ data/works/*.json 을 저본(sources/<id>/)·registry 와 맞대어 보고
   · 교감 공백    교감표지가 있는데 메모가 없는 단위
   · 도판         깨진 이미지 경로
   · 찌꺼기       본문에 남은 제작 메모·각주 번호 따위
+  · 권 나눔      권 경계가 앞 권의 닫는 줄에서 시작하지 않는지, 권 판정에서
+                 경계를 짐작한 곳(여는 줄 없음·두 권 묶음), 지나치게 긴 화면
 
 결과는 data/verify-report.json 에 적는다. 커밋마다 이 파일의 차이를 보면
 어떤 문헌이 왜 바뀌었는지 드러난다.
@@ -101,6 +103,25 @@ def check(wid: str) -> dict:
     r["junk_in_notes"] = sum(
         1 for u in units for n in u["nt"] if RE_JUNK.search(note_text(n))
     )
+    # 권 나눔
+    juan = d.get("juan") or []
+    r["juan"] = len(juan)
+    r["screens"] = len(d.get("chapters") or [])
+    r["juan_warn"] = [w for w in (d.get("juan_warn") or []) if not w.startswith("참고")]
+    bad_start = []
+    for k in range(1, len(juan)):
+        first = "".join(units[juan[k]["i"]]["cn"][:1])
+        prev = juan[k - 1].get("cn") or ""
+        key = lambda t: re.sub(r"\[[^\]]*\]|\s", "", t)
+        if prev and first and key(first) == key(prev) and juan[k]["e"] - juan[k]["i"] > 1:
+            bad_start.append(juan[k]["t"])
+    r["juan_starts_on_close"] = bad_start
+    ch = d.get("chapters") or [{"i": 0}]
+    sizes = []
+    for k, c in enumerate(ch):
+        e = ch[k + 1]["i"] if k + 1 < len(ch) else len(units)
+        sizes.append(sum(len(flat(RE_APP.sub("", "".join(u["cn"])))) for u in units[c["i"]:e]))
+    r["longest_screen"] = max(sizes) if sizes else 0
     r["bare_number_in_ko"] = sum(
         len(re.findall(r"(?<!No)[다.,’”」)!?]\s?\d{1,3}(?=[\s‘“「(]|$)", k))
         for u in units for k in u["ko"]
@@ -128,6 +149,12 @@ def main(argv: list[str]) -> int:
             flags.append((wid, f"제작 메모 잔류 {r['junk_in_notes']}건"))
         if r["no_translation_count"] > max(5, r["units"] * 0.02):
             flags.append((wid, f"번역 없는 단위 {r['no_translation_count']}개"))
+        if r["juan_starts_on_close"]:
+            flags.append((wid, f"앞 권 닫는 줄에서 시작하는 권 {', '.join(r['juan_starts_on_close'][:5])}"))
+        for w in r["juan_warn"]:
+            flags.append((wid, f"권 나눔 확인: {w}"))
+        if r["longest_screen"] > 40000:
+            flags.append((wid, f"한 화면이 원문 {r['longest_screen']:,}자"))
         if r["bare_number_in_ko"]:
             flags.append((wid, f"번역문에 숫자만 남은 곳 {r['bare_number_in_ko']}건"))
 

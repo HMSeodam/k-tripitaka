@@ -1065,24 +1065,29 @@ async function viewWork(id, anchor, hit) {
     else if (chapters.length > 1) window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
+  // 화면이 곧 권이면 「앞 권·뒤 권」, 긴 권을 나눈 화면이 섞이면 「이전·다음」
+  const oneJuanPerScreen = Array.isArray(doc.juan) && doc.juan.length === chapters.length;
+
   function drawNav() {
     if (chapters.length < 2) return;
     nav.innerHTML = '';
-    const prev = el('button', 'chapbtn', '← 앞 권');
+    const prev = el('button', 'chapbtn', oneJuanPerScreen ? '← 앞 권' : '← 이전');
     prev.disabled = ci === 0;
     prev.onclick = () => renderChapter(ci - 1);
 
     const sel = el('select', 'chapsel');
+    sel.setAttribute('aria-label', '권 고르기');
+    // 새 데이터(권 목록 있음)는 화면 이름만, 옛 데이터는 단위 수를 곁들인다
     chapters.forEach((c, n) => {
       const to = n + 1 < chapters.length ? chapters[n + 1].i : doc.units.length;
-      const o = el('option', null, `${c.t}  (${to - c.i}단위)`);
+      const o = el('option', null, doc.juan ? c.t : `${c.t}  (${to - c.i}단위)`);
       o.value = String(n);
       if (n === ci) o.selected = true;
       sel.append(o);
     });
     sel.onchange = () => renderChapter(Number(sel.value));
 
-    const next = el('button', 'chapbtn', '뒤 권 →');
+    const next = el('button', 'chapbtn', oneJuanPerScreen ? '뒤 권 →' : '다음 →');
     next.disabled = ci >= chapters.length - 1;
     next.onclick = () => renderChapter(ci + 1);
 

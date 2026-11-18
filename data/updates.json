@@ -2,6 +2,13 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-11-18",
+      "title": "권 나눔 정비",
+      "added": [],
+      "changed": [],
+      "memo": "모든 문헌을 원문의 권(卷) 단위로 다시 나누었습니다. 한 권이 아주 긴 경우에만 그 권 안에서 나누어 보여 줍니다. N-gram 분석에서도 문헌을 권별로 불러옵니다."
+    },
+    {
       "date": "2026-10-04",
       "title": "법원주림 추가",
       "added": ["beobwon-jurim"],

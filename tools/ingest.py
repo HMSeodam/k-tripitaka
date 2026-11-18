@@ -2504,6 +2504,524 @@ def subdivide(units, chapters, limit=150):
     return out
 
 
+# ── 권(卷)과 화면 나눔 ─────────────────────────────────────────────────
+# 권은 원문에 남은 권 표제(여는 줄·닫는 줄)로 잡는다. 번역 docx 의 제목 단계는
+# 문헌마다 달리 만들어져 권·품·과목이 뒤섞이므로 권의 근거로 삼지 않는다
+# (원문에 권 표제가 없을 때만 docx 제목 가운데 '권' 이름을 쓴다).
+# 화면은 1권 = 1화면이 기본이고, 원문이 SCREEN_CHARS 자를 넘는 권만
+# 그 권 안에서 고르게 나눈다. 권 경계를 넘어 자르지 않는다.
+SCREEN_CHARS = 25000
+
+JUAN_NUM = "一二三四五六七八九十百○〇零"
+RE_JUAN_HEAD = re.compile(
+    r"^(?P<title>[^。，、；：！？\s]{0,40}?)卷\s*"
+    r"(?:第\s*(?P<num>[" + JUAN_NUM + r"\d]+)|(?P<ud>[上中下])(?![" + JUAN_NUM + r"]))"
+    # 之上·之下·之本·之末·之一·之餘 따위는 따로 세는 권이다.
+    # '(之下終)' 처럼 괄호 안에 닫는 표시가 함께 오기도 한다.
+    r"(?P<sub>\s*[(（]?\s*(?:之\s*[上中下本末餘" + JUAN_NUM + r"]+|餘之|[上中下本末])"
+    r"\s*(?:終|竟)?\s*[)）]?)?"
+    r"(?P<tail>(?:\s*(?:[(（][^()（）]{0,16}[)）]|終|竟|畢|了))*)\s*$")
+RE_JUAN_END = re.compile(r"^\s*(?:[(（]\s*)?(?:終|竟|畢|了)(?:\s*[)）])?\s*$")
+RE_JUAN_STRIP = re.compile(r"\[\d{3,4}[abc]\d{2}\]|\[(?:\d{1,3}|＊|\*)\]|【[^】]{0,12}】")
+SUB_KO = {"上": "상", "中": "중", "下": "하", "本": "본", "末": "말", "餘": "여"}
+
+
+def juan_number(s):
+    """'四十五' · '一百' · '一○' · '12' → 정수"""
+    s = s.replace("〇", "○").replace("零", "○")
+    if s.isdigit():
+        return int(s)
+    d = {c: i + 1 for i, c in enumerate("一二三四五六七八九")}
+    d["○"] = 0
+    if "百" in s or "十" in s:
+        n, cur = 0, 0
+        for c in s:
+            if c == "百":
+                n += (cur or 1) * 100; cur = 0
+            elif c == "十":
+                n += (cur or 1) * 10; cur = 0
+            else:
+                cur = d.get(c, 0)
+        return n + cur
+    n = 0
+    for c in s:
+        n = n * 10 + d.get(c, 0)
+    return n
+
+
+def parse_juan_line(line):
+    """권 표제 줄이면 (키, 한국어 이름, 닫는 줄 표시, 서명) 을, 아니면 None."""
+    s = unicodedata.normalize("NFKC", line).strip()
+    s = RE_JUAN_STRIP.sub("", s).strip()
+    s = s.replace("〔", "").replace("〕", "")      # '(〔末〕)' 처럼 교감 괄호에 싸인 권차
+    if not s or len(s) > 60 or "\n" in s:
+        return None
+    m = RE_JUAN_HEAD.match(s)
+    if not m:
+        return None
+    rawsub = m.group("sub") or ""
+    sub = re.sub(r"[()（）\s之終竟]", "", rawsub)
+    if sub == "餘":
+        sub = "餘"
+    if m.group("num"):
+        n = juan_number(m.group("num"))
+        if not n:
+            return None
+        key = (n, sub)
+        name = f"권{n}"
+    else:
+        ud = m.group("ud")
+        key = (0, ud + sub)
+        name = f"권{SUB_KO[ud]}"
+    if sub:
+        if sub in SUB_KO:
+            name += " " + SUB_KO[sub]
+        elif all(c in JUAN_NUM for c in sub):
+            name += f"-{juan_number(sub)}"
+        else:
+            name += " " + sub
+    # 닫는 줄 표시: 괄호 밖의 終·竟, '(終)' 한 자짜리 괄호, '(之下終)' 따위만 본다.
+    # ('(終第八修證階差門)' 처럼 괄호 안 설명에 든 終은 표시가 아니다)
+    tail = m.group("tail") or ""
+    end = bool(re.search(r"終|竟", rawsub)) or any(
+        RE_JUAN_END.match(t) for t in re.findall(r"[(（][^()（）]*[)）]|[^()（）\s]+", tail))
+    return key, name, end, m.group("title")
+
+
+def juan_order(key):
+    n, sub = key
+    rank = {"": 0, "上": 1, "本": 1, "中": 2, "下": 3, "末": 3, "餘": 4}
+
+    def r(x):
+        if not x:
+            return 0
+        if all(c in JUAN_NUM for c in x):
+            return juan_number(x)
+        return rank.get(x, 0)
+    if n == 0:                      # 卷上 · 卷中 · 卷下 (+之上 따위)
+        return (0, rank.get(sub[:1], 0), r(sub[1:]))
+    return (n, r(sub), 0)
+
+
+def unit_chars(u):
+    return len(norm_search(" ".join(u["cn"])))
+
+
+def _share2(a, b):
+    """두 서명이 두 글자 이상 이어진 부분을 함께 갖는가"""
+    a, b = norm_search(a or ""), norm_search(b or "")
+    return any(a[k:k + 2] in b for k in range(len(a) - 1))
+
+
+def detect_juan(units, own_title="", front_merge=300):
+    """원문 단위에서 권 경계를 잡는다.
+
+    · 권 표제 줄 = 서명 + 卷第N / 卷上 (+之上·本·末·之餘 / 괄호 설명 / 終).
+      서명이 이 문헌의 서명과 겹치지 않는 줄(주석서가 인용한 「論本卷第一」,
+      「經卷第三」 따위)과, 권 차례를 거슬러 올라가는 줄(본문 속 인용)은 세지 않는다.
+    · 같은 권 표제가 그 권에 본문이 들어선 뒤 다시 나오거나 '終·竟' 이 붙으면
+      닫는 줄이다. 닫는 줄이 든 단위까지가 그 권이고 다음 권은 그 뒤부터다.
+      닫는 줄은 本·末 따위를 빼고 적기도 한다(卷第二(本) … 卷第二).
+    · 권 표제 줄 바로 뒤에 다른 권의 표제가 이어지면(본문 없이), 앞의 것은
+      닫는 줄이다. 여는 줄이 교감표지·괄호 때문에 달리 적혀 못 읽힌 권은
+      이렇게 닫는 줄로 잡혀 앞 권이 닫힌 바로 뒤에서 시작한다.
+    · 한 단위 안에서 본문 뒤에 다음 권의 여는 줄이 붙어 있으면(묶음형 번역)
+      다음 권은 그 다음 단위부터다.
+    돌려주는 값: ([{key,t,cn,i,e}], 경고 목록)
+    """
+    BODY = 40                                   # 이만큼 넘는 글자가 있어야 '본문'
+    raw = []
+    for idx, u in enumerate(units):
+        seen_body = False
+        for ln, line in enumerate(u["cn"]):
+            p = parse_juan_line(line)
+            if p:
+                raw.append([idx, ln, seen_body, p[0], p[1], p[2], line.strip(), p[3]])
+            elif norm_search(line):
+                seen_body = True
+    if not raw:
+        return [], []
+    # 서명 거르기: 이 문헌 서명 또는 가장 많이 나온 서명과 겹치는 줄만
+    titles = {}
+    for h in raw:
+        t = norm_search(h[7] or "")
+        titles[t] = titles.get(t, 0) + 1
+    major = max(titles, key=titles.get)
+    own = norm_search(own_title)
+
+    def own_line(t):
+        t = norm_search(t or "")
+        if not t:
+            return True
+        # 주석 대상 경론의 권 표제(「金光明最勝王經卷第三」 — 서명이 이 문헌 서명의
+        # 앞부분일 뿐인 것)는 이 문헌의 권이 아니다
+        if t != own and own.startswith(t) and t != major:
+            return False
+        return _share2(t, own_title) or _share2(t, major)
+    hits_all = [h for h in raw if own_line(h[7])]
+    if not hits_all:
+        return [], []
+    # 이 문헌의 대표 서명으로 적힌 줄만으로도 권이 거의 다 잡히면 그쪽을 쓴다
+    # (『유가론기』처럼 본문에 「瑜伽師地論卷第六十」 따위가 섞인 문헌)
+    strong = [h for h in hits_all if norm_search(h[7] or "") == major]
+    k_all = {h[3] for h in hits_all}
+    k_str = {h[3] for h in strong}
+    if strong and len(strong) < len(hits_all) and len(k_str) >= 2 \
+            and len(k_str) >= 0.8 * len(k_all):
+        # 대표 서명 줄을 뼈대로 삼되, 서명이 달리 적힌 줄이라도 뼈대의 빈 권을
+        # 메우는 것(앞뒤 권 사이 차례에 맞는 것)은 되살린다
+        pos = lambda h: (h[0], h[1])
+        hits = list(strong)
+        for h in hits_all:
+            if h in strong or h[3] in k_str:
+                continue
+            before = [x for x in strong if pos(x) < pos(h)]
+            after = [x for x in strong if pos(x) > pos(h)]
+            lo = juan_order(before[-1][3]) if before else (-1, -1, -1)
+            hi = juan_order(after[0][3]) if after else (10 ** 6, 0, 0)
+            if lo < juan_order(h[3]) < hi:
+                hits.append(h)
+        hits.sort(key=pos)
+    else:
+        hits = hits_all
+    dropped_title = len(raw) - len(hits)
+
+    def body_between(p0, p1):
+        """p0 줄 뒤부터 p1 줄 앞까지 원문 글자 수 (p1 이 None 이면 끝까지)"""
+        (i0, l0) = p0
+        (i1, l1) = p1 if p1 else (len(units) - 1, 10 ** 6)
+        n = 0
+        for i in range(max(i0, 0), i1 + 1):
+            lines = units[i]["cn"]
+            lo = l0 + 1 if i == i0 else 0
+            hi = l1 if i == i1 else len(lines)
+            for line in lines[lo:hi]:
+                if not parse_juan_line(line):
+                    n += len(norm_search(line))
+        return n
+
+    # 각 줄 뒤에 본문이 오는지, 곧바로 다른 권 표제가 오는지
+    for k, h in enumerate(hits):
+        nxt = hits[k + 1] if k + 1 < len(hits) else None
+        after = body_between((h[0], h[1]), (nxt[0], nxt[1]) if nxt else None)
+        h.append(after)                         # h[8]: 뒤따르는 본문 양
+        h.append(nxt[3] if nxt else None)       # h[9]: 다음 표제의 키
+
+    out, warns = [], []
+    cur = None
+    closed = set()
+    last = (0, -1)
+    last_close_end = 0
+    back_ignored = 0
+    for h in hits:
+        idx, ln, seen_body, key, name, endmark, rawline, _t, after, nkey = h
+        gap = body_between(last, (idx, ln))
+        here = idx + 1 if seen_body else idx    # 이 줄 다음에서 새 권이 시작되는 단위
+        last = (idx, ln)
+        same = cur is not None and (key == cur["key"] or (
+            key[0] and key[0] == cur["key"][0] and (not key[1] or not cur["key"][1])))
+        if same:
+            cur["chars"] += gap
+            if cur["chars"] >= BODY or endmark:  # 닫는 줄
+                cur["e"] = idx + 1
+                closed.add(cur["key"])
+                closed.add(key)
+                cur = None
+                last_close_end = idx + 1
+            continue                            # 본문 없이 되풀이된 여는 줄
+        prev_key = cur["key"] if cur is not None else (out[-1]["key"] if out else None)
+        if prev_key is not None and juan_order(key) < juan_order(prev_key):
+            back_ignored += 1                   # 본문 속 인용으로 본다
+            if cur is not None:
+                cur["chars"] += gap
+            continue
+        if cur is not None:
+            cur["chars"] += gap
+            closer = endmark or (after < BODY and nkey is not None and nkey != key)
+            if closer and cur["chars"] >= BODY:
+                # 다른 권의 닫는 줄: 그 권의 여는 줄과 지금 권의 닫는 줄이 모두 빠져
+                # 두 권의 경계를 알 수 없다. 한 화면으로 묶고 이름을 「권16–17」로 단다.
+                ck = cur["key"]
+                if key[0] == ck[0] and key[1].startswith(ck[1]) and key[1] != ck[1]:
+                    # 卷上 으로 열고 卷上本 으로 닫은 것: 실은 '권상 본'
+                    cur["key"], cur["t"] = key, name
+                elif key != ck and juan_order(key) > juan_order(ck):
+                    cur["t"] = f"{cur['t']}–{name.replace('권', '', 1)}"
+                    cur["merged"] = True
+                cur["e"] = idx + 1
+                closed.update({cur["key"], key})
+                cur = None
+                last_close_end = idx + 1
+                continue
+            if cur["chars"] < BODY and not cur.get("solid"):
+                # 목차처럼 본문 없이 권 이름만 늘어선 것
+                out.remove(cur)
+                start = cur["i"]
+            else:
+                cur["e"] = here
+                start = here
+        else:
+            if key in closed and gap < BODY:
+                continue                        # 닫는 줄이 한 번 더 적힌 것
+            closer = (endmark or (after < BODY and nkey is not None and nkey != key)
+                      or (nkey is None and after < BODY))
+            if gap >= BODY and closer and key not in closed:
+                # 여는 줄 없이 본문이 이어지다 닫는 줄만 나온 권
+                start = last_close_end if out else 0
+                out.append({"key": key, "t": name, "cn": rawline, "i": start,
+                            "e": idx + 1, "chars": gap, "noopen": bool(out)})
+                closed.add(key)
+                last_close_end = idx + 1
+                continue
+            if not out and gap >= BODY:
+                out.append({"key": None, "t": "권두", "cn": "", "i": 0, "e": here, "chars": gap})
+                start = here
+            elif out:
+                start = last_close_end          # 닫힌 뒤 짧은 군더더기(찬자 줄 따위)는 새 권 앞머리로
+                if gap >= BODY:
+                    # 닫힌 뒤 본문이 이어지다 새 권이 열림: 그 본문은 앞 권 꼬리(간기 따위)
+                    out[-1]["e"] = here
+                    start = here
+            else:
+                start = 0
+        cur = {"key": key, "t": name, "cn": rawline, "i": start, "e": None, "chars": 0,
+               "solid": after >= BODY}
+        out.append(cur)
+    if cur is not None:
+        cur["e"] = len(units)
+    out = [j for j in out if j.get("e") is not None]
+    if not out:
+        return [], []
+    out[0]["i"] = 0
+    for k in range(len(out) - 1):
+        out[k]["e"] = out[k + 1]["i"]
+    out[-1]["e"] = len(units)
+    out = [j for j in out if j["e"] > j["i"]]
+    for k in range(len(out) - 1):
+        out[k]["e"] = out[k + 1]["i"]
+    if out:
+        out[-1]["e"] = len(units)
+    # 권두가 아주 짧으면(제목 한 줄 따위) 첫 권에 붙인다
+    if len(out) >= 2 and out[0]["key"] is None:
+        size = sum(unit_chars(units[i]) for i in range(out[0]["i"], out[0]["e"]))
+        if size < front_merge:
+            out[1]["i"] = 0
+            out.pop(0)
+    keys = [j["key"] for j in out if j["key"] is not None]
+    for a, b in zip(keys, keys[1:]):
+        if juan_order(b) <= juan_order(a):
+            warns.append(f"권 차례가 어긋남: {a} 뒤에 {b}")
+    if len(set(keys)) != len(keys):
+        warns.append("같은 권이 두 번 잡힘")
+    for j in out:
+        if j.get("noopen"):
+            warns.append(f"{j['t']}: 여는 줄을 못 찾아 앞 권 끝에서 시작함")
+        if j.get("merged"):
+            warns.append(f"{j['t']}: 두 권 사이 경계 표제가 없어 한데 묶음")
+    if back_ignored:
+        warns.append(f"참고: 권 차례를 거스르는 권 표제 {back_ignored}줄은 본문 속 인용으로 보고 건너뜀")
+    if dropped_title:
+        warns.append(f"참고: 서명이 다른 권 표제 {dropped_title}줄(인용된 다른 책)은 건너뜀")
+    return out, warns
+
+
+RE_MARK_JUAN = re.compile(r"^(卷[^\s第]*)\s*第")
+
+
+def juan_from_markers(units):
+    """한불전(KABC) 저본 위치 「卷一 第1張」 의 권차로 권을 나눈다.
+    위치표지가 없는 단위(권 제목 줄 따위)는 다음 권 쪽에 붙인다."""
+    labels = []
+    for u in units:
+        m = RE_MARK_JUAN.match(u.get("m") or "")
+        labels.append(m.group(1) if m else None)
+    if len({x for x in labels if x}) < 2:
+        return []
+    out, cur = [], None
+    pending = 0                                 # 표지 없는 단위가 시작된 자리
+    for idx, lab in enumerate(labels):
+        if lab is None:
+            if cur is not None and pending is None:
+                pending = idx
+            continue
+        if lab != cur:
+            start = idx if pending is None else pending
+            if not out:
+                start = 0
+            p = parse_juan_line(lab.replace("卷", "卷第", 1)) if not re.match(r"卷[上中下]", lab) \
+                else parse_juan_line(lab)
+            name = p[1] if p else lab
+            key = p[0] if p else None
+            out.append({"key": key, "t": name, "cn": "", "i": start})
+            cur = lab
+        pending = None
+    for k, j in enumerate(out):
+        j["e"] = out[k + 1]["i"] if k + 1 < len(out) else len(units)
+    return [j for j in out if j["e"] > j["i"]]
+
+
+def juan_monotonic(juan):
+    keys = [j["key"] for j in juan if j.get("key")]
+    return all(juan_order(b) > juan_order(a) for a, b in zip(keys, keys[1:]))
+
+
+def juan_gappy(juan):
+    """번호 권이 1·10 처럼 크게 비어 있는가"""
+    nums = sorted({j["key"][0] for j in juan if j["key"] and j["key"][0]})
+    if len(nums) < 2:
+        return False
+    return len(nums) / (nums[-1] - nums[0] + 1) < 0.6
+
+
+RE_KO_JUAN = re.compile(
+    r"(?:卷\s*第?\s*([" + JUAN_NUM + r"]+)|卷([上中下])"
+    r"|권\s*제?\s*(\d+|[" + JUAN_NUM + r"]+)|제\s*(\d+)\s*권|권\s*([상중하])"
+    r"|第\s*([" + JUAN_NUM + r"\d]+)\s*卷|([上中下])\s*卷|([상중하])\s*권)")
+
+
+def longest_increasing(items, key):
+    """차례에 맞는 가장 긴 줄기만 남긴다 (중간에 끼어든 엉뚱한 권 번호를 걸러 냄)"""
+    n = len(items)
+    if n < 2:
+        return items
+    best, prev = [1] * n, [-1] * n
+    for i in range(n):
+        for j in range(i):
+            if key(items[j]) < key(items[i]) and best[j] + 1 > best[i]:
+                best[i], prev[i] = best[j] + 1, j
+    i = max(range(n), key=lambda k: best[k])
+    keep = []
+    while i >= 0:
+        keep.append(items[i]); i = prev[i]
+    return keep[::-1]
+
+
+def juan_from_headings(secs, n_units):
+    """원문에 권 표제가 없을 때, 번역 docx 제목 가운데 '권' 이름만 골라 권으로 쓴다.
+    「…卷第一 — 권 제二」 처럼 앞 권 끝과 새 권을 함께 적은 제목은 뒤의 것을 본다."""
+    picked, seen = [], set()
+    for s in sorted(secs, key=lambda x: x["i"]):
+        # 「상권 제1분권」 = 卷上之一 (분권은 따로 세는 권)
+        mb = re.search(r"([상중하])\s*권\s*제?\s*(\d+)\s*분권", s["t"])
+        if mb:
+            ud = {"상": "上", "중": "中", "하": "下"}[mb.group(1)]
+            key = (0, ud + han_juan(int(mb.group(2))))
+            if key not in seen:
+                seen.add(key)
+                picked.append({"key": key, "t": f"권{mb.group(1)}-{int(mb.group(2))}", "cn": "", "i": s["i"]})
+            continue
+        ms = list(RE_KO_JUAN.finditer(s["t"]))
+        if not ms:
+            continue
+        g = list(ms[-1].groups())
+        if g[5]:
+            g[0] = g[5]
+        if g[6]:
+            g[1] = g[6]
+        if g[7]:
+            g[4] = g[7]
+        if g[0] and g[0].isdigit():
+            g[2], g[0] = g[0], None
+        if g[0]:
+            key, name = (juan_number(g[0]), ""), f"권{juan_number(g[0])}"
+        elif g[1]:
+            key, name = (0, g[1]), f"권{SUB_KO[g[1]]}"
+        elif g[2] or g[3]:
+            n = juan_number(g[2] or g[3]); key, name = (n, ""), f"권{n}"
+        else:
+            ud = {"상": "上", "중": "中", "하": "下"}[g[4]]; key, name = (0, ud), f"권{g[4]}"
+        if key in seen or not (key[0] or key[1]):
+            continue
+        seen.add(key)
+        picked.append({"key": key, "t": name, "cn": "", "i": s["i"]})
+    picked = longest_increasing(picked, lambda j: juan_order(j["key"]))
+    if len(picked) < 2:
+        return []
+    if picked[0]["i"] > 0:
+        picked.insert(0, {"key": None, "t": "권두", "cn": "", "i": 0})
+    for k, j in enumerate(picked):
+        j["e"] = picked[k + 1]["i"] if k + 1 < len(picked) else n_units
+    return [j for j in picked if j["e"] > j["i"]]
+
+
+def split_screens(units, a, b, secs, target=SCREEN_CHARS):
+    """[a, b) 구간을 원문 target 자 안팎으로 고르게 나눈다.
+    자르는 자리는 목표 지점 ±15% 안에서 고르되, 절 제목이 시작되는 자리,
+    쪽(위치표지의 쪽 번호)이 바뀌는 자리, 목표에 가까운 자리 순으로 낫게 친다."""
+    sizes = [unit_chars(units[i]) for i in range(a, b)]
+    total = sum(sizes)
+    if total <= target or b - a < 2:
+        return [a]
+    parts = -(-total // target)
+    goal = total / parts
+    sec_at = {s["i"] for s in secs if a < s["i"] < b}
+    cum = [0]
+    for z in sizes:
+        cum.append(cum[-1] + z)               # cum[k] = a..a+k-1 까지의 글자 수
+
+    def page(i):
+        m = units[i].get("m") or ""
+        return m[:-3] if m else None
+
+    cuts = [a]
+    for k in range(1, parts):
+        t = goal * k
+        best, best_score = None, None
+        for j in range(cuts[-1] + 1, b):
+            c = cum[j - a]
+            if c < t - goal * 0.15:
+                continue
+            if c > t + goal * 0.15 and best is not None:
+                break
+            score = abs(c - t) / goal
+            if j in sec_at:
+                score -= 0.2
+            elif page(j) and page(j) != page(j - 1):
+                score -= 0.1
+            if best_score is None or score < best_score:
+                best, best_score = j, score
+        if best is not None and best < b:
+            cuts.append(best)
+    if len(cuts) > 1 and total - cum[cuts[-1] - a] < goal * 0.3:
+        cuts.pop()                              # 너무 짧은 꼬리는 앞 화면에
+    return cuts
+
+
+def build_screens(units, juan, secs):
+    """권 목록에서 화면(chapters) 목록을 만든다."""
+    screens = []
+    if not juan:
+        juan = [{"key": None, "t": "", "cn": "", "i": 0, "e": len(units)}]
+    # 권이 없는 문헌은 화면 이름에 그 자리의 큰 제목(품·문 따위)을 곁들인다
+    top = min((x["lv"] for x in secs), default=None)
+    heads = sorted((x for x in secs if x["lv"] == top), key=lambda x: x["i"]) if top is not None else []
+
+    def head_at(i):
+        t = ""
+        for x in heads:
+            if x["i"] <= i:
+                t = x["t"]
+            else:
+                break
+        t = re.sub(r"【[^】]*】|\[[^\]]*\]", "", t).strip()
+        return t[:24]
+
+    for jn, j in enumerate(juan):
+        cuts = split_screens(units, j["i"], j["e"], secs)
+        for k, c in enumerate(cuts):
+            if len(cuts) == 1:
+                t = j["t"]
+            elif j["t"]:
+                t = f"{j['t']} ({k + 1}/{len(cuts)})"
+            else:
+                h = head_at(c)
+                t = f"{k + 1}/{len(cuts)}" + (f" · {h}" if h else "")
+            screens.append({"t": t, "i": c, "j": jn})
+    if len(screens) == 1:
+        return []                       # 한 화면이면 이동 막대가 필요 없다
+    return screens
+
+
 def build_sections(sections, n_units):
     """빈 절을 걷어내고, 화면 분할에 쓸 '권(chapter)' 층위를 고른다."""
     secs = [s for s in sections if 0 <= s["i"] < n_units]
@@ -2893,49 +3411,31 @@ def build_work(entry):
                     continue
                 j = later[0]
             raw_secs.append({"lv": sec["lv"], "t": sec["t"], "i": j})
-    if not raw_secs:
-        raw_secs = detect_juan_from_source(units)
+    sections, _ = build_sections(raw_secs, len(units)) if raw_secs else ([], [])
 
-    sections, chapters = build_sections(raw_secs, len(units))
+    # 권: 원문의 권 표제가 1차 근거, 없으면 docx 제목 가운데 '권' 이름
+    juan, juan_warn = detect_juan(units, entry.get("title_cn", ""))
+    hj = juan_from_headings(sections, len(units))
+    if not juan_monotonic(hj):
+        hj = []
+    mj = juan_from_markers(units) if kabc else []
+    if mj:
+        # 한불전 저본은 위치표지에 권차가 적혀 있어 이것이 가장 확실하다
+        juan, juan_warn = mj, []
+    elif len([j for j in juan if j["key"] is not None]) < 2:
+        juan, juan_warn = (hj, []) if hj else ([], [])
+    elif juan_gappy(juan) and len(hj) > len(juan):
+        # 원문에 권 표제가 듬성듬성 남은 문헌(권1·권10만 남은 따위)은 docx 의 권 제목을 따른다
+        juan, juan_warn = hj, [f"참고: 원문 권 표제가 드문드문하여 번역본의 권 제목({len(hj)}개)을 따름"]
+    for w_ in juan_warn:
+        print(f"  ! {wid}: {w_}")
 
-    # 번역 docx가 권마다 표제를 달아 두지 않은 문헌은, 권 나눔이 엉뚱하게 잡힌다.
-    # (한 권 제목이 뒤 권까지 끌려가 '…(2) (3)'처럼 되풀이된다)
-    # 이럴 때는 원문에 남아 있는 권 표제를 따르는 편이 낫다.
-    # 번역 docx가 권마다 표제를 달아 두면 그쪽이 한국어 병기까지 있어 낫다.
-    # 표제가 거의 없을 때만(=권이 3개 이하로 잡힐 때) 원문 표제로 갈아탄다.
-    if len(chapters) <= 3:
-        juan = detect_juan_from_source(units)
-        if len(juan) >= 4 and len(juan) > len(chapters):
-            _, chapters = build_sections(juan, len(units))
+    # 화면: 1권 = 1화면, 원문이 SCREEN_CHARS 자를 넘는 권만 그 권 안에서 나눈다
+    chapters = build_screens(units, juan, sections)
 
-
-    # 단위는 적지만 글자 수가 많은 문헌(묶음형 번역)도 나눈다
-    total_chars = sum(len(norm_search(" ".join(u["cn"]))) for u in units)
-    if not chapters and total_chars > 40000 and len(units) <= 120:
-        cuts = [0] + chunk_by_chars(units, 0, len(units))
-        if len(cuts) > 1:
-            chapters = [
-                {"lv": 1, "i": b,
-                 "t": label_range(units, b,
-                                  cuts[k + 1] if k + 1 < len(cuts) else len(units))}
-                for k, b in enumerate(cuts)]
-
-    # 표제가 없어 권이 안 잡힌 긴 문헌은 위치표지 쪽으로 나눈다
-    if not chapters and len(units) > 120:
-        cuts = [0] + chunk_by_page(units, 0, len(units))
-        if len(cuts) > 1:
-            chapters = [
-                {"lv": 1, "i": b,
-                 "t": label_range(units, b,
-                                  cuts[k + 1] if k + 1 < len(cuts) else len(units))}
-                for k, b in enumerate(cuts)]
-
-    # 권 하나가 너무 길면 더 잘게
-    chapters = subdivide(units, chapters)
-
-    # 각 단위에 소속 권 번호 부여
+    # 각 단위에 소속 화면 번호 부여 (검색 결과에서 그 화면으로 바로 가기 위함)
     if chapters:
-        ci, nxt = 0, (chapters[1]["i"] if len(chapters) > 1 else len(units))
+        ci = 0
         for idx, u in enumerate(units):
             while ci + 1 < len(chapters) and idx >= chapters[ci + 1]["i"]:
                 ci += 1
@@ -3018,6 +3518,7 @@ def build_work(entry):
         "has_source": bool(txt_units),
         "has_translation": bool(dx),
         "chapters": len(chapters),
+        "juan": len(juan),
     })
     if dx:
         gl = pick_glossary(dx["tables"])
@@ -3034,7 +3535,11 @@ def build_work(entry):
         "glossary": gl,
         "front": [x for x in ((drop_prompt(plain_words(f)) if isinstance(f, str) else f)
                               for f in ((dx["front"] + dx["appendix"]) if dx else [])) if x],
-        "chapters": [{"t": c["t"], "i": c["i"]} for c in chapters],
+        "juan": [{"t": j["t"], "i": j["i"], "e": j["e"], **({"cn": j["cn"]} if j.get("cn") else {})}
+                 for j in juan],
+        "chapters": [{"t": c["t"], "i": c["i"], "j": c["j"]} for c in chapters],
+        # 권 판정에서 사람이 확인할 만한 점 (verify.py 가 보고서에 옮긴다)
+        **({"juan_warn": juan_warn} if juan_warn else {}),
         "sections": [{"lv": s["lv"], "t": s["t"], "i": s["i"]} for s in sections],
         "units": units,
     }

@@ -801,20 +801,26 @@ class NgramAnalyzer {
       }
       this.canon.current = { w, doc };
       whole.disabled = false;
-      // 앱은 긴 권을 쪽으로 나눈다(「권 제1 (2) 0003a24–0003c17」). 같은 권의 쪽은 하나로 묶는다.
-      const groups = [];
-      (doc.chapters || []).forEach(c => {
-        const base = String(c.t).replace(/\s*\(\d+\)\s*\S*[–-]\S*\s*$/, '').trim();
-        const last = groups[groups.length - 1];
-        if (last && last.t === base) return;
-        groups.push({ t: base, i: c.i });
-      });
-      groups.forEach((g, k) => { g.end = k + 1 < groups.length ? groups[k + 1].i : doc.units.length; });
+      // N-gram 은 늘 권 단위로 불러온다. 문헌 데이터의 권 목록(juan)을 쓰고,
+      // 화면에서 긴 권을 나눈 것(「권3 (1/2)」)은 여기서는 나누지 않는다.
+      let groups = [];
+      if (Array.isArray(doc.juan)) {
+        groups = doc.juan.map(j => ({ t: j.t, i: j.i, end: j.e }));
+      } else {
+        // 권 목록이 없는 옛 데이터: 쪽으로 나눈 화면(「권 제1 (2) 0003a24–0003c17」)을 권으로 묶는다
+        (doc.chapters || []).forEach(c => {
+          const base = String(c.t).replace(/\s*\(\d+\)\s*\S*[–-]\S*\s*$/, '').trim();
+          const last = groups[groups.length - 1];
+          if (last && last.t === base) return;
+          groups.push({ t: base, i: c.i });
+        });
+        groups.forEach((g, k) => { g.end = k + 1 < groups.length ? groups[k + 1].i : doc.units.length; });
+      }
       this.canon.current.groups = groups;
       document.getElementById('canonJuanWrap').style.display = groups.length > 1 ? '' : 'none';
       juan.innerHTML = groups.map((g, k) =>
-        `<button type="button" class="btn btn-outline-secondary" data-k="${k}">${esc(g.t.replace(/『[^』]*』\s*/g, ''))} ` +
-        `<small class="text-muted">(${g.end - g.i})</small></button>`
+        `<button type="button" class="btn btn-outline-secondary" data-k="${k}">${esc(g.t.replace(/『[^』]*』\s*/g, ''))}` +
+        (Array.isArray(doc.juan) ? '' : ` <small class="text-muted">(${g.end - g.i})</small>`) + `</button>`
       ).join('');
       juan.querySelectorAll('button').forEach(b => b.onclick = () => { this._canonAdd(Number(b.dataset.k)); b.classList.add('added'); });
     } catch {
