@@ -1066,7 +1066,9 @@ async function viewWork(id, anchor, hit) {
   }
 
   // 화면이 곧 권이면 「앞 권·뒤 권」, 긴 권을 나눈 화면이 섞이면 「이전·다음」
-  const oneJuanPerScreen = Array.isArray(doc.juan) && doc.juan.length === chapters.length;
+  // (권이 아니라 목차의 편으로 나눈 문헌은 늘 「이전·다음」)
+  const oneJuanPerScreen = Array.isArray(doc.juan) && doc.juan.length === chapters.length
+    && doc.juan_kind !== 'divisions';
 
   function drawNav() {
     if (chapters.length < 2) return;

@@ -3222,6 +3222,38 @@ def fill_missing_juan(cj, cj_warn, src_juan, n_units):
     return out, warns
 
 
+def juan_from_divisions(units, divs):
+    """registry.json 의 "divisions" 로 문헌을 나눈다(한불전 목차처럼 권이 아닌 편으로 된 문헌).
+    divs = [{"t": 이름, "at": 첫머리 글자, "nth": 몇 번째로 나온 것(기본 1)}, …]
+    첫 항목은 "at" 이 없어도 되며 문헌 맨 앞부터다. 각 "at" 은 그 단위 원문의
+    첫머리(각주 번호 숫자는 빼고)가 이 글자로 시작하는 단위를 앞에서부터 찾는다."""
+    heads = [re.sub(r"[0-9]", "", norm_search(" ".join(u["cn"]))) for u in units]
+    out, warns, cursor = [], [], 0
+    for k, d in enumerate(divs):
+        if k == 0 and not d.get("at"):
+            out.append({"key": None, "t": d["t"], "cn": "", "i": 0})
+            continue
+        at = re.sub(r"[0-9]", "", norm_search(d.get("at", "")))
+        need, idx = d.get("nth", 1), None
+        for i in range(cursor, len(units)):
+            if at and heads[i].startswith(at):
+                need -= 1
+                if need == 0:
+                    idx = i
+                    break
+        if idx is None:
+            warns.append(f"목차 나눔 「{d['t']}」의 첫머리 「{d.get('at')}」를 원문에서 찾지 못함")
+            continue
+        if not out:
+            idx = 0
+        out.append({"key": None, "t": d["t"], "cn": "", "i": idx})
+        cursor = idx + 1
+    out = [j for n, j in enumerate(out) if n == 0 or j["i"] > out[n - 1]["i"]]
+    for k, j in enumerate(out):
+        j["e"] = out[k + 1]["i"] if k + 1 < len(out) else len(units)
+    return out, warns
+
+
 def juan_monotonic(juan):
     keys = [j["key"] for j in juan if j.get("key")]
     return all(juan_order(b) > juan_order(a) for a, b in zip(keys, keys[1:]))
@@ -3787,7 +3819,10 @@ def build_work(entry):
         hj = []
     mj = juan_from_markers(units) if kabc else []
     cj, cj_warn = juan_from_cbeta(units, entry) if not kabc else (None, [])
-    if mj:
+    if entry.get("divisions"):
+        # registry 에 적어 둔 목차 나눔(한불전 목차의 편 따위)이 가장 먼저다
+        juan, juan_warn = juan_from_divisions(units, entry["divisions"])
+    elif mj:
         # 한불전 저본은 위치표지에 권차가 적혀 있어 이것이 가장 확실하다
         juan, juan_warn = mj, []
     elif cj is not None:
@@ -3909,6 +3944,8 @@ def build_work(entry):
         "juan": [{"t": j["t"], "i": j["i"], "e": j["e"], **({"cn": j["cn"]} if j.get("cn") else {})}
                  for j in juan],
         "chapters": [{"t": c["t"], "i": c["i"], "j": c["j"]} for c in chapters],
+        # 권이 아니라 목차의 편으로 나눈 문헌(registry "divisions")은 화면 단추를 「이전·다음」으로
+        **({"juan_kind": "divisions"} if entry.get("divisions") else {}),
         # 권 판정에서 사람이 확인할 만한 점 (verify.py 가 보고서에 옮긴다)
         **({"juan_warn": juan_warn} if juan_warn else {}),
         "sections": [{"lv": s["lv"], "t": s["t"], "i": s["i"]} for s in sections],
