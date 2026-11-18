@@ -119,8 +119,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 11,
-   "juan": 11,
+   "chapters": 10,
+   "juan": 10,
    "canon_full": "T32 no.1668"
   },
   {
@@ -157,8 +157,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2,
-   "juan": 0,
+   "chapters": 20,
+   "juan": 20,
    "canon_full": "T32 no.1669"
   },
   {
@@ -375,8 +375,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T33 no.1700",
    "author_line": "唐 大慈恩寺沙門 基 撰",
    "author_short": "唐 기 찬"
@@ -420,8 +420,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T33 no.1701",
    "author_line": "唐 京大興福寺沙門 宗密 述 · 宋 長水沙門 子璿 治定",
    "author_short": "唐 종밀 술"
@@ -548,8 +548,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 6,
-   "juan": 6,
+   "chapters": 5,
+   "juan": 5,
    "canon_full": "T33 no.1705",
    "author_line": "隋 智顗 說 · 灌頂 記 · 宋 晁說之 序",
    "author_short": "隋 지의 설"
@@ -636,8 +636,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 6,
+   "juan": 6,
    "canon_full": "T33 no.1707",
    "author_line": "隋 吉藏法師 撰",
    "author_short": "隋 길장 찬"
@@ -681,8 +681,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 7,
-   "juan": 7,
+   "chapters": 6,
+   "juan": 6,
    "canon_full": "T33 no.1708",
    "author_line": "唐(신라 출신) 원측 · 西明寺 圓測法師 撰",
    "author_short": "唐(신라 출신) 원측 찬"
@@ -726,8 +726,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 6,
-   "juan": 4,
+   "chapters": 7,
+   "juan": 7,
    "canon_full": "T33 no.1709",
    "author_line": "唐 靑龍寺翻經講論沙門 良賁 奉詔 述",
    "author_short": "唐 양분 술"
@@ -1010,8 +1010,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 22,
-   "juan": 0,
+   "chapters": 33,
+   "juan": 20,
    "canon_full": "T35 no.1733"
   },
   {
@@ -1038,11 +1038,11 @@
    ],
    "verify": false,
    "note": "청량국사 징관(澄觀, 738~839)이 80권본 『화엄경』을 풀이한 주석으로, 흔히 『청량소』로 불린다. 60권. 교기인연부터 수문해석까지 열 문을 세워 경 전체를 해석하며, 같은 찬자의 『화엄경수소연의초』 90권이 이 소를 다시 풀이한 것이다. 법장의 『탐현기』를 이어 화엄교학을 집대성한 저작으로 꼽히며, 권말에 저자의 술회게가 붙어 있다.",
-   "units": 133,
-   "translated": 96,
-   "coverage": 0.9992,
+   "units": 247,
+   "translated": 246,
+   "coverage": 1.0,
    "chars_cn": 637992,
-   "chars_ko": 2163479,
+   "chars_ko": 2163329,
    "range": [
     "0503a06",
     "0955b23"
@@ -1255,8 +1255,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5,
-   "juan": 5,
+   "chapters": 8,
+   "juan": 8,
    "canon_full": "T36 no.1741",
    "author_line": "唐 李通玄 撰",
    "author_short": "唐 이통현 찬"
@@ -1298,7 +1298,7 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 7,
+   "chapters": 6,
    "juan": 6,
    "canon_full": "T37 no.1744",
    "author_line": "隋 吉藏 撰",
@@ -1464,7 +1464,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 20,
-   "juan": 11,
+   "juan": 12,
    "canon_full": "T37 no.1764"
   },
   {
@@ -1879,8 +1879,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 19,
-   "juan": 17,
+   "chapters": 11,
+   "juan": 10,
    "canon_full": "T38 no.1778",
    "author_line": "隋 智顗 說 · 唐 湛然 略",
    "author_short": "隋 지의 설 · 담연 약"
@@ -1923,8 +1923,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 12,
-   "juan": 11,
+   "chapters": 11,
+   "juan": 10,
    "canon_full": "T38 no.1779",
    "author_line": "宋 孤山沙門 智圓 述",
    "author_short": "宋 고산 지원 술"
@@ -2012,7 +2012,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 6,
-   "juan": 5,
+   "juan": 6,
    "canon_full": "T38 no.1781",
    "author_line": "隋 長安弘法寺沙門 吉藏 撰",
    "author_short": "隋 길장 찬"
@@ -2056,8 +2056,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 11,
-   "juan": 11,
+   "chapters": 13,
+   "juan": 12,
    "canon_full": "T38 no.1782",
    "author_line": "唐 大慈恩寺沙門 基 撰",
    "author_short": "唐 기 찬"
@@ -2189,8 +2189,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5,
-   "juan": 5,
+   "chapters": 6,
+   "juan": 6,
    "canon_full": "T39 no.1785",
    "author_line": "隋 天台智者大師 說 · 門人 灌頂 錄",
    "author_short": "隋 지의 설 · 관정 록"
@@ -2234,8 +2234,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 7,
-   "juan": 7,
+   "chapters": 12,
+   "juan": 12,
    "canon_full": "T39 no.1786",
    "author_line": "宋 四明沙門 釋知禮 述",
    "author_short": "宋 사명 지례 술"
@@ -2403,8 +2403,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5,
-   "juan": 3,
+   "chapters": 4,
+   "juan": 4,
    "canon_full": "T39 no.1795",
    "author_line": "唐 宗密 述 · 唐 裴休 序",
    "author_short": "唐 종밀 술"
@@ -2489,7 +2489,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 13,
-   "juan": 9,
+   "juan": 12,
    "canon_full": "T40 no.1804"
   },
   {
@@ -2531,8 +2531,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 17,
-   "juan": 0,
+   "chapters": 25,
+   "juan": 16,
    "canon_full": "T40 no.1805",
    "author_line": "宋 餘杭沙門 釋元照 撰",
    "author_short": "宋 원조 찬"
@@ -2575,7 +2575,7 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
+   "chapters": 2,
    "juan": 2,
    "canon_full": "T40 no.1811",
    "author_line": "隋 天台智者大師 說 · 門人 灌頂 記",
@@ -2618,8 +2618,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4,
-   "juan": 4,
+   "chapters": 3,
+   "juan": 3,
    "canon_full": "T40 no.1812",
    "author_line": "唐 天台 沙門 明曠 刪補",
    "author_short": "唐 명광 산보"
@@ -2660,8 +2660,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4,
-   "juan": 0,
+   "chapters": 6,
+   "juan": 6,
    "canon_full": "T40 no.1813"
   },
   {
@@ -2877,7 +2877,7 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 34,
+   "chapters": 33,
    "juan": 31,
    "canon_full": "T41 no.1822",
    "author_line": "唐 沙門 法寶 撰",
@@ -2921,8 +2921,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 31,
-   "juan": 31,
+   "chapters": 30,
+   "juan": 30,
    "canon_full": "T41 no.1823",
    "author_line": "唐 中大雲寺沙門 圓暉 述",
    "author_short": "唐 원휘 술"
@@ -2965,8 +2965,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 21,
-   "juan": 21,
+   "chapters": 20,
+   "juan": 20,
    "canon_full": "T42 no.1824",
    "author_line": "隋 吉藏 製",
    "author_short": "隋 길장 제"
@@ -3008,8 +3008,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 7,
-   "juan": 7,
+   "chapters": 6,
+   "juan": 6,
    "canon_full": "T42 no.1825",
    "author_line": "隋 吉藏 撰",
    "author_short": "隋 길장 찬"
@@ -3051,8 +3051,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 8,
-   "juan": 6,
+   "chapters": 9,
+   "juan": 9,
    "canon_full": "T42 no.1827",
    "author_line": "隋 吉藏 撰",
    "author_short": "隋 길장 찬"
@@ -3211,8 +3211,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2,
-   "juan": 0,
+   "chapters": 4,
+   "juan": 4,
    "canon_full": "T44 no.1843"
   },
   {
@@ -3251,8 +3251,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T44 no.1844",
    "author_line": "新羅 釋元曉 撰",
    "author_short": "新羅 원효 찬"
@@ -3293,8 +3293,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0,
-   "juan": 0,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T44 no.1845",
    "author_line": "新羅 海東 沙門 元曉 撰",
    "author_short": "新羅 원효 찬"
@@ -3334,8 +3334,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 0,
+   "chapters": 5,
+   "juan": 5,
    "canon_full": "T44 no.1846"
   },
   {
@@ -3662,8 +3662,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4,
-   "juan": 4,
+   "chapters": 3,
+   "juan": 3,
    "canon_full": "T45 no.1854",
    "author_line": "隋 吉藏 撰",
    "author_short": "隋 길장 찬"
@@ -3786,8 +3786,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 10,
-   "juan": 7,
+   "chapters": 9,
+   "juan": 6,
    "canon_full": "T45 no.1861"
   },
   {
@@ -3826,8 +3826,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2,
-   "juan": 0,
+   "chapters": 4,
+   "juan": 4,
    "canon_full": "T45 no.1866"
   },
   {
@@ -3903,8 +3903,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0,
-   "juan": 0,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T45 no.1869"
   },
   {
@@ -4021,8 +4021,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0,
-   "juan": 0,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T45 no.1873",
    "author_line": "唐 법장(?) · 신라 의상 강의록"
   },
@@ -4060,8 +4060,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 0,
-   "juan": 0,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T45 no.1874"
   },
   {
@@ -4504,8 +4504,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 32,
-   "juan": 31,
+   "chapters": 31,
+   "juan": 30,
    "canon_full": "T47 no.1998A · T47 no.1998B"
   },
   {
@@ -4546,8 +4546,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 11,
-   "juan": 10,
+   "chapters": 10,
+   "juan": 9,
    "canon_full": "T48 no.2001",
    "author_line": "宋 天童 宏智 正覺 語 · 門人 集",
    "author_short": "宋 굉지 정각 어"
@@ -4587,8 +4587,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 101,
-   "juan": 101,
+   "chapters": 100,
+   "juan": 100,
    "canon_full": "T48 no.2016"
   },
   {
@@ -4664,8 +4664,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 2,
-   "juan": 0,
+   "chapters": 4,
+   "juan": 4,
    "canon_full": "T51 no.2073"
   },
   {
@@ -4751,7 +4751,7 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 31,
+   "chapters": 30,
    "juan": 30,
    "canon_full": "T52 no.2103",
    "author_line": "唐 麟德元年 西明寺 沙門 釋道宣 撰",
@@ -4795,8 +4795,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 101,
-   "juan": 101,
+   "chapters": 100,
+   "juan": 100,
    "canon_full": "T53 no.2122",
    "author_line": "唐 西明寺 沙門 釋道世 撰",
    "author_short": "唐 도세 찬"
@@ -4882,8 +4882,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5,
-   "juan": 4,
+   "chapters": 4,
+   "juan": 3,
    "canon_full": "T54 no.2127",
    "author_line": "宋 錢塘月輪山居講經論賜紫沙門 道誠 集",
    "author_short": "宋 도성 집"
@@ -5095,8 +5095,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "T85 no.2813"
   },
   {
@@ -5134,8 +5134,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 0,
+   "chapters": 4,
+   "juan": 3,
    "canon_full": "T85 no.2814"
   },
   {
@@ -5259,8 +5259,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 39,
-   "juan": 39,
+   "chapters": 40,
+   "juan": 40,
    "canon_full": "X08 no.236",
    "author_line": "元 蒼山再光寺比丘 普瑞 集",
    "author_short": "元 보서 집"
@@ -5337,8 +5337,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 13,
-   "juan": 13,
+   "chapters": 12,
+   "juan": 12,
    "canon_full": "X9 no.243"
   },
   {
@@ -5375,8 +5375,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 28,
-   "juan": 27,
+   "chapters": 27,
+   "juan": 26,
    "canon_full": "X09 no.245"
   },
   {
@@ -5414,8 +5414,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 21,
-   "juan": 21,
+   "chapters": 20,
+   "juan": 20,
    "canon_full": "X11 no.270"
   },
   {
@@ -5544,8 +5544,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 0,
+   "chapters": 4,
+   "juan": 3,
    "canon_full": "X21 no.368"
   },
   {
@@ -5674,8 +5674,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "X24 no.459",
    "author_line": "唐 六祖 慧能 解義",
    "author_short": "唐 육조 혜능 해의"
@@ -5764,8 +5764,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 4,
-   "juan": 4,
+   "chapters": 3,
+   "juan": 3,
    "canon_full": "X24 no.461",
    "author_line": "宋 冶父 道川 頌 並 著語",
    "author_short": "宋 야보 도천 송"
@@ -5853,8 +5853,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 10,
-   "juan": 10,
+   "chapters": 9,
+   "juan": 9,
    "canon_full": "X24 no.467",
    "author_line": "宋 宗鏡 述 · 明 覺連 重集",
    "author_short": "明 각련 중집"
@@ -6028,7 +6028,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 4,
-   "juan": 3,
+   "juan": 4,
    "canon_full": "X38 no.686",
    "author_line": "唐 崇義寺 僧 勝莊 撰",
    "author_short": "唐 승장 찬"
@@ -6200,7 +6200,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 22,
-   "juan": 19,
+   "juan": 20,
    "canon_full": "X41 no.731",
    "author_line": "唐 沙門 法礪 撰",
    "author_short": "唐 법려 찬"
@@ -6289,7 +6289,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 34,
-   "juan": 29,
+   "juan": 28,
    "canon_full": "X42 no.736",
    "author_line": "唐 江東杭州華嚴寺沙門 大覺 撰",
    "author_short": "唐 대각 찬"
@@ -6451,7 +6451,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 2,
-   "juan": 0,
+   "juan": 2,
    "canon_full": "X45 no.759"
   },
   {
@@ -6536,7 +6536,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 4,
-   "juan": 3,
+   "juan": 4,
    "canon_full": "X45 no.771",
    "author_line": "唐 沙門 法敏 集",
    "author_short": "唐 법민 집"
@@ -6665,8 +6665,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5,
-   "juan": 5,
+   "chapters": 4,
+   "juan": 4,
    "canon_full": "X46 no.775",
    "author_line": "遼 志福 撰 · 天佑皇帝 御製 引文",
    "author_short": "遼 지복 찬"
@@ -6706,7 +6706,7 @@
    "has_source": true,
    "has_translation": true,
    "chapters": 9,
-   "juan": 6,
+   "juan": 7,
    "canon_full": "X46 no.784"
   },
   {
@@ -6791,8 +6791,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 0,
+   "juan": 0,
    "canon_full": "X49 no.810",
    "author_line": "唐 智周(周法師) 述",
    "author_short": "唐 지주 술"
@@ -6873,8 +6873,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 8,
-   "juan": 5,
+   "chapters": 10,
+   "juan": 7,
    "canon_full": "X53 no.836",
    "author_line": "唐 神泰 述",
    "author_short": "唐 신태 술"
@@ -7000,8 +7000,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 7,
-   "juan": 4,
+   "chapters": 6,
+   "juan": 6,
    "canon_full": "X53 no.839",
    "author_line": "唐 慧暉 述",
    "author_short": "唐 혜휘 술"
@@ -7043,8 +7043,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 31,
-   "juan": 30,
+   "chapters": 29,
+   "juan": 28,
    "canon_full": "X53 no.841",
    "author_line": "唐 遁麟 述",
    "author_short": "唐 둔린 술"
@@ -7085,8 +7085,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "X53 no.842",
    "author_line": "某 補作",
    "author_short": "찬자 미상"
@@ -7211,8 +7211,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 3,
-   "juan": 3,
+   "chapters": 2,
+   "juan": 2,
    "canon_full": "X56 no.932",
    "author_line": "唐 剡川 明曠 記",
    "author_short": "唐 섬천 명광 기"
@@ -7466,8 +7466,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 5,
-   "juan": 5,
+   "chapters": 4,
+   "juan": 4,
    "canon_full": "L141 no.1600"
   },
   {
@@ -7494,19 +7494,19 @@
    ],
    "verify": false,
    "note": "원(元) 임제종 승려 중봉명본(中峰明本, 1263~1323)의 어록·법어·시문을 모은 총서. 명본은 자가 환주(幻住), 호가 중봉이며 고봉원묘(高峰原妙)의 법을 이어 만년에 천목산에 머물렀다. 문인 북정자적(北庭慈寂, 몽골식 이름 善達密的理)이 30권으로 엮었고, 원통(元統) 2년(1334) 명본에게 보응국사(普應國師)의 시호가 내려지면서 함께 입장(入藏)이 허락되었다. 권수에 자적이 올린 「進天目中峯和尚廣錄表」가 실려 있다. 원문 표제는 '天目中峯和尚廣錄'이나 CBETA 목록은 '天目中峰廣錄'으로 표기한다. 30권.",
-   "units": 2860,
-   "translated": 1374,
+   "units": 2864,
+   "translated": 1381,
    "coverage": 0.859,
    "chars_cn": 211064,
-   "chars_ko": 607563,
+   "chars_ko": 607556,
    "range": [
     "0687a02",
     "0983a05"
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 40,
-   "juan": 40,
+   "chapters": 39,
+   "juan": 39,
    "canon_full": "B25 no.145"
   },
   {
@@ -8659,8 +8659,8 @@
    ],
    "has_source": true,
    "has_translation": true,
-   "chapters": 16,
-   "juan": 12,
+   "chapters": 30,
+   "juan": 30,
    "canon_full": "韓佛全 11",
    "author_line": "高麗 沙門 守其 等 奉勅校勘",
    "author_short": "高麗 수기 등 교감"
@@ -8847,8 +8847,8 @@
  ],
  "totals": {
   "works": 209,
-  "units": 230170,
-  "translated": 226020,
+  "units": 230288,
+  "translated": 226177,
   "chars_cn": 22189858
  }
 }
