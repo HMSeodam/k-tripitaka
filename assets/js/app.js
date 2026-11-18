@@ -719,6 +719,30 @@ function closeNote() {
 
 document.addEventListener('click', closeNote);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNote(); });
+
+/* 서지 · 용어표 · 해제 서랍
+   펼친 뒤 서랍 바깥 어디를 누르면(본문·단추·위쪽 바 등) 저절로 접힌다.
+   서랍 안에서 읽거나 손가락으로 끌어 스크롤하는 동안은 그대로 둔다
+   (끌어서 스크롤하면 'click'이 생기지 않는다). Esc 로도 접힌다.
+   이체자 글자(.gj) 처리처럼 전파를 막는 손잡이보다 먼저 받도록 capture 로 건다. */
+function closeBiblio(except) {
+  const d = document.querySelector('.biblio[open]');
+  if (!d || (except && d.contains(except))) return;
+  d.open = false;
+  const bar = d.closest('.docbar');
+  if (bar) bar.scrollTop = 0;          // 길게 내려 읽던 서랍을 접으면 막대도 처음으로
+}
+document.addEventListener('click', e => closeBiblio(e.target), true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBiblio(); });
+// 서랍이 열려 있는 동안 본문을 옅게 가린다(가린 곳을 누르면 접힘 — 본문 단추가 잘못 눌리지 않게).
+// 'toggle' 은 거품이 일지 않으므로 capture 로 받는다.
+document.addEventListener('toggle', e => {
+  if (e.target.matches?.('.biblio')) document.body.classList.toggle('biblio-on', e.target.open);
+}, true);
+window.addEventListener('hashchange', () => {
+  closeBiblio();
+  document.body.classList.remove('biblio-on');   // 화면이 바뀌어 서랍이 사라진 경우까지
+});
 window.addEventListener('scroll', closeNote, true);
 window.addEventListener('hashchange', closeNote);
 
@@ -968,6 +992,11 @@ async function viewWork(id, anchor, hit) {
     doc.front.forEach(t => fr.append(el('p', null, t)));
     info.append(fr);
   }
+  // 끝까지 읽은 자리에서 바로 접을 수 있게
+  const fold = el('button', 'biblio-fold', '접기 ▴');
+  fold.type = 'button';
+  fold.addEventListener('click', () => closeBiblio());
+  info.append(fold);
   drawer.append(info);
   bar.append(drawer);
 

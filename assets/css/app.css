@@ -398,6 +398,17 @@ mark{background:var(--amber-wash);color:var(--amber);padding:0 .1em;border-radiu
 .biblio>summary::before{content:"▸ ";color:var(--celadon)}
 .biblio[open]>summary::before{content:"▾ "}
 .biblio>summary:hover{color:var(--celadon-deep)}
+/* 펼친 서랍: 화면을 다 덮지 않게 높이를 70%로 묶어 아래 본문(가린 곳)을 눌러 닫을 자리를 남긴다.
+   제목 줄은 서랍 안에서 스크롤해도 위에 붙어 있어 언제든 다시 눌러 접을 수 있다. */
+.docbar:has(.biblio[open]){max-height:min(70vh,calc(100vh - var(--top) - var(--tabh,0px) - 44px));
+  max-height:min(70dvh,calc(100dvh - var(--top) - var(--tabh,0px) - 44px))}
+.biblio[open]>summary{position:sticky;top:-.55rem;z-index:2;display:block;
+  margin:-.55rem 0 .4rem;padding:.55rem 0 .35rem;background:rgb(246,248,245)}
+body.biblio-on::after{content:'';position:fixed;inset:0;z-index:29;
+  background:rgba(14,31,38,.18)}
+.biblio-fold{display:block;margin:.3rem auto .2rem;padding:.3rem .9rem;font-size:.78rem;
+  color:var(--ink-3);border:1px solid var(--mist);border-radius:var(--radius);background:var(--paper-2)}
+.biblio-fold:hover{border-color:var(--celadon);color:var(--celadon-deep);background:var(--celadon-wash)}
 .meta-table{width:100%;border-collapse:collapse;font-size:.86rem;margin:.4rem 0 .8rem}
 .meta-table th,.meta-table td{text-align:left;padding:.42rem .6rem;border-bottom:1px solid var(--mist-2);vertical-align:top}
 .meta-table th{width:8.5rem;color:var(--ink-3);font-weight:500;white-space:nowrap}
@@ -462,6 +473,7 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .brand-sub{display:none}
   /* 좁은 화면: 첫 줄 = 이름 · 도구 · 업데이트, 둘째 줄 = 검색창 */
   :root{--top:102px}
+  :root{--tabh:calc(56px + env(safe-area-inset-bottom))}   /* 아래 탭바 높이(서랍 높이 계산용) */
   .topbar{display:grid;grid-template-columns:auto 1fr auto auto;
     grid-template-areas:"brand . links upd" "search search search search";
     align-content:center;row-gap:.45rem;column-gap:.35rem;padding:.4rem .8rem}
