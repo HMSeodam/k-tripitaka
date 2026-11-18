@@ -28,16 +28,29 @@ const state = {
 
 const worker = new Worker(BASE + 'assets/js/search.worker.js', { type: 'classic' });
 const pending = new Map();
+let onSearchUpdate = null;   // 색인 검색의 뒤이은 확인 결과를 받는 곳(지금 화면의 검색만)
 worker.onmessage = e => {
   const { type, token, payload } = e.data;
+  if (type === 'update') {
+    if (onSearchUpdate && token === state.token) onSearchUpdate(payload);
+    return;
+  }
   const h = pending.get(token);
-  if (h && type === 'result') { h(payload); pending.delete(token); }
+  if (h && (type === 'result' || type === 'snips')) { h(payload); pending.delete(token); }
 };
 function search(query, ids, scope, variants = true) {
   const token = ++state.token;
   return new Promise(res => {
     pending.set(token, res);
     worker.postMessage({ type:'search', token, payload:{ query, ids, base:BASE, scope, variants, limit:0 } });
+  });
+}
+let snipToken = 1e9;
+function searchSnips(query, variants, hits) {
+  const token = ++snipToken;
+  return new Promise(res => {
+    pending.set(token, res);
+    worker.postMessage({ type:'snips', token, payload:{ query, variants, base:BASE, hits } });
   });
 }
 
@@ -1232,10 +1245,44 @@ async function viewSearch(q, scope) {
   const list = el('div', 'hits'); main.append(list);
 
   const ids = m.works.map(w => w.id);
-  const { hits, counts } = await search(q, ids, scope, state.variants);
+  const myToken = state.token + 1;
+  const res = await search(q, ids, scope, state.variants);
+  if (state.token !== myToken) return;               // 그 사이 다른 검색이 시작됨
+  let hits = res.hits;
+  let counts = res.counts;
+  let approx = !!res.approx, capped = false, progress = null, capBytes = 0;
+  const byG = new Map();
+  for (const h of hits) {
+    if (h.g !== undefined) byG.set(h.g, h);
+    if (!h.title) {
+      const wk = m.works.find(x => x.id === h.work);
+      if (wk) h.title = wk.title_cn;
+    }
+  }
+  const variants = state.variants;
 
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  $('#resN').textContent = total ? `${total.toLocaleString()}곳` : '';
+  let total = Object.values(counts).reduce((a, b) => a + b, 0);
+  function showN() {
+    const n = $('#resN');
+    if (!n) return;
+    if (!total) { n.textContent = ''; return; }
+    n.innerHTML = '';
+    if (approx && capped) {
+      // 흔한 말: 글자 조각이 모두 든 단위(후보)만 셌다. 보이는 쪽은 그때그때 확인한다.
+      n.append(`후보 ${total.toLocaleString()}곳 · 정확한 수는 아직 셈하지 않음 `);
+      const b = el('button', 'verify-all',
+        `모두 확인(약 ${Math.max(1, Math.round(capBytes / 1e6))}MB 받음)`);
+      b.onclick = () => {
+        capped = false; progress = [0, 1]; stopFill = false; emptyRounds = 0; showN();
+        worker.postMessage({ type: 'verify', token: myToken });
+      };
+      n.append(b);
+    } else if (approx) {
+      n.textContent = `${total.toLocaleString()}곳 · 확인 중`
+        + (progress ? ` ${Math.round(progress[0] / Math.max(1, progress[1]) * 100)}%` : '');
+    } else n.textContent = `${total.toLocaleString()}곳`;
+  }
+  showN();
 
   if (!total) {
     list.innerHTML = `<div class="empty"><b>찾은 곳이 없습니다</b>
@@ -1248,9 +1295,74 @@ async function viewSearch(q, scope) {
     b.onclick = () => { state.facet = state.facet === id ? null : id; draw(); [...facets.children].forEach(c => c.classList.remove('on')); if (state.facet) b.classList.add('on'); };
     return b;
   };
-  facets.append(mkFacet(`전체 ${total}`, null));
-  m.works.filter(w => counts[w.id]).forEach(w =>
-    facets.append(mkFacet(`${w.title_ko} ${counts[w.id]}`, w.id)));
+  function drawFacets() {
+    facets.innerHTML = '';
+    facets.append(mkFacet(`전체 ${total}`, null));
+    m.works.filter(w => counts[w.id]).forEach(w =>
+      facets.append(mkFacet(`${w.title_ko} ${counts[w.id]}`, w.id)));
+  }
+  drawFacets();
+
+  // 색인 검색: 화면에 보일 결과의 앞뒤 문맥을 그때그때 받아 오고,
+  // 3자 이상 검색은 뒤에서 후보를 확인해 맞지 않는 곳을 뺀다.
+  function recount() {
+    counts = {};
+    for (const h of hits) counts[h.work] = (counts[h.work] || 0) + 1;
+    total = hits.length;
+    showN();
+    drawFacets();
+  }
+  function removeHits(gs) {
+    if (!gs.size) return;
+    hits = hits.filter(h => !gs.has(h.g));
+    shown = shown.filter(h => !gs.has(h.g));
+    recount();
+  }
+  onSearchUpdate = p => {
+    if (!list.isConnected) {                 // 검색 화면을 떠났으면 뒤의 확인을 멈춘다
+      onSearchUpdate = null;
+      worker.postMessage({ type: 'stop' });
+      return;
+    }
+    const drop = new Set();
+    for (const [g, where] of p.changes) {
+      const h = byG.get(g);
+      if (!h) continue;
+      if (where) { h.where = where; h.pending = false; } else drop.add(g);
+    }
+    if (p.done) {
+      approx = !!p.capped; capped = !!p.capped;
+      if (p.bytes) capBytes = p.bytes;
+      if (!p.capped && stopFill) { stopFill = false; emptyRounds = 0; drop.add(-1); }  // 다시 그리기
+    }
+    progress = p.progress || progress;
+    if (drop.size) { removeHits(drop); render(); }
+    else showN();
+  };
+  let snipBusy = false, emptyRounds = 0, stopFill = false;
+  async function fillSnips(slice) {
+    const need = slice.filter(h => h.g !== undefined && !h.snip && !h.dropped);
+    if (!need.length || snipBusy || stopFill) return;
+    snipBusy = true;
+    const out = await searchSnips(q, variants, need.map(h => ({ g: h.g, work: h.work, k: h.k,
+      where: h.where, pending: h.pending, c: h.c, o: h.o })));
+    snipBusy = false;
+    if (state.token !== myToken || !list.isConnected) return;
+    const drop = new Set();
+    for (const r of out) {
+      const h = byG.get(r.g);
+      if (!h) continue;
+      if (r.drop) { h.dropped = true; drop.add(r.g); continue; }
+      if (r.error) { h.snip = { pre: '', hit: '(미리보기를 불러오지 못했습니다)', post: '' }; continue; }
+      Object.assign(h, { i: r.i, m: r.m, where: r.where, snip: r.snip, alt: r.alt, pending: false });
+    }
+    // 한 쪽의 후보가 거듭 모두 빠지면(흔한 글자를 이체자 접기 없이 찾을 때 등)
+    // 끝없이 받아 오지 않도록 멈추고 ‘모두 확인’에 맡긴다
+    emptyRounds = (drop.size && drop.size === need.length) ? emptyRounds + 1 : 0;
+    if (emptyRounds >= 3) stopFill = true;
+    removeHits(drop);
+    render();
+  }
 
   // 결과가 수천 곳에 이를 수 있으므로 쪽 단위로 나눠 보여 준다.
   const PER_OPTIONS = [10, 20, 30, 50, 100];
@@ -1260,8 +1372,10 @@ async function viewSearch(q, scope) {
 
   function hitNode(h) {
     const a = el('a', 'hit');
-    a.href = `#/w/${h.work}/${h.m || 'u' + h.i}`
-      + `?q=${encodeURIComponent(q)}&in=${h.where}&u=${h.i}`;
+    a.href = (h.m || h.i !== undefined)
+      ? `#/w/${h.work}/${h.m || 'u' + h.i}` + `?q=${encodeURIComponent(q)}&in=${h.where}&u=${h.i}`
+      : `#/w/${h.work}`;                       // 미리보기를 받기 전
+
     const top = el('div', 'hit-top');
     const wk = m.works.find(x => x.id === h.work);
     top.innerHTML = `<b>${esc(h.title || h.title_cn || '')}</b>
@@ -1272,7 +1386,9 @@ async function viewSearch(q, scope) {
     const p = el('p', h.where === 'cn' ? 'hit-cn' : 'hit-ko');
     p.innerHTML = h.snip
       ? `${esc(h.snip.pre)}<mark>${esc(h.snip.hit)}</mark>${esc(h.snip.post)}`
-      : '';
+      : (h.g !== undefined
+        ? `<span class="hit-wait">${stopFill ? '확인하지 않은 후보 — 위의 ‘모두 확인’을 누르면 맞는 곳만 남깁니다' : '미리보기를 불러오는 중…'}</span>`
+        : '');
     a.append(p);
     if (h.alt) {
       const q2 = el('p', h.where === 'cn' ? 'hit-ko' : 'hit-cn');
@@ -1347,6 +1463,7 @@ async function viewSearch(q, scope) {
     const frag = document.createDocumentFragment();
     slice.forEach(h => frag.append(hitNode(h)));
     list.append(frag);
+    fillSnips(slice);
 
     drawPager(pages);
     if (!pager.isConnected) main.append(pager);

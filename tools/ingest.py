@@ -2249,6 +2249,25 @@ def merge(txt_units, dx):
                 return i
         return None
 
+    last_owner = [0]                         # 바로 앞 docx 단위가 붙은 자리
+
+    def resolve_title(piece, r_old):
+        """권 표제 줄 하나만 담은 docx 단위(「…卷第一」)의 자리 바로잡기.
+        같은 글자가 여는 줄·닫는 줄로 두 번 나오고 앞머리 열쇠(head_key)는 「…卷第」까지만
+        보아 卷第二·卷第三을 가르지 못한다. 그래서 원래 찾은 자리가 앞 단위보다 뒤로 가거나
+        글자가 다르면(연의초: 닫는 줄 번역 「권제1.」이 여는 줄에 붙고 뒤가 한 권씩 밀림)
+        바로 앞 docx 단위가 붙은 자리 뒤에서 글자가 같은 표제 줄을 찾는다."""
+        np_ = norm_search(RE_INLINE_NOTE.sub("", piece))
+        if not (6 <= len(np_) <= 40 and parse_juan_line(np_)):
+            return r_old
+        lo = last_owner[0]
+        if r_old is not None and r_old >= lo and np_ in flat[r_old]:
+            return r_old
+        for i in range(lo, min(lo + 60, len(flat))):
+            if np_ in flat[i] and len(flat[i]) <= len(np_) + 6:
+                return i
+        return r_old
+
     def resolve(piece):
         # 본문 앞머리가 가장 확실한 단서이므로 먼저 본다
         k = head_key(piece)
@@ -2276,6 +2295,10 @@ def merge(txt_units, dx):
             # 시작 자리는 첫 원문 조각이 정한다. 뒤 조각이 우연히 앞쪽 글귀와
             # 맞아떨어져 덩어리 전체가 앞으로 끌려가는 것을 막는다.
             first = resolve(u["cn"][0])
+            if len(u["cn"]) == 1 and "\n" not in u["cn"][0]:
+                t_ = resolve_title(u["cn"][0], first)
+                if t_ != first:
+                    first, targets = t_, [t_]
             pieces = list(u["cn"])
             # 아래 둘은 '어디까지 걸치는가'만 넓힌다. 시작 자리는 바꾸지 않는다.
             #  · docx 원문 조각이 줄바꿈으로 여러 행을 담고 있을 때
@@ -2324,6 +2347,7 @@ def merge(txt_units, dx):
         targets = [t for t in targets if t - owner <= span_max]
         last = targets[-1]
         taken.update(targets)
+        last_owner[0] = owner
         dxmap[dxi] = owner
         owners.add(owner)
         spans.append((owner, last))

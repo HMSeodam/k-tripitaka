@@ -451,8 +451,304 @@ function kwic(raw, kind, needle, pad, folding = true){
   };
 }
 
+/* ─── 색인 검색 ──────────────────────────────────────────
+   data/search/ 의 글자 조각 색인(1자·2자 → 단위 번호)으로 후보 단위를 고르고,
+   3자 이상이거나 이체자 접기를 끈 검색은 후보 단위의 본문 묶음만 받아 확인한다.
+   색인이 없으면(로컬 개발 등) 아래의 전체 훑기로 돌아간다. */
+let META;                       // undefined: 아직 모름 · null: 색인 없음
+const SHARD = new Map();        // 'cn2/17' → Promise<{dir, blob}>
+const CHUNK = new Map();        // 'cn/wid/3' → Promise<array>
+const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힣]/;
+let VERIFY_TOKEN = 0;           // 새 검색이 시작되면 이전 확인 작업을 멈춘다
+
+async function getMeta(base){
+  if (META !== undefined) return META;
+  try {
+    const r = await fetch(`${base}data/search/meta.json`, { cache: 'no-cache' });
+    META = r.ok ? await r.json() : null;
+  } catch (e) { META = null; }
+  if (META){
+    META.info = META.works.map(([id, b, n, starts]) => ({ id, base: b, n, starts }));
+    META.byId = new Map(META.info.map((w, ix) => [w.id, ix]));
+  }
+  return META;
+}
+
+async function gunzip(buf){
+  const u = new Uint8Array(buf);
+  if (u[0] !== 0x1f || u[1] !== 0x8b) return u;          // 서버가 이미 풀어 보낸 경우
+  const st = new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+
+function fnv(key){
+  let h = 0x811c9dc5;
+  for (const b of new TextEncoder().encode(key)){
+    h ^= b;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+
+function shard(name, s, base){
+  const k = `${name}/${s}`;
+  if (!SHARD.has(k)) SHARD.set(k, (async () => {
+    const r = await fetch(`${base}data/search/${name}/${s}.bin?v=${META.built}`);
+    if (!r.ok) throw new Error('색인 파일을 받지 못함: ' + k);
+    const u = await gunzip(await r.arrayBuffer());
+    const dv = new DataView(u.buffer, u.byteOffset, u.byteLength);
+    const td = new TextDecoder();
+    let p = 0;
+    const n = dv.getUint32(p, true); p += 4;
+    const dir = new Map();
+    for (let i = 0; i < n; i++){
+      const kl = u[p]; p += 1;
+      const key = td.decode(u.subarray(p, p + kl)); p += kl;
+      dir.set(key, [dv.getUint32(p, true), dv.getUint32(p + 4, true), dv.getUint32(p + 8, true)]);
+      p += 12;
+    }
+    return { dir, blob: u.subarray(p) };
+  })().catch(e => { SHARD.delete(k); throw e; }));
+  return SHARD.get(k);
+}
+
+async function postings(name, key, base){
+  const sh = await shard(name, fnv(key) % META.shards[name], base);
+  const e = sh.dir.get(key);
+  if (!e) return new Int32Array(0);
+  const [cnt, off, len] = e;
+  const out = new Int32Array(cnt), b = sh.blob, end = off + len;
+  let p = off, last = -1, i = 0;
+  while (p < end){
+    let v = 0, sft = 0, c;
+    do { c = b[p++]; v += (c & 0x7f) * 2 ** sft; sft += 7; } while (c & 0x80);
+    last += v;
+    out[i++] = last;
+  }
+  return out;
+}
+
+function intersect(a, b){
+  const out = [];
+  let i = 0, j = 0;
+  while (i < a.length && j < b.length){
+    if (a[i] === b[j]){ out.push(a[i]); i++; j++; }
+    else if (a[i] < b[j]) i++;
+    else j++;
+  }
+  return Int32Array.from(out);
+}
+
+function locate(g){                       // 전체 단위 번호 → [문헌 순번, 문헌 안 순번]
+  const W = META.info;
+  let lo = 0, hi = W.length - 1;
+  while (lo < hi){
+    const mid = (lo + hi + 1) >> 1;
+    if (W[mid].base <= g) lo = mid; else hi = mid - 1;
+  }
+  return [lo, g - W[lo].base];
+}
+
+function chunkNo(w, k){
+  const s = w.starts;
+  let lo = 0, hi = s.length - 1;
+  while (lo < hi){
+    const mid = (lo + hi + 1) >> 1;
+    if (s[mid] <= k) lo = mid; else hi = mid - 1;
+  }
+  return lo;
+}
+
+function chunk(field, w, c, base){
+  const key = `${field}/${w.id}/${c}`;
+  if (!CHUNK.has(key)){
+    if (CHUNK.size > 600) CHUNK.delete(CHUNK.keys().next().value);
+    CHUNK.set(key, (async () => {
+      const r = await fetch(`${base}data/search/t/${field}/${w.id}/${c}.bin?v=${META.built}`);
+      if (!r.ok) throw new Error('본문 묶음을 받지 못함: ' + key);
+      return JSON.parse(new TextDecoder().decode(await gunzip(await r.arrayBuffer())));
+    })().catch(e => { CHUNK.delete(key); throw e; }));
+  }
+  return CHUNK.get(key);
+}
+
+async function fieldText(field, h, base){  // 한쪽 본문만(확인용)
+  const w = META.info[h.wi];
+  const c = chunkNo(w, h.k), off = h.k - w.starts[c];
+  const a = await chunk(field, w, c, base);
+  return field === 'cn' ? a[off][2] : a[off];
+}
+
+async function unitText(h, base){         // → {i, m, cn, ko}
+  const w = META.info[h.wi];
+  const c = chunkNo(w, h.k), off = h.k - w.starts[c];
+  const [cnA, koA] = await Promise.all([chunk('cn', w, c, base), chunk('ko', w, c, base)]);
+  const [i, m, cn] = cnA[off];
+  return { i, m, cn, ko: koA[off] };
+}
+
+/* 후보 단위의 본문을 보고 실제로 맞는지, 맞으면 원문·번역 어느 쪽인지 정한다 */
+function judge(h, t, Q){
+  if (h.c && (h.c === 1 || normCN(t.cn, Q.folding).includes(Q.qcn))) return 'cn';
+  if (h.o && (h.o === 1 || normKO(t.ko).includes(Q.qko))) return 'ko';
+  return null;
+}
+
+async function pool(items, n, fn){
+  let i = 0;
+  const run = async () => { while (i < items.length){ const x = items[i++]; await fn(x); } };
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, run));
+}
+
+async function indexSearch(P, token){
+  const { query, ids, base, scope } = P;
+  if (!(await getMeta(base))) return null;
+  const folding = P.variants !== false;
+  const Q = { folding, qcn: normCN(query, folding), qko: normKO(query) };
+  const qcnF = normCN(query, true);
+  const sets = {};
+  const look = async (field, q) => {
+    const cps = [...q];
+    const one = cps.length === 1;
+    const keys = one ? [cps[0]] : [...new Set(cps.slice(0, -1).map((c, i) => c + cps[i + 1]))];
+    const lists = await Promise.all(keys.map(k => postings(field + (one ? '1' : '2'), k, base)));
+    lists.sort((a, b) => a.length - b.length);
+    let s = lists[0];
+    for (let i = 1; i < lists.length && s.length; i++) s = intersect(s, lists[i]);
+    // 1자·2자는 색인만으로 정확하다(이체자 접기를 끈 원문 검색은 확인이 필요)
+    const exact = cps.length <= 2 && !(field === 'cn' && !folding);
+    return { s, state: exact ? 1 : 2 };
+  };
+  if (scope !== 'ko' && qcnF && !HANGUL.test(qcnF)) sets.cn = await look('cn', qcnF);
+  if (scope !== 'cn' && Q.qko) sets.ko = await look('ko', Q.qko);
+
+  const allow = new Set(ids.map(id => META.byId.get(id)).filter(x => x !== undefined));
+  const hits = new Map();
+  for (const [f, { s, state }] of Object.entries(sets)){
+    for (const g of s){
+      let h = hits.get(g);
+      if (!h){
+        const [wi, k] = locate(g);
+        if (!allow.has(wi)) continue;
+        h = { g, wi, k, c: 0, o: 0 };
+        hits.set(g, h);
+      }
+      if (f === 'cn') h.c = state; else h.o = state;
+    }
+  }
+  const list = [...hits.values()].sort((a, b) => a.g - b.g);
+  for (const h of list){
+    h.where = h.c ? 'cn' : 'ko';
+    h.pending = (h.c === 2) || (!h.c && h.o === 2);
+  }
+  return { list, Q };
+}
+
+function publicHit(h){
+  return { g: h.g, work: META.info[h.wi].id, k: h.k, where: h.where, pending: h.pending };
+}
+
+/* 후보를 본문 묶음 단위로 모아 확인한다. 받아야 할 양이 많으면(흔한 말)
+   저절로 확인하지 않고 화면에 '모두 확인' 단추를 낸다(휴대폰 데이터 보호). */
+const VERIFY_MAX_BYTES = 12e6;
+let LAST = null;                          // 마지막 검색(‘모두 확인’ 단추용)
+function planVerify(list){
+  const groups = new Map();
+  let bytes = 0;
+  for (const h of list){
+    if (!h.pending) continue;
+    const field = h.c === 2 ? 'cn' : 'ko';
+    const w = META.info[h.wi];
+    const key = `${field}/${h.wi}/${chunkNo(w, h.k)}`;
+    if (!groups.has(key)){ groups.set(key, []); bytes += META['avg_' + field] || 8000; }
+    groups.get(key).push(h);
+  }
+  return { groups, bytes };
+}
+async function verifyAll(list, Q, base, token, vt, force){
+  const { groups, bytes } = planVerify(list);
+  if (!groups.size) return;
+  if (!force && bytes > VERIFY_MAX_BYTES){
+    self.postMessage({ type: 'update', token, payload: { changes: [], done: true, capped: true, bytes } });
+    return;
+  }
+  let changes = [], last = Date.now(), seen = 0;
+  const flush = (done) => {
+    self.postMessage({ type: 'update', token, payload: { changes, done, capped: false,
+                       progress: [seen, groups.size] } });
+    changes = []; last = Date.now();
+  };
+  await pool([...groups.values()], 6, async hs => {
+    if (vt !== VERIFY_TOKEN) return;
+    for (const h of hs){
+      if (!h.pending) continue;
+      let where = null;
+      try {
+        if (h.c === 2 && normCN(await fieldText('cn', h, base), Q.folding).includes(Q.qcn)) where = 'cn';
+        else if (h.o === 1) where = 'ko';
+        else if (h.o === 2 && normKO(await fieldText('ko', h, base)).includes(Q.qko)) where = 'ko';
+      } catch (e) { continue; }
+      h.pending = false;
+      changes.push([h.g, where]);
+    }
+    seen++;
+    if (Date.now() - last > 400) flush(false);
+  });
+  if (vt === VERIFY_TOKEN) flush(true);
+}
+
+/* 결과 화면에 보일 단위의 미리보기(앞뒤 문맥)를 만든다 */
+async function snips(P){
+  const { hits, base } = P;
+  const Q = { folding: P.variants !== false, qcn: normCN(P.query, P.variants !== false), qko: normKO(P.query) };
+  await getMeta(base);
+  return Promise.all(hits.map(async x => {
+    const wi = META.byId.get(x.work);
+    const h = { g: x.g, wi, k: x.k, c: x.c, o: x.o };
+    let t;
+    try { t = await unitText(h, base); } catch (e) { return { g: x.g, error: true }; }
+    const where = x.pending ? judge(h, t, Q) : x.where;
+    if (!where) return { g: x.g, drop: true };
+    const snip = where === 'cn' ? kwic(t.cn, 'cn', Q.qcn, 22, Q.folding) : kwic(t.ko, 'ko', Q.qko, 34);
+    return {
+      g: x.g, i: t.i, m: t.m, where, snip,
+      alt: where === 'cn' ? (t.ko ? t.ko.slice(0, 90) : '') : (t.cn ? t.cn.replace(MARKER, '').slice(0, 60) : '')
+    };
+  }));
+}
+
 self.onmessage = async (ev) => {
   const { type, payload, token } = ev.data;
+
+  if (type === 'stop'){ VERIFY_TOKEN++; return; }
+  if (type === 'verify'){                 // ‘모두 확인’ 단추
+    if (LAST && LAST.token === token) verifyAll(LAST.list, LAST.Q, LAST.base, token, VERIFY_TOKEN, true);
+    return;
+  }
+
+  if (type === 'snips'){
+    let out = [];
+    try { out = await snips(payload); } catch (e) {}
+    self.postMessage({ type: 'snips', token, payload: out });
+    return;
+  }
+
+  if (type === 'search' && payload.index !== false){
+    const vt = ++VERIFY_TOKEN;
+    let r = null;
+    try { r = await indexSearch(payload, token); } catch (e) { r = null; }
+    if (r){
+      const hits = r.list.map(publicHit);
+      for (let i = 0; i < hits.length; i++){ hits[i].c = r.list[i].c; hits[i].o = r.list[i].o; }
+      const counts = {};
+      for (const h of hits) counts[h.work] = (counts[h.work] || 0) + 1;
+      self.postMessage({ type: 'result', token, payload: { hits, counts, indexed: true,
+                         approx: hits.some(h => h.pending) } });
+      LAST = { list: r.list, Q: r.Q, base: payload.base, token };
+      verifyAll(r.list, r.Q, payload.base, token, vt, false);
+      return;
+    }
+  }
 
   if (type === 'warm'){
     for (const id of payload.ids){ try { await load(id, payload.base); } catch(e){} }

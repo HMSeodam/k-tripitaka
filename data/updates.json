@@ -3,6 +3,13 @@
   "updates": [
     {
       "date": "2026-11-18",
+      "title": "검색이 빨라졌습니다",
+      "added": [],
+      "changed": [],
+      "memo": "처음 검색할 때 모든 문헌을 내려받던 방식을 바꾸어, 찾는 말이 든 부분만 받아 옵니다. 휴대폰에서도 몇 초 안에 결과가 나옵니다. 아주 흔한 말은 먼저 후보 수를 보여 드리고, ‘모두 확인’을 누르면 정확한 곳 수를 셉니다."
+    },
+    {
+      "date": "2026-11-18",
       "title": "권 나눔 보완",
       "added": [],
       "changed": ["seongyusik-hakgi", "gusaron-songsogi", "yeolban-jiphae", "haengsacho-bi", "cheonmok-jungbong-gwangnok", "sa-ron-hyeonuigi", "gisin-uigi", "hwaeom-jeongi"],

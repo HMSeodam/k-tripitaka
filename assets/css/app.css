@@ -375,6 +375,8 @@ body.hide-cn .split .kobox{grid-column:2;grid-row:1}
 .hit-top .m{font-family:var(--mono);color:var(--indigo)}
 .hit-cn{font-family:var(--serif);font-size:.99rem;line-height:1.85;color:var(--ink);margin:0}
 .hit-ko{font-size:.87rem;color:var(--ink-3);margin:.2rem 0 0}
+.hit-wait{color:var(--ink-3);font-size:.8rem}
+.verify-all{font:inherit;font-size:.78rem;padding:.12rem .55rem;margin-left:.3rem;border:1px solid var(--mist);border-radius:999px;background:var(--paper-2);color:var(--indigo);cursor:pointer}
 mark{background:var(--amber-wash);color:var(--amber);padding:0 .1em;border-radius:2px;font-weight:600}
 
 /* 안내 글. word-break:keep-all 이 한국어 낱말이 중간에 끊기는 것을 막는다.
