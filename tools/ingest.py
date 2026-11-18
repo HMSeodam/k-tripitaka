@@ -2846,11 +2846,11 @@ RE_KO_TITLE_SEG = (r"(?:[『《][^』》]{1,30}[』》]\s*)?"
                    r"(?:권\s*제?\s*\d+|제\s*\d+\s*권|권\s*[상중하]|[상중하]\s*권)(?:\s*[본말상중하])?"
                    r"(?:\s*\(?(?:끝|終)\)?)?\.?(?:\s*끝\.?)?")
 RE_KO_BYLINE_SEG = (r"[^○△「『.]{2,40}?(?:지음|지었다|짓다|찬|술|엮음|모아\s*엮음|"
-                    r"기록함|기록한다|서술함|서술하였다|서술했다)\.?")
-RE_CN_BYLINE = re.compile(r"(?:沙門|比丘|釋|僧|大師|法師|居士).{0,12}(?:撰|述|集|記|錄|註|注|造)$")
+                    r"기록함|기록한다|서술함|서술하였다|서술했다|올림|올리다)\.?")
+RE_CN_BYLINE = re.compile(r"(?:沙門|比丘|釋|僧|大師|法師|居士).{0,12}(?:撰|述|集|記|錄|註|注|造|上進|進)$")
 
 
-def split_glued_ko(line, block, lead_title=False):
+def split_glued_ko(line, block, lead_title=False, mid_generic=False):
     """번역 문단 끝 한 줄에 「…본문. 『書』 권제1 말. 『書』 권제2 본. 아무개 지음. ○편명」 처럼
     권 표제·찬자·편명의 번역이 붙어 있으면, 원문 덩어리(block) 줄 수에 맞춰 잘라
     [본문, 표제1, 표제2, 찬자, 편명] 으로 돌려준다. 맞지 않으면 None."""
@@ -2864,7 +2864,11 @@ def split_glued_ko(line, block, lead_title=False):
         elif re.fullmatch(r"No\.?\s*[\w-]+", x.strip()):
             segs.append(r"No\.?\s*[\w-]+")
         elif k == len(block) - 1:
-            segs.append(r"[^.]{1,40}?\.?")        # 맨 끝의 편명·품명
+            # 맨 끝의 편명·품명(「심왕에게 답한 서신. (온 서신을 붙임.)」 처럼 두 문장일 수 있음)
+            segs.append(r"(?:[^.]{1,40}?\.?|[^.『《]{1,40}?\.\s*\([^()]{1,20}\)\.?)" if mid_generic
+                        else r"[^.]{1,40}?\.?")
+        elif mid_generic and len(nx) <= 12:
+            segs.append(r"[^.『《]{1,30}?\.")       # 사이의 짧은 줄(「法語」 → 「법어(法語).」)
         else:
             return None
     # lead_title: 덩어리 바로 앞 원문 줄 끝에 앞 권의 닫는 표제가 붙어 있음
@@ -2875,9 +2879,14 @@ def split_glued_ko(line, block, lead_title=False):
     if not m:
         return None
     parts = [m.group(1)] + [m.group(k + 2).strip() for k in range(len(segs))]
-    # 표제 자리에는 반드시 권 번호가 들어 있어야 한다
+    # 표제 자리에는 반드시 권 번호가 들어 있어야 하고, 원문 번호와 같아야 한다
     if not all(RE_KO_JUAN_LINE.search(p) for p, x in zip(parts[1:], block) if parse_juan_line(x)):
         return None
+    for p, x in zip(parts[1:], block):
+        p_ = parse_juan_line(norm_search(RE_INLINE_NOTE.sub("", x)))
+        mk = re.search(r"권\s*제?\s*(\d+)|제\s*(\d+)\s*권", p)
+        if p_ and p_[0][0] and mk and int(mk.group(1) or mk.group(2)) != p_[0][0]:
+            return None
     return parts
 
 
@@ -2891,8 +2900,8 @@ def mid_juan_split(u):
     fk = u["ko"][0].split("\n")
     if len(fc) != len(fk) or len(fc) < 3:
         return None
-    keys = [parse_juan_line(x) for x in fc]
-    for p in range(1, len(fc) - 1):
+    keys = [parse_juan_line(RE_APPARATUS.sub("", RE_MARKER.sub("", x)).strip()) for x in fc]
+    for p in range(1, len(fc)):
         if not keys[p] or not RE_KO_JUAN_LINE.search(fk[p]):
             continue
         closers = [keys[q] for q in range(p) if keys[q]]
@@ -2900,8 +2909,11 @@ def mid_juan_split(u):
             continue
         # 여는 표제 뒤에 본문(위치표지가 붙었거나 40자 넘는 줄)이 있어야 한다
         # (뒤가 찬자·품 제목뿐이면 끝에 붙은 표제 덩어리이므로 아래의 방식으로 뗀다)
-        if not any((RE_MARKER.search(x) or len(norm_search(x)) > 40) and not keys[q]
-                   for q, x in enumerate(fc) if q > p):
+        # 다만 여는 표제가 맨 끝 줄이고 그 줄이 원문 한 칸 안에 줄바꿈으로 붙어 있으면
+        # (「…봉진기⏎…卷第七⏎…卷第八」) 아래 방식으로는 뗄 수 없으므로 여기서 나눈다
+        tail_open = p == len(fc) - 1 and "\n" in u["cn"][-1]
+        if not tail_open and not any((RE_MARKER.search(x) or len(norm_search(x)) > 40) and not keys[q]
+                                     for q, x in enumerate(fc) if q > p):
             continue
         def mark(lines):
             for x in lines:
@@ -2914,6 +2926,71 @@ def mid_juan_split(u):
              "ko": ["\n".join(fk[p:])], "nt": [], "h": u.get("h")}
         return [a, b]
     return None
+
+
+def distribute_title_ko(units):
+    """원문 권 표제·찬자·편명 줄이 각각 번역 없는 단위로 섰는데, 그 번역이 앞 본문 단위의
+    번역 끝에 한 줄로 붙어 있는 경우(『천목중봉화상광록』 「…(상륜절). 『…』 권 제5 상.
+    참학 문인 … 올림. 법어(法語). 해인거사에게 보임.」) 잘라서 각 단위에 나눠 준다.
+    단위 수와 글자는 바뀌지 않고 번역이 놓이는 단위만 바뀐다. 돌려주는 값: 고친 곳 수."""
+    fixed = 0
+    for k in range(len(units) - 1):
+        u = units[k]
+        if not u.get("ko") or not any(norm_search(x) for x in u["cn"]):
+            continue
+        if all(parse_juan_line(norm_search(RE_INLINE_NOTE.sub("", x))) for x in u["cn"] if norm_search(x)):
+            continue                           # 앞 단위가 본문이 아니라 권 표제 줄
+        run = []
+        for j in range(k + 1, min(k + 7, len(units))):
+            v = units[j]
+            if v.get("ko") or len(v["cn"]) != 1 or "\n" in v["cn"][0] \
+                    or len(norm_search(v["cn"][0])) > 40 or RE_MARKER.search(v["cn"][0]):
+                break
+            run.append(j)
+        if not run or not parse_juan_line(units[run[0]]["cn"][0]):
+            continue
+        # 번역 칸이 둘 이상이고 마지막 칸이 통째로 다음 권 표제의 번역이면 그 칸을 옮긴다
+        # (「[2]대혜보각선사 주강서운문암어록 권제7.」)
+        last = u["ko"][-1]
+        p0 = parse_juan_line(norm_search(RE_INLINE_NOTE.sub("", units[run[0]]["cn"][0])))
+        mk = re.search(r"권\s*제?\s*(\d+)|제\s*(\d+)\s*권", last)
+        if (len(u["ko"]) >= 2 and "\n" not in last and len(last) <= 60 and p0 and p0[0][0]
+                and mk and int(mk.group(1) or mk.group(2)) == p0[0][0]
+                and re.search(r"권\s*제?\s*\d+\s*(?:[상중하본말])?\.?\s*$", last)):
+            units[run[0]]["ko"] = [last]
+            u["ko"] = list(u["ko"][:-1])
+            fixed += 1
+            continue
+        line = u["ko"][-1].split("\n")[-1]
+        for m in range(len(run), 0, -1):
+            block = [units[j]["cn"][0] for j in run[:m]]
+            g = split_glued_ko(line, block, mid_generic=True)
+            if not g:
+                continue
+            # 서명이 붙은 원문 권 표제에는 서명이 붙은 번역(『…』 권제N)만 맞춘다
+            ok = all(re.match(r"\s*[『《]", seg) for seg, x in zip(g[1:], block)
+                     if parse_juan_line(x) and len(norm_search(x).split("卷")[0]) >= 2)
+            # 번역 쪽 권 번호가 원문 권 표제의 번호와 같아야 한다(「卷第四」 ↔ 「권제3」 은 아님)
+            for n_, (seg, x) in enumerate(zip(g[1:], block)):
+                p_ = parse_juan_line(norm_search(RE_INLINE_NOTE.sub("", x)))
+                if not p_:
+                    ok = ok and n_ > 0
+                    continue
+                num, sub = p_[0]
+                mk = re.search(r"권\s*제?\s*(\d+)|제\s*(\d+)\s*권", seg)
+                if num:
+                    ok = ok and bool(mk) and int(mk.group(1) or mk.group(2)) == num
+                elif sub[:1] in SUB_KO:
+                    ok = ok and bool(re.search(r"권\s*" + SUB_KO[sub[:1]] + "|" + SUB_KO[sub[:1]] + r"\s*권", seg))
+            if not ok:
+                continue
+            lines = u["ko"][-1].split("\n")
+            u["ko"] = list(u["ko"][:-1]) + ["\n".join(lines[:-1] + [g[0]])]
+            for j, seg in zip(run[:m], g[1:]):
+                units[j]["ko"] = [seg]
+            fixed += 1
+            break
+    return fixed
 
 
 def split_juan_titles(units):
@@ -3244,14 +3321,19 @@ def juan_from_cbeta(units, entry):
         def title_key(x):
             if len(norm_search(x)) > 40 or not re.search(r"卷|第[" + NUMCH + r"]", x):
                 return None
+            x0 = RE_INLINE_NOTE.sub("", RE_APPARATUS.sub("", RE_MARKER.sub("", x))).strip(" 　○◎△")
+            # 품 제목(「明法品第十八(入第十八卷經)」·「分別賢聖品第六之三 論卷二十五」)과
+            # 본론 권 인용(「論本卷第二十 修所成地」)은 이 책의 권 표제가 아니다
+            if re.match(r"^[^卷]*品\s*(?:第|之)", x0) or re.match(r"^(?:論|經)本?\s*(?:卷|第)", x0):
+                return None
             p_ = parse_juan_line(x)
             if p_:
                 return p_[0]
             if "卷" not in x:
                 # 「說無垢稱經疏第一(本)」 처럼 卷 없이 적힌 권 제목은 서명이 같을 때만
                 # (「世主妙嚴品第一」 같은 품 제목을 권으로 읽지 않도록)
-                pre = re.split(r"第", RE_JUAN_STRIP.sub("", x))[0]
-                if not _share2(pre, j["head"]):
+                pre = re.split(r"第", RE_JUAN_STRIP.sub("", x0))[0]
+                if not _share2(pre, RE_INLINE_NOTE.sub("", j["head"])):
                     return None
             return cbeta_juan_name(x, "")[0]
 
@@ -4037,6 +4119,9 @@ def build_work(entry):
             raw_secs.append({"lv": sec["lv"], "t": sec["t"], "i": j})
     # 본문 단위 끝에 붙은 권 표제 줄을 떼어 따로 세운다(묶음형 번역)
     units, rm, n_split = split_juan_titles(units)
+    n_dist = distribute_title_ko(units)
+    if n_dist:
+        print(f"  · {wid}: 앞 단위 번역 끝에 붙은 권 표제 번역 {n_dist}곳을 제 단위로 나눔")
     if n_split:
         raw_secs = [{**s, "i": rm.get(s["i"], s["i"])} for s in raw_secs]
         print(f"  · {wid}: 본문 끝에 붙은 권 표제 {n_split}곳을 따로 세움")
