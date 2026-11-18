@@ -2748,6 +2748,7 @@ def detect_juan(units, own_title="", front_merge=300):
                 elif key != ck and juan_order(key) > juan_order(ck):
                     cur["t"] = f"{cur['t']}–{name.replace('권', '', 1)}"
                     cur["merged"] = True
+                    cur["key_end"] = key
                 cur["e"] = idx + 1
                 closed.update({cur["key"], key})
                 cur = None
@@ -2818,6 +2819,14 @@ def detect_juan(units, own_title="", front_merge=300):
             warns.append(f"{j['t']}: 여는 줄을 못 찾아 앞 권 끝에서 시작함")
         if j.get("merged"):
             warns.append(f"{j['t']}: 두 권 사이 경계 표제가 없어 한데 묶음")
+    # 권 번호가 건너뛴 곳: 사이 권이 원문에 없거나, 표제 없이 앞뒤 권에 섞여 있다
+    numbered = [j for j in out if j["key"] and j["key"][0]]
+    for a, b in zip(numbered, numbered[1:]):
+        ak = a.get("key_end") or a["key"]
+        if b["key"][0] - ak[0] > 1:
+            miss = "·".join(str(n) for n in range(ak[0] + 1, b["key"][0]))
+            warns.append(f"{a['t']} 다음이 {b['t']}: 권{miss} 표제가 원문에 없음"
+                         f"(원문에 없는 권인지, 표제 없이 {a['t']}에 섞였는지 확인)")
     if back_ignored:
         warns.append(f"참고: 권 차례를 거스르는 권 표제 {back_ignored}줄은 본문 속 인용으로 보고 건너뜀")
     if dropped_title:
@@ -2825,7 +2834,100 @@ def detect_juan(units, own_title="", front_merge=300):
     return out, warns
 
 
-RE_MARK_JUAN = re.compile(r"^(卷[^\s第]*)\s*第")
+# 한불전 위치표지의 권차: 「卷一 第1張」 · 「卷上 第3張」 · 「卷第15」 따위
+RE_MARK_JUAN = re.compile(r"^卷\s*第?\s*([上中下一二三四五六七八九十○〇百\d]+)(?=\s|$)")
+
+
+RE_KO_JUAN_LINE = re.compile(
+    r"권\s*제?\s*[\d一二三四五六七八九十百]|[상중하]\s*권|권\s*[상중하]|卷")
+
+
+def split_juan_titles(units):
+    """본문 단위 끝에 권 표제 줄이 붙어 있으면(묶음형 번역) 떼어 따로 세운다.
+
+    『화엄경소』 DOCX는 「권1 마지막 본문 + 卷第一 + 卷第二」를 한 문단에 번역해
+    두어, 다음 권의 여는 줄이 앞 권 화면 끝에 붙었다. 원문 TXT와 번역 문단 양쪽에서
+    권 표제가 각각 따로 줄을 차지하고, 그 수가 맞을 때만 떼어 낸다.
+      · 닫는 줄(앞의 것들)은 앞 권 끝에, 여는 줄(마지막 것)은 다음 권 첫머리에 따로 선다
+      · 번역 문단 끝에 찬자 줄 번역이 붙어 있고 다음 단위가 번역 없는 찬자 줄이면
+        그 번역을 다음 단위로 옮긴다
+    돌려주는 값: (새 단위 목록, 옛 번호→새 번호, 떼어 낸 곳 수)
+    """
+    out, remap, moved = [], {}, 0
+    carry = None                                 # 다음 단위로 넘길 번역 줄
+    for k, u in enumerate(units):
+        remap[k] = len(out)
+        if carry is not None:
+            u = {**u, "ko": [carry]}
+            carry = None
+        cn = u["cn"]
+        # 본문 뒤에 이어진 권 표제 덩어리: 첫 권 표제 줄부터 끝까지가 모두 짧은 줄
+        # (권 표제·찬자 줄 따위)이고 그 안에 권 표제가 하나 이상
+        t = len(cn)
+        while t > 0 and len(norm_search(cn[t - 1])) <= 40 and "\n" not in cn[t - 1]:
+            t -= 1
+        while t < len(cn) and not parse_juan_line(cn[t]):
+            t += 1                                   # 덩어리는 권 표제 줄에서 시작
+        block = cn[t:]
+        has_body = any(norm_search(x) for x in cn[:t])
+        n = len(block)
+        # 본문 없이 「앞 권 닫는 줄 + 다음 권 여는 줄」만 든 단위도 둘로 나눈다
+        title_only = (not has_body and t == 0
+                      and sum(1 for x in block if parse_juan_line(x)) >= 2)
+        # 교감표지가 든 줄은 옮기지 않는다(그 교감 메모가 본문 단위에 남아 서로 떨어지므로)
+        ok = n and (has_body or title_only) and len(u["ko"]) >= 1 \
+            and not any(RE_APPARATUS.search(x) for x in block)
+        if ok:
+            lines = u["ko"][-1].split("\n")
+            nxt = units[k + 1] if k + 1 < len(units) else None
+            # 다음 단위가 번역 없는 짧은 줄(찬자·품명 따위)이면, 번역 끝 줄이 그 번역일 수 있다
+            tail_for_next = bool(nxt is not None and not nxt["ko"] and nxt["cn"]
+                                 and all(len(norm_search(x)) <= 40 and not parse_juan_line(x)
+                                         for x in nxt["cn"])
+                                 and len(lines) > n + 1 and not RE_KO_JUAN_LINE.search(lines[-1])
+                                 and len(lines[-1]) <= 80)
+            body_lines = lines[:-1] if tail_for_next else lines
+            if title_only:
+                ko_titles = body_lines if len(body_lines) == n else []
+            else:
+                ko_titles = body_lines[-n:] if len(body_lines) > n else []
+            ok = (len(ko_titles) == n
+                  and all(len(x) <= 80 for x in ko_titles)
+                  and all(RE_KO_JUAN_LINE.search(kx) for cx, kx in zip(block, ko_titles)
+                          if parse_juan_line(cx))
+                  and (title_only or len(body_lines[-n - 1]) > 0))
+            if ok and title_only and not [x for x in block[:-1] if parse_juan_line(x)]:
+                ok = False
+        if not ok:
+            out.append(u)
+            continue
+        if not title_only:
+            keep_ko = list(u["ko"][:-1]) + ["\n".join(body_lines[:-n])]
+            out.append({**u, "cn": cn[:t], "ko": keep_ko})
+        titles = list(zip(block, ko_titles))
+        # 마지막 권 표제 줄 앞까지(닫는 줄들)는 앞 권 끝에, 마지막 권 표제 줄부터는
+        # (찬자 줄과 함께) 다음 권 첫머리에
+        last = max(i for i, (c, _) in enumerate(titles) if parse_juan_line(c))
+        for gi, g in enumerate((titles[:last], titles[last:])):
+            if g:
+                rec = {"i": 0, "m": None, "cn": [c for c, _ in g],
+                       "ko": ["\n".join(x for _, x in g)], "nt": [], "h": u.get("h")}
+                if title_only and gi == 0:
+                    # 원래 단위 자리를 그대로 이어받는다(위치표지·각주)
+                    rec = {**u, "cn": rec["cn"], "ko": rec["ko"]}
+                out.append(rec)
+        if tail_for_next:
+            carry = lines[-1]
+        moved += 1
+    remap[len(units)] = len(out)
+    if moved:
+        # 단위 번호를 원래 방식(첫 번호부터 1씩)대로 다시 매긴다
+        base = units[0]["i"] if units and isinstance(units[0].get("i"), int) else 1
+        for n_, u in enumerate(out):
+            u["i"] = base + n_
+    else:
+        out = units
+    return out, remap, moved
 
 
 def juan_from_markers(units):
@@ -2834,7 +2936,7 @@ def juan_from_markers(units):
     labels = []
     for u in units:
         m = RE_MARK_JUAN.match(u.get("m") or "")
-        labels.append(m.group(1) if m else None)
+        labels.append(m.group(1) if m else None)       # 「一○」·「15」·「上」
     if len({x for x in labels if x}) < 2:
         return []
     out, cur = [], None
@@ -2848,8 +2950,8 @@ def juan_from_markers(units):
             start = idx if pending is None else pending
             if not out:
                 start = 0
-            p = parse_juan_line(lab.replace("卷", "卷第", 1)) if not re.match(r"卷[上中下]", lab) \
-                else parse_juan_line(lab)
+            p = parse_juan_line(f"卷{lab}") if lab in ("上", "中", "下") \
+                else parse_juan_line(f"卷第{lab}")
             name = p[1] if p else lab
             key = p[0] if p else None
             out.append({"key": key, "t": name, "cn": "", "i": start})
@@ -2858,6 +2960,266 @@ def juan_from_markers(units):
     for k, j in enumerate(out):
         j["e"] = out[k + 1]["i"] if k + 1 < len(out) else len(units)
     return [j for j in out if j["e"] > j["i"]]
+
+
+# CBETA 원본 XML 의 권 경계 표 (tools/cbeta_juan.py 가 만든다)
+CBETA_JUAN_FILE = ROOT / "tools" / "cbeta_juan.json"
+CBETA_JUAN = (json.loads(CBETA_JUAN_FILE.read_text(encoding="utf-8"))
+              if CBETA_JUAN_FILE.exists() else {})
+RE_CANON_ID = re.compile(r"\b(T|X|L|K|B|J|ZW)\s*(\d+)\s*no\.\s*(\d+)\s*([a-zA-Z]?)")
+RE_MARK_LINE = re.compile(r"^\d{4}[a-c]\d{2}$")
+RE_HEAD_JUAN = re.compile(
+    r"卷\s*(?:第\s*([" + JUAN_NUM + r"\d]+)|([上中下]))"
+    r"\s*[(（]?\s*(之\s*[上中下本末餘" + JUAN_NUM + r"]+|[上中下本末])?")
+
+
+RE_HEAD_TAIL = re.compile(
+    r"([上中下])\s*卷?\s*(?:之\s*)?([一二三四五六七八九十]*)\s*(?:之\s*)?([上中下本末]?)\s*$")
+NUMCH = "一二三四五六七八九十百○〇零"
+
+
+def _parse_after(h, i, allow_bare):
+    """h[i:] 에서 「第N」·「N」·「上中下」 와 뒤따르는 本末·之上 따위를 읽는다."""
+    j = i
+    while j < len(h) and h[j] in " 　":
+        j += 1
+    has_di = j < len(h) and h[j] == "第"
+    if has_di:
+        j += 1
+    k = j
+    while k < len(h) and (h[k] in NUMCH or h[k].isdigit()):
+        k += 1
+    num = h[j:k]
+    ud = ""
+    if not num:
+        if j < len(h) and h[j] in "上中下" and not has_di:
+            ud, k = h[j], j + 1
+        else:
+            return None
+    elif not has_di and not allow_bare:
+        return None
+    rest = h[k:]
+    sub = ""
+    if re.match(r"\s*[(（]?\s*(?:本末|上下|上中下)合", rest):
+        return num, ud, ""                     # 「本末合」: 本·末을 합친 한 권
+    m = re.match(r"\s*[(（]?\s*之\s*([上中下本末餘]|[" + NUMCH + r"]+)", rest)
+    if m:
+        sub = m.group(1)
+    else:
+        m = re.match(r"\s*[(（]?\s*([上中下本末餘])", rest)
+        if m:
+            sub = m.group(1)
+        elif ud:
+            m = re.match(r"\s*([" + NUMCH + r"]+)", rest)
+            if m:
+                sub = m.group(1)
+    return num, ud, sub
+
+
+def cbeta_juan_name(head, n):
+    """XML 권 제목에서 (키, 이름).
+    「華嚴經探玄記卷第二盡世間淨眼品」 → 권2, 「大疏上卷之一」 → 권상-1,
+    「行事鈔卷上四」 → 권상-4, 「資持記上一上并序」 → 권상-1 상, 「義記下末」 → 권하 말,
+    「涅槃義記第三」 → 권3, 「經卷第八疏卷第五末」 → 권5 말(마지막 「卷」을 본다).
+    번호는 CBETA 권 번호(n)와 어긋나면 n 을 따른다(「卷第一五科入」 → 권1)."""
+    h = unicodedata.normalize("NFKC", head or "").replace("\n", "")
+    h = h.replace("〔", "").replace("〕", "")
+    h = re.sub(r"并序|幷序|\s", "", h)
+    h = re.sub(r"[(（][^)）]{3,}[)）]", "", h)      # 「(本末合)」·「(盡第三會)」 같은 설명
+    d = re.match(r"(\d+)", n or "")
+    nd = int(d.group(1)) if d else None
+    got = None
+    cands = [g for g in (_parse_after(h, m.end(), allow_bare=True) for m in re.finditer("卷", h)) if g]
+    if cands:
+        # CBETA 권 번호와 같은 번호를 단 「卷」 을 먼저, 없으면 마지막 「卷」
+        same = [g for g in cands if g[0] and nd is not None and juan_number(g[0]) == nd]
+        got = same[-1] if same else cands[-1]
+        if not same and nd is not None and any(g[0] for g in cands) and not cands[-1][0]:
+            got = [g for g in cands if g[0]][-1]
+    if not got:
+        for m in list(re.finditer("第", h))[::-1]:
+            got = _parse_after(h, m.start(), allow_bare=False)
+            if got:
+                break
+    if not got:
+        t = RE_HEAD_TAIL.search(re.sub(r"[(（][^)）]*[)）]", "", h))
+        if t:
+            ud, num2, sub2 = t.group(1), t.group(2), t.group(3)
+            name = f"권{SUB_KO[ud]}" + (f"-{juan_number(num2)}" if num2 else "") + \
+                   (f" {SUB_KO[sub2]}" if sub2 else "")
+            return (0, ud + num2 + sub2), name
+    if not got:
+        if nd is not None:
+            return (nd, ""), f"권{nd}"
+        return None, "권"
+    num, ud, sub = got
+    if num:
+        val = juan_number(num)
+        if nd is not None and val != nd:
+            val, sub = nd, sub if len(num) == 1 else ""
+        key, name = (val, sub), f"권{val}"
+        if sub:
+            name += (" " + SUB_KO[sub]) if sub in SUB_KO else f"-{juan_number(sub)}"
+    else:
+        key, name = (0, ud + sub), f"권{SUB_KO[ud]}"
+        if sub:
+            if sub in SUB_KO:
+                name += " " + SUB_KO[sub]
+            else:
+                name += f"-{juan_number(sub)}"
+    return key, name
+
+
+def juan_from_cbeta(units, entry):
+    """CBETA 원본 XML 의 권 경계로 권을 나눈다.
+
+    권마다 XML 에서 뽑아 둔 첫 본문 글자(lead)를 우리 원문에서 차례로 찾아
+    그 글자가 든 단위를 권의 시작으로 삼는다. 위치표지(쪽 번호)는 판본에 따라
+    다를 수 있어 쓰지 않는다. 원문에 없는 권(일부 권만 실은 문헌)은 건너뛴다.
+    돌려주는 값: (권 목록, 경고). 쓸 수 없으면 (None, 경고)."""
+    ids = RE_CANON_ID.findall(entry.get("canon", ""))
+    if len(ids) != 1 or entry.get("source", "CBETA") != "CBETA":
+        return None, []                        # 회본·한불전은 해당 없음
+    coll, vol, no, suf = ids[0]
+    rec = CBETA_JUAN.get(f"{coll}{int(vol)}n{int(no)}{suf}")
+    if not rec or not rec.get("juan"):
+        return None, []
+    xj = rec["juan"]
+    if len(xj) < 2:
+        return [], []                          # CBETA 로 1권짜리
+    # 단위마다 정규화한 원문을 이어 붙이고, 글자 위치 → 단위 번호 표를 만든다
+    texts = [norm_search(" ".join(u["cn"])) for u in units]
+    starts, pos = [], 0
+    for t in texts:
+        starts.append(pos)
+        pos += len(t)
+    whole = "".join(texts)
+    import bisect
+
+    def unit_at(off):
+        return bisect.bisect_right(starts, off) - 1
+
+    out, warns, missing = [], [], []
+    cursor = 0
+    for j in xj:
+        full = norm_search(j.get("lead") or "")
+        if len(full) < 6:
+            missing.append(j["n"]); continue
+        # 첫 12자 → 8자 → 앞 몇 자를 건너뛴 8자 순으로 찾는다
+        # (XML 첫머리에 과목 표시·이체자가 섞여 우리 원문과 앞 몇 자가 다를 수 있다)
+        off, lead = -1, ""
+        for a_, n_ in ((0, 12), (0, 8), (1, 8), (2, 8), (3, 8), (4, 8), (5, 8), (6, 8)):
+            cand = full[a_:a_ + n_]
+            if len(cand) < 8 and n_ == 8:
+                break
+            off = whole.find(cand, cursor)
+            if off >= 0:
+                lead = cand
+                break
+        if off < 0:
+            missing.append(j["n"]); continue
+        idx = unit_at(off)
+        key, name = cbeta_juan_name(j["head"], j["n"])
+
+        def title_key(x):
+            if len(norm_search(x)) > 40 or not re.search(r"卷|第[" + NUMCH + r"]", x):
+                return None
+            p_ = parse_juan_line(x)
+            if p_:
+                return p_[0]
+            if "卷" not in x:
+                # 「說無垢稱經疏第一(本)」 처럼 卷 없이 적힌 권 제목은 서명이 같을 때만
+                # (「世主妙嚴品第一」 같은 품 제목을 권으로 읽지 않도록)
+                pre = re.split(r"第", RE_JUAN_STRIP.sub("", x))[0]
+                if not _share2(pre, j["head"]):
+                    return None
+            return cbeta_juan_name(x, "")[0]
+
+        # 바로 앞의 권 제목·찬자 줄 단위는 새 권 쪽에 붙인다(앞 권의 닫는 줄은 빼고)
+        while idx > (out[-1]["i"] + 1 if out else 0):
+            pu = units[idx - 1]["cn"]
+            if not pu or any(len(norm_search(x)) > 40 for x in pu):
+                break                          # 본문이 든 단위
+            keys = [title_key(x) for x in pu]
+            if any(k_ is not None and k_ != key for k_ in keys):
+                break                          # 다른 권(앞 권)의 표제 줄
+            if units[idx - 1].get("m") and key not in keys:
+                break                          # 위치표지가 있는 짧은 본문
+            idx -= 1
+        if not out:
+            idx = 0
+        if out and idx <= out[-1]["i"]:
+            out[-1]["t"] = f"{out[-1]['t']}–{name.replace('권', '', 1)}"
+            warns.append(f"참고: CBETA {out[-1]['t']}: 한 단위 안에 두 권이 들어 있어 묶음")
+            cursor = off + len(lead)
+            continue
+        out.append({"key": key, "t": name, "cn": j["head"], "i": idx})
+        cursor = off + len(lead)
+    if len(out) < 2:
+        return None, ([f"참고: CBETA XML 권 첫머리를 원문에서 찾지 못해 쓰지 않음"] if xj else [])
+    # 찾은 권 사이에 못 찾은 권이 끼어 있으면(원문이 다른 판본이거나 그 권이 빠짐) 알린다
+    found_n = [j["n"] for j in xj if j["n"] not in missing]
+    lo, hi = xj.index(next(j for j in xj if j["n"] == found_n[0])), \
+        xj.index(next(j for j in xj if j["n"] == found_n[-1]))
+    inner = [j["n"] for j in xj[lo:hi + 1] if j["n"] in missing]
+    if len(inner) > max(1, (hi - lo + 1) * 0.3):
+        return None, [f"참고: CBETA XML 권 첫머리 {len(inner)}곳을 원문에서 못 찾아 쓰지 않음"]
+    for n in inner:
+        jj = next(j for j in xj if j["n"] == n)
+        k_, nm_ = cbeta_juan_name(jj["head"], n)
+        warns.append({"missing": n, "key": k_, "t": nm_})
+    # 같은 이름의 권(「권하」 둘)이나 「권상」 뒤에 「권상-2」 가 오는 경우:
+    # 이름만 있는 것들에 남은 번호를 차례로 매긴다 → 권하-1, 권하-2, (권하-3)
+    names = [j["t"] for j in out]
+    for base in sorted(set(names)):
+        if not re.fullmatch(r"권(?:[상중하]|\d+)", base):
+            continue
+        bare = [j for j in out if j["t"] == base]
+        used = {int(m.group(1)) for x in names for m in [re.fullmatch(re.escape(base) + r"-(\d+)", x)] if m}
+        if len(bare) < 2 and not used:
+            continue
+        n_ = 1
+        for j in bare:
+            while n_ in used:
+                n_ += 1
+            j["t"] = f"{base}-{n_}"
+            used.add(n_)
+    seen = {}
+    for j in out:
+        seen[j["t"]] = seen.get(j["t"], 0) + 1
+    count = {}
+    for j in out:
+        if seen[j["t"]] > 1:
+            count[j["t"]] = count.get(j["t"], 0) + 1
+            j["t"] = f"{j['t']}-{count[j['t']]}" if not re.search(r"-\d+$", j["t"]) \
+                else f"{j['t']}({count[j['t']]})"
+    for k, j in enumerate(out):
+        j["e"] = out[k + 1]["i"] if k + 1 < len(out) else len(units)
+    return out, warns
+
+
+def fill_missing_juan(cj, cj_warn, src_juan, n_units):
+    """CBETA XML 에서 첫머리를 못 찾은 권은, 원문 권 표제로 잡은 경계(src_juan)에
+    같은 권이 있으면 그 자리로 메운다. 그래도 없으면 경고로 남긴다."""
+    out, warns = list(cj), []
+    for w in cj_warn:
+        if not isinstance(w, dict):
+            warns.append(w)
+            continue
+        cand = [j for j in src_juan if j.get("key") == w["key"]]
+        placed = False
+        for c in cand:
+            i = c["i"]
+            if all(i != j["i"] for j in out) and 0 < i < n_units:
+                out.append({"key": w["key"], "t": w["t"], "cn": c.get("cn", ""), "i": i})
+                placed = True
+                break
+        if not placed:
+            warns.append(f"CBETA {w['t']}의 첫머리를 원문에서 찾지 못함(그 권이 앞 권에 섞여 있음)")
+    out.sort(key=lambda j: j["i"])
+    for k, j in enumerate(out):
+        j["e"] = out[k + 1]["i"] if k + 1 < len(out) else n_units
+    return out, warns
 
 
 def juan_monotonic(juan):
@@ -3411,6 +3773,11 @@ def build_work(entry):
                     continue
                 j = later[0]
             raw_secs.append({"lv": sec["lv"], "t": sec["t"], "i": j})
+    # 본문 단위 끝에 붙은 권 표제 줄을 떼어 따로 세운다(묶음형 번역)
+    units, rm, n_split = split_juan_titles(units)
+    if n_split:
+        raw_secs = [{**s, "i": rm.get(s["i"], s["i"])} for s in raw_secs]
+        print(f"  · {wid}: 본문 끝에 붙은 권 표제 {n_split}곳을 따로 세움")
     sections, _ = build_sections(raw_secs, len(units)) if raw_secs else ([], [])
 
     # 권: 원문의 권 표제가 1차 근거, 없으면 docx 제목 가운데 '권' 이름
@@ -3419,9 +3786,13 @@ def build_work(entry):
     if not juan_monotonic(hj):
         hj = []
     mj = juan_from_markers(units) if kabc else []
+    cj, cj_warn = juan_from_cbeta(units, entry) if not kabc else (None, [])
     if mj:
         # 한불전 저본은 위치표지에 권차가 적혀 있어 이것이 가장 확실하다
         juan, juan_warn = mj, []
+    elif cj is not None:
+        # CBETA 원본 XML 의 권 경계: 권마다 첫 본문 글자를 우리 원문에서 찾아 맞춘 것
+        juan, juan_warn = fill_missing_juan(cj, cj_warn, juan, len(units))
     elif len([j for j in juan if j["key"] is not None]) < 2:
         juan, juan_warn = (hj, []) if hj else ([], [])
     elif juan_gappy(juan) and len(hj) > len(juan):
