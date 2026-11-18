@@ -3,6 +3,13 @@
   "updates": [
     {
       "date": "2026-11-18",
+      "title": "권 나눔 보완",
+      "added": [],
+      "changed": ["seongyusik-hakgi", "gusaron-songsogi", "yeolban-jiphae", "haengsacho-bi", "cheonmok-jungbong-gwangnok", "sa-ron-hyeonuigi", "gisin-uigi", "hwaeom-jeongi"],
+      "memo": "『성유식론학기』의 CBETA 번호를 X50 no.818로 바로잡고 CBETA 권1~7(권1은 둘로 나뉨)에 맞추어 다시 나누었습니다. 『구사론송소기』 권2, 『화엄경전기』 권5를 따로 세웠고, 『열반경집해』의 권 제목이 다음 권 화면에 들어가던 것과 『사분율행사초비』·『천목중봉화상광록』·『대승사론현의기』 등에서 권 제목이 앞 권 본문에 붙어 있던 것을 바로잡았습니다."
+    },
+    {
+      "date": "2026-11-18",
       "title": "권 나눔 정비",
       "added": [],
       "changed": [],
