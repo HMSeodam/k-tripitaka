@@ -2,6 +2,13 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-11-23",
+      "title": "대승기신론 두 역본·원각경·능엄경·화엄경 두 역본 추가",
+      "added": ["gisinnon-jinje", "gisinnon-silchananta", "wongakgyeong", "neungeomgyeong", "hwaeomgyeong-60", "hwaeomgyeong-80"],
+      "changed": [],
+      "memo": "『대승기신론』 진제 역과 실차난타 역, 『원각경』, 『능엄경』, 60권본·80권본 『화엄경』을 원문·번역 대조로 더했습니다. 각 문헌의 서지·해제(비고)에 경록 기록, 서문 기년의 어긋남 등 진위와 역출 경위에 관한 의문을 근거와 함께 적었습니다."
+    },
+    {
       "date": "2026-11-18",
       "title": "검색이 빨라졌습니다",
       "added": [],
