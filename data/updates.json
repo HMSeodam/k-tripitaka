@@ -3,6 +3,13 @@
   "updates": [
     {
       "date": "2026-11-26",
+      "title": "N-gram: 고른 권을 합본으로 불러오기",
+      "added": [],
+      "changed": [],
+      "memo": "N-gram 분석의 ‘신한글대장경에서 불러오기’에서 문헌을 열면 ‘문헌 전체 불러오기’ 옆에 ‘선택한 권 합본으로 불러오기’ 스위치가 생겼습니다. 스위치를 켠 채 권을 누르면 고른 권들이 하나의 분석 대상(예: 권1–3·5)으로 묶이고, 다시 누르면 빠집니다. 스위치를 끄면 지금처럼 권마다 따로 들어갑니다. 합본은 한 문헌 안에서만 만들 수 있습니다."
+    },
+    {
+      "date": "2026-11-26",
       "title": "십지경론·십주비바사론·섭대승론 계열 17종 추가",
       "added": ["sipji-gyeongnon", "sipju-bibasa", "sipji-gyeongnon-uigi", "sipji-uigi-dunhuang", "sipjiron-uiso", "seopdaeseungnon-bulta", "seopdaeseungnon-jinje", "seopdaeseungnon-bon", "seopron-seok-jinje", "seopron-seok-geupda", "seopron-seok-hyeonjang", "seopron-museong-seok", "seopron-so-dunhuang", "seopron-cho", "seopdaeseungnon-jang", "seopron-jang", "seopdaeseung-uijang"],
       "changed": ["beopwon-uirimjang", "beobwon-jurim"],
