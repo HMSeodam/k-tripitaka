@@ -88,10 +88,25 @@
     .canon-juan { display:flex; flex-wrap:wrap; gap:.35rem; }
     .canon-juan button { font-size:.84rem; padding:.3rem .6rem; }
     .canon-juan button.added, #canonWhole.added { opacity:.6; }
+    .canon-actions { display:inline-grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.75rem; }
+    .canon-actions .btn { white-space:nowrap; margin:0; }
+    .merge-sw { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; }
+    .merge-sw .tg { flex:none; width:1.75rem; height:1rem; border-radius:.5rem; background:#ced4da; position:relative; transition:background .15s; }
+    .merge-sw .tg::after { content:''; position:absolute; top:.125rem; left:.125rem; width:.75rem; height:.75rem;
+      border-radius:50%; background:#fff; transition:left .15s; }
+    .merge-sw[aria-checked="true"] .tg { background:#6c8f80; }
+    .merge-sw[aria-checked="true"] .tg::after { left:.875rem; }
+    .merge-sw:hover .tg, .merge-sw:focus .tg { box-shadow:0 0 0 1px rgba(255,255,255,.6); }
+    .merge-stat { font-size:.8rem; color:var(--text-muted); margin:-.35rem 0 .4rem; }
+    .merge-stat:empty { display:none; }
+    .canon-juan button.merged { background:#eaf3ee; color:#2a5c4f; border-color:#9cc4b2; opacity:1; }
+    @media (max-width:575.98px) {
+      .canon-actions { display:grid; grid-template-columns:1fr; width:100%; }
+    }
     @media (max-width:768px) {
       .src-pick { flex-direction:column; align-items:stretch; gap:.7rem; }
       .src-pick .canon-btn { margin-bottom:0; }
-      #canonWhole, .canon-item { width:100%; }
+      .canon-item { width:100%; }
       .canon-juan button { width:calc(50% - .2rem); margin-bottom:0; }
     }
     @media (max-width:768px) {
@@ -277,10 +292,16 @@
             <i class="fas fa-arrow-left me-1"></i><span data-i18n="back">목록으로</span>
           </button>
           <div id="canonWorkHead" class="mb-2"></div>
-          <button type="button" id="canonWhole" class="btn btn-primary btn-sm mb-3">
-            <i class="fas fa-plus me-1"></i><span data-i18n="loadWhole">문헌 전체 불러오기</span>
-          </button>
+          <div class="canon-actions">
+            <button type="button" id="canonWhole" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus me-1"></i><span data-i18n="loadWhole">문헌 전체 불러오기</span>
+            </button>
+            <button type="button" id="canonMergeSw" class="btn btn-outline-secondary btn-sm merge-sw" role="switch" aria-checked="false">
+              <span data-i18n="mergeToggle">선택한 권 합본으로 불러오기</span><span class="tg" aria-hidden="true"></span>
+            </button>
+          </div>
           <div id="canonJuanWrap">
+            <div id="canonMergeStat" class="merge-stat"></div>
             <div class="small text-muted mb-1" data-i18n="byJuan">권·장별로 불러오기</div>
             <div id="canonJuan" class="canon-juan"></div>
           </div>
@@ -374,6 +395,7 @@ const LOCALES = {
     loadCanon:"신한글대장경에서 불러오기", canonTitle:"신한글대장경 문헌 불러오기",
     canonSearch:"제목·찬자·대장경 번호로 찾기 (예: 起信, 원효, T44)", canonCount:"{count}종",
     back:"목록으로", loadWhole:"문헌 전체 불러오기", byJuan:"권·장별로 불러오기", done:"완료",
+    mergeToggle:"선택한 권 합본으로 불러오기", mergeHint:"권을 누르면 하나의 합본으로 들어갑니다. 다시 누르면 빠집니다.", mergeStat:"합본: {label} ({count}권, 한자 {chars}자)",
     canonAdded:"분석 대상에 넣었습니다: {name}", canonPicked:"분석 대상 {count}개",
     canonLoading:"문헌을 불러오는 중...", canonLoadError:"신한글대장경 자료를 불러오지 못했습니다.",
     fileTypesHint:"txt · docx · hwpx · pdf · html 파일을 읽습니다. 신한글대장경 문헌과 섞어 2개 이상을 모아 분석합니다.",
@@ -401,6 +423,7 @@ const LOCALES = {
     loadCanon:"Load from Sinhangeul Tripitaka", canonTitle:"Load texts from Sinhangeul Tripitaka",
     canonSearch:"Search by title, author or canon number (e.g. 起信, T44)", canonCount:"{count} texts",
     back:"Back to list", loadWhole:"Load whole text", byJuan:"Load by fascicle / chapter", done:"Done",
+    mergeToggle:"Combine selected fascicles", mergeHint:"Tap fascicles to add them to one combined text. Tap again to remove.", mergeStat:"Combined: {label} ({count} fasc., {chars} characters)",
     canonAdded:"Added to analysis: {name}", canonPicked:"{count} items selected",
     canonLoading:"Loading text...", canonLoadError:"Could not load Sinhangeul Tripitaka data.",
     fileTypesHint:"Reads txt · docx · hwpx · pdf · html. Combine two or more files or canon texts.",
@@ -428,6 +451,7 @@ const LOCALES = {
     loadCanon:"从新韩文大藏经载入", canonTitle:"载入新韩文大藏经文献",
     canonSearch:"按题名、撰者、藏经编号检索（例：起信、T44）", canonCount:"{count}种",
     back:"返回列表", loadWhole:"载入全文", byJuan:"按卷、章载入", done:"完成",
+    mergeToggle:"所选各卷合并载入", mergeHint:"点选各卷即并入同一合本，再点一次即移除。", mergeStat:"合本：{label}（{count}卷，汉字 {chars} 字）",
     canonAdded:"已加入分析：{name}", canonPicked:"已选 {count} 项",
     canonLoading:"正在载入文献...", canonLoadError:"无法载入新韩文大藏经数据。",
     fileTypesHint:"可读取 txt · docx · hwpx · pdf · html，可与大藏经文献合并，至少两项进行分析。",
@@ -455,6 +479,7 @@ const LOCALES = {
     loadCanon:"新ハングル大蔵経から読み込む", canonTitle:"新ハングル大蔵経の文献を読み込む",
     canonSearch:"題名・撰者・大蔵経番号で検索（例：起信、T44）", canonCount:"{count}種",
     back:"一覧に戻る", loadWhole:"文献全体を読み込む", byJuan:"巻・章ごとに読み込む", done:"完了",
+    mergeToggle:"選んだ巻を合本で読み込む", mergeHint:"巻を押すと一つの合本に入ります。もう一度押すと外れます。", mergeStat:"合本：{label}（{count}巻・漢字 {chars}字）",
     canonAdded:"分析対象に追加しました：{name}", canonPicked:"分析対象 {count}件",
     canonLoading:"文献を読み込み中...", canonLoadError:"新ハングル大蔵経のデータを読み込めませんでした。",
     fileTypesHint:"txt · docx · hwpx · pdf · html を読み込みます。大蔵経文献と合わせて2件以上で分析します。",
@@ -523,6 +548,9 @@ class NgramAnalyzer {
     this.currentLang     = this._getLang();
     this.sources         = [];   // 분석 대상: {name, kind:'file'|'canon', file?, text?}
     this.canon           = { manifest: null, docs: new Map(), current: null };
+    // 합본 불러오기: 스위치를 켠 채 고른 권들을 한 문헌 안에서 하나의 분석 대상으로 묶는다
+    let mergeOn = false; try { mergeOn = localStorage.getItem('ngram_merge') === '1'; } catch {}
+    this.merge           = { on: mergeOn, ks: new Set(), src: null };
 
     this._applyLocale();
     this._initEvents();
@@ -547,6 +575,7 @@ class NgramAnalyzer {
       el.placeholder = this._t(el.getAttribute('data-i18n-ph'));
     });
     if (this.sources) this._renderSources();
+    if (this.merge) this._mergeDraw();
     // select options
     document.querySelector('#modeSelect option[value="all"]').textContent = this._t('all');
     document.querySelector('#modeSelect option[value="common"]').textContent = this._t('common');
@@ -561,9 +590,16 @@ class NgramAnalyzer {
     document.getElementById('canonSearch').addEventListener('input', () => this._renderCanonList());
     document.getElementById('canonBack').addEventListener('click', () => this._canonShowList());
     document.getElementById('canonWhole').addEventListener('click', () => this._canonAdd(null));
+    document.getElementById('canonMergeSw').addEventListener('click', () => {
+      this.merge.on = !this.merge.on;
+      try { localStorage.setItem('ngram_merge', this.merge.on ? '1' : '0'); } catch {}
+      this._mergeFinish();
+    });
+    document.getElementById('canonModal').addEventListener('hidden.bs.modal', () => this._mergeFinish());
     document.getElementById('selectedFilesList').addEventListener('click', e => {
       const b = e.target.closest('.src-x'); if (!b) return;
-      this.sources.splice(Number(b.dataset.i), 1);
+      const [gone] = this.sources.splice(Number(b.dataset.i), 1);
+      if (gone && gone === this.merge.src) this._mergeFinish();
       this._renderSources();
     });
     document.getElementById('analyzeBtn').addEventListener('click', () => this._analyze());
@@ -608,8 +644,8 @@ class NgramAnalyzer {
     else {
       const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
       list.innerHTML = this.sources.map((x, i) =>
-        `<span class="src-badge ${x.kind === 'canon' ? 'canon' : ''}">` +
-        `<i class="fas ${x.kind === 'canon' ? 'fa-book' : 'fa-file-lines'}"></i>${esc(x.name)}` +
+        `<span class="src-badge ${x.kind === 'canon' ? 'canon' : ''}${x.merged ? ' merged' : ''}">` +
+        `<i class="fas ${x.merged ? 'fa-layer-group' : x.kind === 'canon' ? 'fa-book' : 'fa-file-lines'}"></i>${esc(x.name)}` +
         `<button type="button" class="src-x" data-i=${i} title="${esc(this._t('removeItem'))}" aria-label="${esc(this._t('removeItem'))}">×</button></span>`
       ).join('');
       info.style.display = 'block';
@@ -760,6 +796,7 @@ class NgramAnalyzer {
     }
   }
   _canonShowList() {
+    this._mergeFinish();
     document.getElementById('canonListView').style.display = '';
     document.getElementById('canonWorkView').style.display = 'none';
   }
@@ -781,6 +818,8 @@ class NgramAnalyzer {
   }
   async _canonOpenWork(id) {
     const w = this.canon.manifest.works.find(x => x.id === id);
+    this.canon.current = null;
+    this._mergeFinish();
     const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     document.getElementById('canonListView').style.display = 'none';
     document.getElementById('canonWorkView').style.display = '';
@@ -818,14 +857,72 @@ class NgramAnalyzer {
       }
       this.canon.current.groups = groups;
       document.getElementById('canonJuanWrap').style.display = groups.length > 1 ? '' : 'none';
+      document.getElementById('canonMergeSw').style.display = groups.length > 1 ? '' : 'none';
       juan.innerHTML = groups.map((g, k) =>
         `<button type="button" class="btn btn-outline-secondary" data-k="${k}">${esc(g.t.replace(/『[^』]*』\s*/g, ''))}` +
         (Array.isArray(doc.juan) ? '' : ` <small class="text-muted">(${g.end - g.i})</small>`) + `</button>`
       ).join('');
-      juan.querySelectorAll('button').forEach(b => b.onclick = () => { this._canonAdd(Number(b.dataset.k)); b.classList.add('added'); });
+      juan.querySelectorAll('button').forEach(b => {
+        b.dataset.label = b.innerHTML;
+        b.onclick = () => {
+          const k = Number(b.dataset.k);
+          if (this.merge.on) this._mergeToggle(k);
+          else { this._canonAdd(k); b.classList.add('added'); }
+        };
+      });
+      this._mergeDraw();
     } catch {
       juan.innerHTML = `<div class="text-danger small py-2">${this._t('canonLoadError')}</div>`;
     }
+  }
+  // ── 합본 불러오기 ─────────────────────────────────────
+  _juanLabel(k) { return this.canon.current.groups[k].t.replace(/『[^』]*』\s*/g, '').trim(); }
+  // 고른 권 이름: 이어지는 권은 「권1–3」, 떨어진 권은 「권1–3·5」
+  _mergeLabel(ks) {
+    const runs = [];
+    ks.forEach(k => { const r = runs[runs.length - 1]; if (r && k === r[1] + 1) r[1] = k; else runs.push([k, k]); });
+    const num = s => (s.match(/^권\s*(\d+)$/) || [])[1];
+    return runs.map(([a, b], i) => {
+      const la = this._juanLabel(a), lb = this._juanLabel(b);
+      let s = a === b ? la : (num(la) && num(lb) ? `${la}–${num(lb)}` : `${la}–${lb}`);
+      if (i > 0 && num(la) && num(this._juanLabel(runs[i - 1][1]))) s = s.replace(/^권\s*/, '');
+      return s;
+    }).join('·');
+  }
+  _mergeToggle(k) {
+    const cur = this.canon.current; if (!cur) return;
+    const m = this.merge;
+    if (m.ks.has(k)) m.ks.delete(k); else m.ks.add(k);
+    const ks = [...m.ks].sort((a, b) => a - b);
+    if (!ks.length) {
+      const i = this.sources.indexOf(m.src); if (i >= 0) this.sources.splice(i, 1);
+      m.src = null;
+    } else {
+      const text = ks.map(j => { const g = cur.groups[j]; return this._canonText(cur.doc.units.slice(g.i, g.end)); }).join('\n');
+      const base = `${cur.w.title_cn} ${this._mergeLabel(ks)}`;
+      if (m.src) { m.src.name = ''; m.src.name = this._uniqName(base); m.src.text = text; }
+      else { m.src = { name: this._uniqName(base), kind: 'canon', merged: true, text }; this.sources.push(m.src); }
+    }
+    this._renderSources();
+    this._mergeDraw();
+  }
+  // 합본을 확정하고 새로 시작할 준비(스위치를 끄거나 켤 때, 다른 문헌·목록으로 갈 때, 창을 닫을 때)
+  _mergeFinish() { this.merge.ks = new Set(); this.merge.src = null; this._mergeDraw(); }
+  _mergeDraw() {
+    const m = this.merge, sw = document.getElementById('canonMergeSw'), st = document.getElementById('canonMergeStat');
+    if (!sw) return;
+    sw.setAttribute('aria-checked', m.on ? 'true' : 'false');
+    document.querySelectorAll('#canonJuan button').forEach(b => {
+      const on = m.on && m.ks.has(Number(b.dataset.k));
+      b.classList.toggle('merged', on);
+      if (b.dataset.label != null) b.innerHTML = (on ? '✓ ' : '') + b.dataset.label;
+    });
+    if (!m.on) { st.textContent = ''; return; }
+    if (!m.ks.size || !this.canon.current) { st.textContent = this._t('mergeHint'); return; }
+    const ks = [...m.ks].sort((a, b) => a - b);
+    let chars = 0; for (const ch of m.src ? m.src.text : '') if (HANJA_RE.test(ch)) chars++;
+    st.textContent = this._t('mergeStat').replace('{label}', this._mergeLabel(ks))
+      .replace('{count}', ks.length).replace('{chars}', chars.toLocaleString());
   }
   _canonText(units) {
     return units.map(u => (u.cn || []).join('')
@@ -1068,6 +1165,7 @@ class NgramAnalyzer {
 
     // UI 초기화
     this.sources        = [];
+    this._mergeFinish();
     document.getElementById('fileInput').value = '';
     document.getElementById('selectedFilesInfo').style.display = 'none';
     document.getElementById('selectedFilesList').innerHTML = '';
