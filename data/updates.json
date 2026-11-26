@@ -2,6 +2,13 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-11-26",
+      "title": "십지경론·십주비바사론·섭대승론 계열 17종 추가",
+      "added": ["sipji-gyeongnon", "sipju-bibasa", "sipji-gyeongnon-uigi", "sipji-uigi-dunhuang", "sipjiron-uiso", "seopdaeseungnon-bulta", "seopdaeseungnon-jinje", "seopdaeseungnon-bon", "seopron-seok-jinje", "seopron-seok-geupda", "seopron-seok-hyeonjang", "seopron-museong-seok", "seopron-so-dunhuang", "seopron-cho", "seopdaeseungnon-jang", "seopron-jang", "seopdaeseung-uijang"],
+      "changed": ["beopwon-uirimjang", "beobwon-jurim"],
+      "memo": "『십지경론』과 그 주석 3종, 『십주비바사론』을 ‘지론’ 묶음으로, 『섭대승론』 본문 세 역본과 석론 네 역본, 돈황본 등 섭론학 문헌 5종을 ‘섭론’ 묶음으로 원문·번역 대조로 더했습니다. 각 문헌의 서지·해제(비고)에 경록·서문·지어의 기록과 찬자·역출 경위에 관한 이견을 근거와 함께 적었습니다. 권 나눔을 보완하면서 『법원의림장』 권1이 권2로 표시되던 것과 『법원주림』 권77~79의 시작 위치도 바로잡았습니다."
+    },
+    {
       "date": "2026-11-23",
       "title": "대승기신론 두 역본·원각경·능엄경·화엄경 두 역본 추가",
       "added": ["gisinnon-jinje", "gisinnon-silchananta", "wongakgyeong", "neungeomgyeong", "hwaeomgyeong-60", "hwaeomgyeong-80"],

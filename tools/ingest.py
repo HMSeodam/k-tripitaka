@@ -3222,6 +3222,10 @@ def cbeta_juan_name(head, n):
     h = re.sub(r"[(（][^)）]{3,}[)）]", "", h)      # 「(本末合)」·「(盡第三會)」 같은 설명
     d = re.match(r"(\d+)", n or "")
     nd = int(d.group(1)) if d else None
+    # 「十地經論初歡喜地第一之一」: 卷 없이 「第(지·품 번호)之(권 번호)」 — 之 뒤가 CBETA 권 번호
+    m_ = re.search(r"第[" + NUMCH + r"]+之([" + NUMCH + r"]+)$", h)
+    if m_ and "卷" not in h and nd is not None and juan_number(m_.group(1)) == nd:
+        return (nd, ""), f"권{nd}"
     got = None
     cands = [g for g in (_parse_after(h, m.end(), allow_bare=True) for m in re.finditer("卷", h)) if g]
     if cands:
@@ -3293,10 +3297,17 @@ def juan_from_cbeta(units, entry):
     # 두 갈래로 찾는다: ① 원문 그대로 ② 괄호 속 협주·「(至)」 따위를 뺀 것
     # (XML 은 협주를 <note> 로 따로 두어 lead 에 들어 있지 않다.
     #  「言有見者(此云有)梵云…」 · 「如是四緣(至)是語依處」)
+    # ③ 맨 앞 권 전용: 갈래 ②에서 NFKC 가 남긴 반각 문장부호(, : ; ? !)까지 뺀 것
+    #    (5언 게송이나 「…．…」로 여는 첫 권은 창마다 문장부호가 끼어 첫머리를 못 찾고,
+    #     못 찾은 맨 앞 권은 「일부 권만 실은 문헌」으로 여겨 버려진다 — 十地經論·法苑義林章 권1.
+    #     뒤 권에까지 쓰면 80권 화엄경처럼 원문 권 표제로 잘 나뉘던 문헌이 XML 쪽으로 넘어가
+    #     긴 게송 단위에 권 경계가 몰리므로 첫 권에만, 12자 창이 한 번만 나올 때만 쓴다)
     streams = []
-    for strip in (False, True):
+    for strip in (False, True, 2):
         texts = [norm_search(RE_INLINE_NOTE.sub("", " ".join(u["cn"])) if strip
                              else " ".join(u["cn"])) for u in units]
+        if strip == 2:
+            texts = [re.sub(r"[,:;?!.]", "", t) for t in texts]
         starts, pos = [], 0
         for t in texts:
             starts.append(pos)
@@ -3307,7 +3318,7 @@ def juan_from_cbeta(units, entry):
         return bisect.bisect_right(streams[si][1], off) - 1
 
     out, warns, missing = [], [], []
-    cursor = [0, 0]                            # 갈래마다 찾기 시작할 자리
+    cursor = [0, 0, 0]                         # 갈래마다 찾기 시작할 자리
     for j in xj:
         full = norm_search(j.get("lead") or "")
         if len(full) < 6:
@@ -3320,10 +3331,13 @@ def juan_from_cbeta(units, entry):
             cand = full[a_:a_ + n_]
             if len(cand) < n_:
                 break
-            for si in (0, 1):
+            for si in ((0, 1, 2) if j is xj[0] else (0, 1)):
                 off = streams[si][0].find(cand, cursor[si])
                 # 7·6자 창은 남은 원문에서 한 번만 나올 때만 믿는다
                 if off >= 0 and n_ < 8 and streams[si][0].find(cand, off + 1) >= 0:
+                    off = -1
+                # 갈래 ③은 12자 창이 남은 원문에서 한 번만 나올 때만(되풀이되는 게송에 엉뚱하게 붙지 않게)
+                if off >= 0 and si == 2 and (n_ < 12 or streams[si][0].find(cand, off + 1) >= 0):
                     off = -1
                 if off >= 0:
                     break
@@ -3336,8 +3350,9 @@ def juan_from_cbeta(units, entry):
 
         def advance():
             cursor[si] = off + len(lead)
-            o_ = 1 - si                         # 다른 갈래는 그 단위 첫머리까지
-            cursor[o_] = max(cursor[o_], streams[o_][1][idx])
+            for o_ in range(len(streams)):      # 다른 갈래는 그 단위 첫머리까지
+                if o_ != si:
+                    cursor[o_] = max(cursor[o_], streams[o_][1][idx])
         key, name = cbeta_juan_name(j["head"], j["n"])
         hkey = cbeta_juan_name(j["head"], "")[0]     # 제목에 적힌 번호 그대로(「卷第三末」)
         hnorm = norm_search(j["head"])
@@ -3366,9 +3381,10 @@ def juan_from_cbeta(units, entry):
         # 앞 권을 닫는 줄 — 「成唯識論學記」 / 「成唯識論學記(自三半至四終)」)
         own = (key, hkey)
         floor_ = out[-1]["i"] + 1 if out else 0
-        # 몇 단위 앞(품 제목·찬자 줄 너머)에 이 권의 표제가 있으면 거기까지 먼저 당긴다
+        # 몇 단위 앞(품 제목·찬자 줄 너머, 8단위 안)에 이 권의 표제가 있으면 거기까지 먼저 당긴다
+        # (攝大乘論釋: 「卷第二」/찬자/역자/「品之二」/「章餘」 다섯 줄 뒤에 본문이 온다)
         # (「論本第三 … 述」 / 「分別根品」 / 본문 — 위치표지가 붙은 짧은 줄이 끼어 있어도)
-        for b in range(idx - 1, max(floor_, idx - 4) - 1, -1):
+        for b in range(idx - 1, max(floor_, idx - 8) - 1, -1):
             pu = units[b]["cn"]
             if not pu or any(len(norm_search(x)) > 40 for x in pu):
                 break
@@ -3426,6 +3442,15 @@ def juan_from_cbeta(units, entry):
                 hi_ = nxt[0]["i"] if nxt else len(units)
                 idx = next((k for k in range(lo_, hi_) if (units[k].get("m") or "") > lb), None)
                 if not lb or idx is None:
+                    continue
+                # 원문에 XML 권 제목과 똑같은 줄이 바로 앞(8단위 안)에 있으면 그 줄에서 연다
+                # (「十地經論明地第三卷之五」: 卷之N 꼴은 원문 권 표제로 읽히지 않아,
+                #  아래처럼 짧은 줄을 거슬러 오르면 앞 권 끝의 짧은 본문까지 끌려온다)
+                hn_ = norm_search(j.get("head") or "")
+                same_ = [k for k in range(idx - 1, max(lo_, idx - 8) - 1, -1)
+                         if hn_ and any(norm_search(x) == hn_ for x in units[k]["cn"])]
+                if same_:
+                    mark_at[n] = (same_[0], lb)
                     continue
                 # 표지 없는 짧은 줄(권 제목·편 목록)은 새 권 쪽에
                 nd_ = juan_number(re.match(r"\d+", n).group(0)) if re.match(r"\d+", n) else None
