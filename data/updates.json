@@ -2,6 +2,13 @@
   "_note": "자료 업데이트 기록. 새 항목을 맨 위에 덧붙인다. date는 YYYY-MM-DD(또는 날짜를 모르면 YYYY-MM). added/changed 에는 문헌 id를 적는다. 이 파일은 GitHub Actions가 다시 만들지 않는다.",
   "updates": [
     {
+      "date": "2026-11-27",
+      "title": "‘클로드 Skill’ 바로가기 추가",
+      "added": [],
+      "changed": [],
+      "memo": "윗줄 도구 버튼에 ‘클로드 Skill’(휴대폰은 ‘Skill’)을 더했습니다. 누르면 수묵학술문화연구소의 공개 AI 스킬 안내 페이지(樹默 스킬 서가)가 새 창으로 열립니다."
+    },
+    {
       "date": "2026-11-26",
       "title": "N-gram: 고른 권을 합본으로 불러오기",
       "added": [],

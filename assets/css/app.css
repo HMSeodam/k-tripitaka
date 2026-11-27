@@ -698,9 +698,10 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
 /* iPhone 가로: 노치 자리만큼 좌우 여백 */
 .topbar{padding-left:max(.8rem,env(safe-area-inset-left));padding-right:max(.8rem,env(safe-area-inset-right))}
 
-/* 태블릿·좁은 PC(901~1279px): 첫 줄 = 이름·도구·업데이트, 둘째 줄 = 검색창·검색 범위.
-   한 줄에 두면 검색칸이 400px 안팎으로 좁아지므로(2026-11-18 결정). 휴대폰 가로는 한 줄 그대로 */
-@media (min-width:901px) and (max-width:1279px) and (min-height:501px),(min-width:901px) and (max-width:1279px) and (pointer:fine),(min-width:1001px) and (max-width:1279px){
+/* 태블릿·좁은 PC(901~1365px): 첫 줄 = 이름·도구·업데이트, 둘째 줄 = 검색창·검색 범위.
+   한 줄에 두면 검색칸이 400px 안팎으로 좁아지므로(2026-11-18 결정). 휴대폰 가로는 한 줄 그대로.
+   2026-11-27 '클로드 Skill' 버튼을 더하면서 경계를 1279 → 1365px로 올림(1366px에서 검색칸 약 440px) */
+@media (min-width:901px) and (max-width:1365px) and (min-height:501px),(min-width:901px) and (max-width:1365px) and (pointer:fine),(min-width:1001px) and (max-width:1365px){
   :root{--top:104px}
   .topbar{display:grid;grid-template-columns:auto 1fr auto auto;
     grid-template-areas:"brand . links upd" "search search search tools";
@@ -710,4 +711,16 @@ h4.sect{font-size:.74rem;letter-spacing:.18em;color:var(--ink-3);margin:1.8rem 0
   .upd{grid-area:upd;justify-self:end}
   .topbar-tools{grid-area:tools;justify-self:end}
   .search{grid-area:search;max-width:none}
+}
+
+/* 아주 좁은 휴대폰(≤380px): 도구 버튼 4개(N-gram·교감·논문·Skill)와 업데이트가 한 줄에 들어가게 */
+@media (max-width:380px){
+  .topbar{column-gap:.25rem;padding-left:max(.6rem,env(safe-area-inset-left));padding-right:max(.6rem,env(safe-area-inset-right))}
+  .applinks{gap:.15rem}
+  .applinks a,.updbtn{padding:.3rem .36rem;font-size:.7rem}
+  .updbtn{gap:.25rem}
+}
+@media (max-width:350px){
+  .brand-mark{font-size:1rem}
+  .applinks a,.updbtn{padding:.28rem .3rem;font-size:.66rem}
 }
